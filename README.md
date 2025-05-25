@@ -6,15 +6,28 @@
 
 A TypeScript client library for interacting with the MyInvois REST API. This package aims to provide an easy way to integrate MyInvois services into your Node.js or TypeScript projects.
 
+## Installation
+
+```bash
+bun install myinvois-client
+# or
+npm install myinvois-client
+# or
+yarn add myinvois-client
+```
+
 ## Understanding E-Invoicing in Malaysia and MyInvois
 
 ### What is MyInvois?
+
 MyInvois is an electronic invoicing system implemented by the Inland Revenue Board of Malaysia (LHDN) to replace traditional paper or PDF invoices. It requires that nearly all business transactions be reported to LHDN through the MyInvois system for validation.
 
 ### Regulations Overview
+
 The mandatory implementation of e-invoicing in Malaysia begins in stages from August 2024, based on business size. It applies to all types of businesses and transactions within Malaysia, including those by foreign entities with a local presence. The system requires electronic issuance, reception, and storage of invoices.
 
 ### How to Use MyInvois
+
 Businesses can interact with the MyInvois system via three primary methods:
 
 1.  **MyInvois Portal (Manual):** Suitable for small businesses or low-volume transactions, involving manual data entry via LHDN's portal.
@@ -22,6 +35,7 @@ Businesses can interact with the MyInvois system via three primary methods:
 3.  **Through 3rd Party ERP or Accounting Software:** The most common method for businesses already using accounting or ERP software, where the software handles the e-invoicing submission process automatically.
 
 ### Why Use This Library?
+
 This `myinvois-client` library is specifically for businesses and developers choosing the **API Integration (Direct)** method. It provides a robust, TypeScript-first SDK that abstracts away the complexities of interacting with the MyInvois REST API. Instead of building the API communication, authentication, UBL document structure handling, and digital signature preparation logic from scratch, developers can leverage this library. This significantly reduces development time and effort, offering a reliable alternative to relying solely on third-party ERP vendors or middleware services for direct API integration.
 
 ## Features
@@ -40,16 +54,6 @@ For complete, working examples of using this library, check out:
 
 - [Integration Test Example](examples/tests/integrationTest.ts) - A full end-to-end example showing authentication, document creation, and submission
 - [Other examples](examples) - Other examples
-
-## Installation
-
-```bash
-bun install myinvois-client
-# or
-npm install myinvois-client
-# or
-yarn add myinvois-client
-```
 
 ## Usage
 
