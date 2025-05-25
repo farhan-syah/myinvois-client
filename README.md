@@ -12,8 +12,6 @@ A TypeScript client library for interacting with the MyInvois REST API. This pac
 bun install myinvois-client
 # or
 npm install myinvois-client
-# or
-yarn add myinvois-client
 ```
 
 ## Understanding E-Invoicing in Malaysia and MyInvois
@@ -90,6 +88,131 @@ const myInvoiceClientSandbox = new MyInvoisClient(
 ```
 
 Make sure to replace `"your_client_id"` and `"your_client_secret"` with your actual credentials provided by MyInvois.
+
+**Note on Client Instantiation for Intermediaries:**
+When acting as an intermediary for multiple taxpayers, it is a best practice to instantiate a new `MyInvoisClient` for each taxpayer session or ensure that the client's internal state (specifically the `onBehalfOfTIN` associated with the current token) is correctly managed if a single client instance is reused. The client has been updated to re-authenticate if the `onBehalfOfTIN` changes for `loginAsIntermediary` calls, but creating separate instances can provide clearer separation of concerns in complex applications.
+
+### 2. Authenticate and Get Access Token
+
+#### Taxpayer Login
+
+To authenticate as a taxpayer and retrieve an access token:
+
+```typescript
+// Assuming myInvoiceClient is already instantiated as shown above
+
+const token = await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI");
+```
+
+#### Intermediary Login
+
+To authenticate as an intermediary system on behalf of a taxpayer:
+
+```typescript
+// Assuming myInvoiceClient is already instantiated with intermediary credentials
+
+const token = await myInvoiceClient.auth.loginAsIntermediary(
+  ON_BEHALF_OF_TIN,
+  "InvoicingAPI",
+);
+```
+
+**Note:** For intermediary login, ensure you instantiate `MyInvoisClient` with the intermediary system's client ID and secret.
+
+### 3. Access API Endpoints
+
+Once the client is instantiated (and authentication has occurred for the first operation or explicitly called), you can access other API methods.
+The client will automatically manage the access token (requesting or refreshing it as needed).
+
+#### 3.1 Get All Document Types
+
+This functionality allows you to retrieve a list of all available document types.
+
+```typescript
+// Assuming myInvoiceClient is already instantiated
+const documentTypes = await myInvoiceClient.documents.getAllDocumentTypes();
+```
+
+#### 3.2 Get Document Type By ID
+
+This functionality allows you to retrieve the details of a single document type by its unique ID.
+
+```typescript
+// Assuming myInvoiceClient is already instantiated
+const documentTypeId = 45; // Replace with an actual document type ID
+const documentType =
+  await myInvoiceClient.documents.getDocumentTypeById(documentTypeId);
+```
+
+#### 3.3 Get Document Type Version By ID
+
+This functionality allows you to retrieve the details of a specific version of a document type.
+
+```typescript
+// Assuming myInvoiceClient is already instantiated
+const docTypeId = 45; // Replace with an actual document type ID
+const versionId = 41235; // Replace with an actual version ID for the document type
+const documentTypeVersion =
+  await myInvoiceClient.documents.getDocumentTypeVersionById(
+    docTypeId,
+    versionId,
+  );
+```
+
+#### 3.4 Validate Taxpayer TIN
+
+This API allows you to validate a taxpayer's Tax Identification Number (TIN) along with their ID Type (NRIC, Passport, BRN, Army) and ID value. It returns `true` if the combination is valid and found, and throws an error otherwise (e.g., for HTTP 400 BadArgument or 404 Not Found).
+
+```typescript
+// Assuming myInvoiceClient is already instantiated
+const tinToValidate = "C25845632020";
+const idTypeForValidation = "BRN"; // Can be "NRIC", "PASSPORT", "BRN", or "ARMY"
+const idValueForValidation = "201901234567";
+const isValid = await myInvoiceClient.taxpayer.validateTaxpayerTIN(
+  tinToValidate,
+  idTypeForValidation,
+  idValueForValidation,
+);
+```
+
+#### 3.5 Submit Documents
+
+This functionality allows you to submit one or more documents (e.g., Invoices, Credit Notes, Debit Notes) to the MyInvois system. Documents are grouped into a submission, and each document must adhere to the defined structure for its type and version.
+
+```typescript
+// Assuming myInvoiceClient is already instantiated
+
+// Example: Submitting a single JSON document as a taxpayer
+const documentToSubmit = {
+  format: "JSON" as "JSON", // or "XML"
+  // For a real implementation, you would generate the base64 document string and its hash
+  document: btoa(
+    JSON.stringify({ invoiceDetails: "Sample e-Invoice Content" }),
+  ),
+  documentHash:
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Placeholder hash for example
+  codeNumber: "ERP-INV-12345",
+};
+
+const submissionRequest = {
+  documents: [documentToSubmit],
+};
+
+// For taxpayer submission:
+const submissionResponse =
+  await myInvoiceClient.documents.submitDocuments(submissionRequest);
+
+submissionResponse.acceptedDocuments.forEach((doc) => {
+  console.log(
+    `Accepted: CodeNumber=${doc.invoiceCodeNumber}, UUID=${doc.uuid}`,
+  );
+});
+submissionResponse.rejectedDocuments.forEach((doc) => {
+  console.log(
+    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS || doc.error.error}`,
+  );
+});
+```
 
 ## Creating UBL Documents
 
@@ -343,129 +466,4 @@ async function getFullDigitalSignature(
 // UBLExtensions section of your UBLJsonInvoiceDocumentV1_1 object.
 ```
 
-For a complete example of how to integrate this into the UBL document and use it with the client, refer to the [Examples](examples)
-
-**Note on Client Instantiation for Intermediaries:**
-When acting as an intermediary for multiple taxpayers, it is a best practice to instantiate a new `MyInvoisClient` for each taxpayer session or ensure that the client's internal state (specifically the `onBehalfOfTIN` associated with the current token) is correctly managed if a single client instance is reused. The client has been updated to re-authenticate if the `onBehalfOfTIN` changes for `loginAsIntermediary` calls, but creating separate instances can provide clearer separation of concerns in complex applications.
-
-### 2. Authenticate and Get Access Token
-
-#### Taxpayer Login
-
-To authenticate as a taxpayer and retrieve an access token:
-
-```typescript
-// Assuming myInvoiceClient is already instantiated as shown above
-
-const token = await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI");
-```
-
-#### Intermediary Login
-
-To authenticate as an intermediary system on behalf of a taxpayer:
-
-```typescript
-// Assuming myInvoiceClient is already instantiated with intermediary credentials
-
-const token = await myInvoiceClient.auth.loginAsIntermediary(
-  ON_BEHALF_OF_TIN,
-  "InvoicingAPI",
-);
-```
-
-**Note:** For intermediary login, ensure you instantiate `MyInvoisClient` with the intermediary system's client ID and secret.
-
-### 3. Access API Endpoints
-
-Once the client is instantiated (and authentication has occurred for the first operation or explicitly called), you can access other API methods.
-The client will automatically manage the access token (requesting or refreshing it as needed).
-
-#### Get All Document Types
-
-This functionality allows you to retrieve a list of all available document types.
-
-```typescript
-// Assuming myInvoiceClient is already instantiated
-const documentTypes = await myInvoiceClient.documents.getAllDocumentTypes();
-```
-
-#### Get Document Type By ID
-
-This functionality allows you to retrieve the details of a single document type by its unique ID.
-
-```typescript
-// Assuming myInvoiceClient is already instantiated
-const documentTypeId = 45; // Replace with an actual document type ID
-const documentType =
-  await myInvoiceClient.documents.getDocumentTypeById(documentTypeId);
-```
-
-#### Get Document Type Version By ID
-
-This functionality allows you to retrieve the details of a specific version of a document type.
-
-```typescript
-// Assuming myInvoiceClient is already instantiated
-const docTypeId = 45; // Replace with an actual document type ID
-const versionId = 41235; // Replace with an actual version ID for the document type
-const documentTypeVersion =
-  await myInvoiceClient.documents.getDocumentTypeVersionById(
-    docTypeId,
-    versionId,
-  );
-```
-
-#### Validate Taxpayer TIN
-
-This API allows you to validate a taxpayer's Tax Identification Number (TIN) along with their ID Type (NRIC, Passport, BRN, Army) and ID value. It returns `true` if the combination is valid and found, and throws an error otherwise (e.g., for HTTP 400 BadArgument or 404 Not Found).
-
-```typescript
-// Assuming myInvoiceClient is already instantiated
-const tinToValidate = "C25845632020";
-const idTypeForValidation = "BRN"; // Can be "NRIC", "PASSPORT", "BRN", or "ARMY"
-const idValueForValidation = "201901234567";
-const isValid = await myInvoiceClient.taxpayer.validateTaxpayerTIN(
-  tinToValidate,
-  idTypeForValidation,
-  idValueForValidation,
-);
-```
-
-#### Submit Documents
-
-This functionality allows you to submit one or more documents (e.g., Invoices, Credit Notes, Debit Notes) to the MyInvois system. Documents are grouped into a submission, and each document must adhere to the defined structure for its type and version.
-
-```typescript
-// Assuming myInvoiceClient is already instantiated
-
-// Example: Submitting a single JSON document as a taxpayer
-const documentToSubmit = {
-  format: "JSON" as "JSON", // or "XML"
-  // For a real implementation, you would generate the base64 document string and its hash
-  document: btoa(
-    JSON.stringify({ invoiceDetails: "Sample e-Invoice Content" }),
-  ),
-  documentHash:
-    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Placeholder hash for example
-  codeNumber: "ERP-INV-12345",
-};
-
-const submissionRequest = {
-  documents: [documentToSubmit],
-};
-
-// For taxpayer submission:
-const submissionResponse =
-  await myInvoiceClient.documents.submitDocuments(submissionRequest);
-
-submissionResponse.acceptedDocuments.forEach((doc) => {
-  console.log(
-    `Accepted: CodeNumber=${doc.invoiceCodeNumber}, UUID=${doc.uuid}`,
-  );
-});
-submissionResponse.rejectedDocuments.forEach((doc) => {
-  console.log(
-    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS || doc.error.error}`,
-  );
-});
-```
+For a complete example of how to use this client, refer to the [Examples](examples)
