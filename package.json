@@ -1,0 +1,45 @@
+{
+  "name": "myinvois-client",
+  "version": "1.0.0-beta.2",
+  "description": "A TypeScript client library (SDK) for seamless integration with the Malaysian MyInvois REST API, enabling developers to build custom e-invoicing solutions.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "lint": "eslint . --ext .ts",
+    "prepare": "bun run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/farhan-syah/myinvois-client.git"
+  },
+  "keywords": [
+    "myinvos",
+    "api",
+    "client",
+    "typescript",
+    "sdk"
+  ],
+  "author": "Farhan Syah",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/farhan-syah/myinvos-client/issues"
+  },
+  "homepage": "https://github.com/farhan-syah/myinvos-client#readme",
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "eslint": "^9.27.0",
+    "typescript": "^5.8.3"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "INTENT.md"
+  ],
+  "engines": {
+    "node": ">=16"
+  }
+}

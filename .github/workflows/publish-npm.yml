@@ -1,0 +1,71 @@
+# .github/workflows/publish-npm.yml
+
+name: Publish Package to npm
+
+on:
+  push:
+    tags:
+      - "v*" # Triggers on tags like v1.0.0, v0.1.0-beta, v2.3.4 etc.
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Permission to read the repository contents
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest # Or a specific Bun version if needed
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile # Ensures use of versions from bun.lockb
+
+      # The 'bun run build' step is executed by the 'prepare' script in package.json,
+      # which 'bun publish' runs automatically when not given a tarball.
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=$(echo $GITHUB_REF_NAME | sed 's/v//')" >> $GITHUB_OUTPUT
+
+      - name: Determine npm dist-tag
+        id: npm_dist_tag
+        run: |
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          if [[ "$VERSION" == *-* ]]; then
+            # For versions like 1.0.0-beta.1, use 'beta' as the tag
+            # For versions like 1.0.0-alpha.0, use 'alpha' as the tag
+            # Extracts the first part of the prerelease identifier
+            echo "DIST_TAG=$(echo $VERSION | awk -F'-' '{print $2}' | awk -F'.' '{print $1}')" >> $GITHUB_OUTPUT
+          else
+            # For stable versions like 1.0.0, use 'latest'
+            echo "DIST_TAG=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify package.json version (optional but recommended)
+        run: |
+          EXPECTED_VERSION="${{ steps.get_version.outputs.VERSION }}"
+          # Use Bun to execute a simple JavaScript file that prints the version
+          echo "console.log(require('./package.json').version);" > get_pkg_version.js
+          PACKAGE_JSON_VERSION=$(bun run get_pkg_version.js)
+          rm get_pkg_version.js # Clean up the temporary file
+
+          echo "Git Tag Version: $EXPECTED_VERSION"
+          echo "package.json Version: $PACKAGE_JSON_VERSION"
+          if [ "$EXPECTED_VERSION" != "$PACKAGE_JSON_VERSION" ]; then
+            echo "Error: package.json version ($PACKAGE_JSON_VERSION) does not match Git tag version ($EXPECTED_VERSION)."
+            echo "Please ensure package.json is updated and committed before tagging."
+            exit 1
+          fi
+
+      - name: Publish to npm with Bun
+        # 'bun publish' will use the version from your package.json.
+        # The --tag flag here sets the npm distribution tag.
+        run: bun publish --tag ${{ steps.npm_dist_tag.outputs.DIST_TAG }} --access public
+        env:
+          # Bun publish respects NPM_CONFIG_TOKEN for authentication
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
