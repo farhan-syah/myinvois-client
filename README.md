@@ -1,6 +1,7 @@
 # myinvois-client
 
-[![npm version](https://badge.fury.io/js/myinvois-client.svg)](https://badge.fury.io/js/myinvois-client)
+[![NPM Version](https://img.shields.io/npm/v/myinvois-client)
+](https://www.npmjs.com/package/myinvois-client)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Publish Package to npm](https://github.com/farhan-syah/myinvois-client/actions/workflows/publish-npm.yml/badge.svg)](https://github.com/farhan-syah/myinvois-client/actions/workflows/publish-npm.yml)
 
