@@ -1,22 +1,18 @@
 // --- User-Friendly Parameter Interfaces - Credit Note Specific ---
 
-import {
-  InvoiceTypeCode, // Reused, but will specify "02" for credit notes
-} from "myinvois-client/codes";
 import { UBLJsonExtensions } from "../../json/ubl_json"; // Reused for v1.1 extensions
 import {
-  AddressParam,
-  SupplierPartyParam,
+  AdditionalDocRefParam,
+  AllowanceChargeParam,
   CustomerPartyParam,
+  DeliveryParam,
   ItemCommodityClassificationParam,
-  TaxSubtotalParam,
+  LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
   PrepaidPaymentParam,
-  AllowanceChargeParam,
-  DeliveryParam,
-  AdditionalDocRefParam,
-  LegalMonetaryTotalParam,
+  SupplierPartyParam,
+  TaxSubtotalParam,
 } from "../params/common";
 
 /**
@@ -53,7 +49,7 @@ export interface CreditNoteLineParam {
     /** Total tax amount for this line item. E.g., 8.76. */
     taxAmount: number;
     /** Breakdown of taxes for this line item by category/rate. */
-    taxSubtotals: Array<TaxSubtotalParam>;
+    taxSubtotals: TaxSubtotalParam[];
   };
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
@@ -67,7 +63,7 @@ export interface CreditNoteTaxTotalParam {
   /** Total tax amount for the entire credit note. E.g., 87.63. */
   totalTaxAmount: number;
   /** Breakdown of taxes by category/rate for the entire credit note. */
-  taxSubtotals: Array<TaxSubtotalParam>;
+  taxSubtotals: TaxSubtotalParam[];
   /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
   roundingAmount?: number;
 }

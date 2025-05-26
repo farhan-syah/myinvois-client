@@ -39,50 +39,50 @@ export interface UBLJsonInvoiceV1_1_Content {
    * TypeCode maps to UBL: /Invoice/cbc:InvoiceTypeCode
    * listVersionID attribute maps to UBL: /Invoice/cbc:InvoiceTypeCode/@listVersionID
    */
-  InvoiceTypeCode: Array<
-    UBLJsonValue<InvoiceTypeCode> & { listVersionID: string }
-  >;
+  InvoiceTypeCode: (UBLJsonValue<InvoiceTypeCode> & {
+    listVersionID: string;
+  })[];
   /** Invoice Currency Code. Specific currency for monetary values in the e-Invoice. Maps to UBL: /Invoice/cbc:DocumentCurrencyCode */
   DocumentCurrencyCode: UBLJsonText;
   /** Optional Tax Currency Code. Maps to UBL: /Invoice/cbc:TaxCurrencyCode */
   TaxCurrencyCode?: UBLJsonText;
   /** Optional. Billing period information. Maps to UBL: /Invoice/cac:InvoicePeriod */
-  InvoicePeriod?: Array<UBLJsonInvoicePeriod>;
+  InvoicePeriod?: UBLJsonInvoicePeriod[];
   /** Optional. Billing reference information, typically containing additional document references. */
-  BillingReference?: Array<{
-    AdditionalDocumentReference: Array<UBLJsonAdditionalDocumentReference>;
-  }>;
+  BillingReference?: {
+    AdditionalDocumentReference: UBLJsonAdditionalDocumentReference[];
+  }[];
   /** Optional. Additional document references. Maps to UBL: /Invoice/cac:AdditionalDocumentReference */
-  AdditionalDocumentReference?: Array<UBLJsonAdditionalDocumentReference>;
+  AdditionalDocumentReference?: UBLJsonAdditionalDocumentReference[];
   /** Supplier (Seller) information. Maps to UBL: /Invoice/cac:AccountingSupplierParty */
-  AccountingSupplierParty: Array<UBLJsonAccountingSupplierParty>;
+  AccountingSupplierParty: UBLJsonAccountingSupplierParty[];
   /** Buyer information. Maps to UBL: /Invoice/cac:AccountingCustomerParty */
-  AccountingCustomerParty: Array<UBLJsonAccountingCustomerParty>;
+  AccountingCustomerParty: UBLJsonAccountingCustomerParty[];
   /** Optional. Delivery information. Maps to UBL: /Invoice/cac:Delivery */
-  Delivery?: Array<UBLJsonDelivery>;
+  Delivery?: UBLJsonDelivery[];
   /** Optional. Payment means information. Maps to UBL: /Invoice/cac:PaymentMeans */
-  PaymentMeans?: Array<UBLJsonPaymentMeans>;
+  PaymentMeans?: UBLJsonPaymentMeans[];
   /** Optional. Payment terms. Maps to UBL: /Invoice/cac:PaymentTerms */
-  PaymentTerms?: Array<UBLJsonPaymentTerms>;
+  PaymentTerms?: UBLJsonPaymentTerms[];
   /** Optional. Prepaid payment information. Maps to UBL: /Invoice/cac:PrepaidPayment */
-  PrepaidPayment?: Array<UBLJsonPrepaidPayment>;
+  PrepaidPayment?: UBLJsonPrepaidPayment[];
   /** Optional. Document level allowances or charges. Maps to UBL: /Invoice/cac:AllowanceCharge */
-  AllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  AllowanceCharge?: UBLJsonFreightAllowanceCharge[];
   /** Optional. Currency exchange rate information. Maps to UBL: /Invoice/cac:TaxExchangeRate */
-  TaxExchangeRate?: Array<UBLJsonTaxExchangeRate>;
+  TaxExchangeRate?: UBLJsonTaxExchangeRate[];
   /** Tax total information for the invoice. Maps to UBL: /Invoice/cac:TaxTotal */
-  TaxTotal: Array<UBLJsonTaxTotal>;
+  TaxTotal: UBLJsonTaxTotal[];
   /** Legal monetary total summary for the invoice. Maps to UBL: /Invoice/cac:LegalMonetaryTotal */
-  LegalMonetaryTotal: Array<UBLJsonLegalMonetaryTotal>;
+  LegalMonetaryTotal: UBLJsonLegalMonetaryTotal[];
   /** Invoice line items. Maps to UBL: /Invoice/cac:InvoiceLine */
-  InvoiceLine: Array<UBLJsonInvoiceLine>;
+  InvoiceLine: UBLJsonInvoiceLine[];
   /** UBL Extensions, typically for digital signatures or other extended information. */
   UBLExtensions: UBLJsonExtensions;
   /**
    * Digital signature information. Maps to UBL: /Invoice/cac:Signature.
    * This is specific to Invoice v1.1 as per this model.
    */
-  Signature: Array<UBLJsonSignature>;
+  Signature: UBLJsonSignature[];
 }
 
 export type UBLJsonInvoiceV1_0_Content = Omit<
@@ -103,7 +103,7 @@ export interface UBLJsonInvoiceDocumentV1_1 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" */
   _B: string;
   /** Array containing the main invoice content. */
-  Invoice: Array<UBLJsonInvoiceV1_1_Content>;
+  Invoice: UBLJsonInvoiceV1_1_Content[];
 }
 
 // --- Root Invoice Document Structure (as per the example) ---
@@ -120,5 +120,5 @@ export interface UBLJsonInvoiceDocumentV1_0 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" */
   _B: string;
   /** Array containing the main invoice content for version 1.0. */
-  Invoice: Array<UBLJsonInvoiceV1_0_Content>;
+  Invoice: UBLJsonInvoiceV1_0_Content[];
 }

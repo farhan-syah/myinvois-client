@@ -1,11 +1,11 @@
-import { MyInvoisClient } from '../client';
-import { MyInvoisGenericApiResponseError } from '../types';
-import { TaxpayerIdType } from '../codes';
-import { 
-    SearchTaxpayerTINRequestParams, 
-    SearchTaxpayerTINResponse,
-    GetTaxpayerInfoByQRCodeResponse // Added for new API
-} from './types';
+import { MyInvoisClient } from "../client";
+import { MyInvoisGenericApiResponseError } from "../types";
+import { TaxpayerIdType } from "../codes";
+import {
+  SearchTaxpayerTINRequestParams,
+  SearchTaxpayerTINResponse,
+  GetTaxpayerInfoByQRCodeResponse, // Added for new API
+} from "./types";
 
 export class TaxpayerService {
   private apiClient: MyInvoisClient;
@@ -24,21 +24,29 @@ export class TaxpayerService {
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves if the TIN is valid (HTTP 200) or rejects with an error.
    */
-  async validateTaxpayerTIN(tin: string, idType: TaxpayerIdType, idValue: string, onBehalfOfTIN?: string): Promise<boolean> {
+  async validateTaxpayerTIN(
+    tin: string,
+    idType: TaxpayerIdType,
+    idValue: string,
+    onBehalfOfTIN?: string,
+  ): Promise<boolean> {
     try {
       const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN, "InvoicingAPI")
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI"); 
+        ? await this.apiClient.getIntermediaryAccessToken(
+            onBehalfOfTIN,
+            "InvoicingAPI",
+          )
+        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
       const response = await fetch(
         `${this.baseUrl}/api/v1.0/taxpayer/validate/${tin}?idType=${idType}&idValue=${idValue}`,
         {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -49,7 +57,7 @@ export class TaxpayerService {
       let errorMessage = `API Error: HTTP ${response.status} ${response.statusText}`;
       try {
         errorData = await response.json();
-        if (typeof errorData === 'object' && errorData.error) {
+        if (typeof errorData === "object" && errorData.error) {
           errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
           if (errorData.error.errorMS) {
             errorMessage += ` - ${errorData.error.errorMS}`;
@@ -59,7 +67,6 @@ export class TaxpayerService {
         // If parsing JSON fails, use the basic HTTP error
       }
       throw new Error(errorMessage);
-
     } catch (error) {
       throw error;
     }
@@ -78,32 +85,36 @@ export class TaxpayerService {
   ): Promise<SearchTaxpayerTINResponse> {
     if (!params.taxpayerName && !(params.idType && params.idValue)) {
       throw new Error(
-        "Search criteria incomplete: Provide either taxpayerName OR (idType AND idValue)."
+        "Search criteria incomplete: Provide either taxpayerName OR (idType AND idValue).",
       );
     }
     if (params.idType && !params.idValue) {
-        throw new Error("idValue is mandatory when idType is provided.");
+      throw new Error("idValue is mandatory when idType is provided.");
     }
     if (params.idValue && !params.idType) {
-        throw new Error("idType is mandatory when idValue is provided.");
+      throw new Error("idType is mandatory when idValue is provided.");
     }
 
     try {
       const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN, "InvoicingAPI") 
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");      
+        ? await this.apiClient.getIntermediaryAccessToken(
+            onBehalfOfTIN,
+            "InvoicingAPI",
+          )
+        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
       const queryParameters = new URLSearchParams();
       if (params.idType) queryParameters.append("idType", params.idType);
       if (params.idValue) queryParameters.append("idValue", params.idValue);
-      if (params.taxpayerName) queryParameters.append("taxpayerName", params.taxpayerName);
-      
+      if (params.taxpayerName)
+        queryParameters.append("taxpayerName", params.taxpayerName);
+
       const url = `${this.baseUrl}/api/v1.0/taxpayer/search/tin?${queryParameters.toString()}`;
 
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       });
@@ -117,7 +128,7 @@ export class TaxpayerService {
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;
       try {
         errorData = await response.json();
-        if (typeof errorData === 'object' && errorData.error) {
+        if (typeof errorData === "object" && errorData.error) {
           errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
           if (errorData.error.errorMS) {
             errorMessage += ` - ${errorData.error.errorMS}`;
@@ -127,7 +138,6 @@ export class TaxpayerService {
         // If parsing JSON fails or no JSON body for some errors
       }
       throw new Error(errorMessage);
-
     } catch (error) {
       throw error;
     }
@@ -149,7 +159,10 @@ export class TaxpayerService {
 
     try {
       const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN, "InvoicingAPI") 
+        ? await this.apiClient.getIntermediaryAccessToken(
+            onBehalfOfTIN,
+            "InvoicingAPI",
+          )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
       // The qrCodeText is part of the path, ensure it's properly encoded for a URL path segment if necessary (though typically UUIDs are URL-safe)
@@ -158,13 +171,14 @@ export class TaxpayerService {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json", // API expects JSON response
         },
       });
 
       if (response.status === 200) {
-        const responseData: GetTaxpayerInfoByQRCodeResponse = await response.json();
+        const responseData: GetTaxpayerInfoByQRCodeResponse =
+          await response.json();
         return responseData;
       }
 
@@ -172,24 +186,27 @@ export class TaxpayerService {
       let errorMessage = `API Error: HTTP ${response.status} ${response.statusText}`;
       try {
         errorData = await response.json(); // Errors are usually JSON
-        if (typeof errorData === 'object' && errorData.error) {
+        if (typeof errorData === "object" && errorData.error) {
           errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
           if (errorData.error.errorMS) {
             errorMessage += ` - ${errorData.error.errorMS}`;
           }
-        } else if (response.status === 404 && typeof errorData === 'object' && (errorData as any).Message) {
+        } else if (
+          response.status === 404 &&
+          typeof errorData === "object" &&
+          (errorData as any).Message
+        ) {
           // Handle specific 404 message format if different
-           errorMessage = `API Error: 404 Not Found - ${(errorData as any).Message}`;
+          errorMessage = `API Error: 404 Not Found - ${(errorData as any).Message}`;
         } else if (response.status === 404) {
-            errorMessage = `API Error: 404 QR Code Not Found (qrCodeText: ${qrCodeText})`;
+          errorMessage = `API Error: 404 QR Code Not Found (qrCodeText: ${qrCodeText})`;
         }
       } catch (e) {
         if (response.status === 404) {
-            errorMessage = `API Error: 404 QR Code Not Found (qrCodeText: ${qrCodeText})`;
+          errorMessage = `API Error: 404 QR Code Not Found (qrCodeText: ${qrCodeText})`;
         }
       }
       throw new Error(errorMessage);
-
     } catch (error) {
       throw error;
     }

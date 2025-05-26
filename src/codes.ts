@@ -344,10 +344,6 @@ export type TaxTypeCode =
   | "04" // High-Value Goods Tax
   | "05" // Sales Tax on Low Value Goods
   | "06" // Not Applicable
-  | "E";  // Tax exemption (where applicable)
+  | "E"; // Tax exemption (where applicable)
 
-export type TaxpayerIdType =
-  | "NRIC"
-  | "PASSPORT"
-  | "BRN" 
-  | "ARMY";
+export type TaxpayerIdType = "NRIC" | "PASSPORT" | "BRN" | "ARMY";

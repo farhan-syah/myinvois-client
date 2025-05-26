@@ -1,4 +1,4 @@
-import { TaxpayerIdType } from '../codes';
+import { TaxpayerIdType } from "../codes";
 
 // Types for Search Taxpayer's TIN API
 export interface SearchTaxpayerTINRequestParams {

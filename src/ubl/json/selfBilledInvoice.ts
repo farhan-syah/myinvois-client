@@ -25,7 +25,6 @@ import {
   UBLJsonValue,
 } from "./ubl_json";
 // Import for UBLDocumentSignatureExtension is for context; JSON structure handled by UBLJsonSignatureExtensionContent
-import { UBLDocumentSignatureExtension } from "./digitalSignature";
 
 // --- Main SelfBilledInvoice v1.1 JSON Structure (Content of the "Invoice" array for a Self-Billed Invoice) ---
 /**
@@ -45,9 +44,9 @@ export interface UBLJsonSelfBilledInvoiceV1_1_Content {
    * listVersionID attribute maps to UBL: /Invoice/cbc:InvoiceTypeCode/@listVersionID
    * Should be "11" for Self-Billed Invoice, listVersionID is the e-Invoice Version (e.g., "1.1").
    */
-  InvoiceTypeCode: Array<
-    UBLJsonValue<InvoiceTypeCode> & { listVersionID: string }
-  >;
+  InvoiceTypeCode: (UBLJsonValue<InvoiceTypeCode> & {
+    listVersionID: string;
+  })[];
   /** Optional Note. Maps to UBL: /Invoice/cbc:Note */
   Note?: UBLJsonText[];
   /** Invoice Currency Code. Specific currency for monetary values in the e-Invoice. Maps to UBL: /Invoice/cbc:DocumentCurrencyCode. Cardinality [1-1]. */
@@ -57,21 +56,21 @@ export interface UBLJsonSelfBilledInvoiceV1_1_Content {
   /** Optional. Billing period information. Maps to UBL: /Invoice/cac:InvoicePeriod. Cardinality [0-1]. */
   InvoicePeriod?: UBLJsonInvoicePeriod;
   /** Optional. Order Reference. Maps to UBL: /Invoice/cac:OrderReference. */
-  OrderReference?: Array<{ ID: UBLJsonIdentifier }>;
+  OrderReference?: { ID: UBLJsonIdentifier }[];
   /** Optional. Billing reference information, typically containing additional document references. Maps to UBL: /ubl:Invoice / cac:BillingReference. Cardinality [0-1] for the overall BillingReference element containing [1-*] AdditionalDocumentReference. */
-  BillingReference?: Array<{
-    AdditionalDocumentReference: Array<UBLJsonAdditionalDocumentReference>;
-  }>;
+  BillingReference?: {
+    AdditionalDocumentReference: UBLJsonAdditionalDocumentReference[];
+  }[];
   /** Optional. Despatch Document Reference. Maps to UBL: /Invoice/cac:DespatchDocumentReference. */
-  DespatchDocumentReference?: Array<UBLJsonDocumentReference>;
+  DespatchDocumentReference?: UBLJsonDocumentReference[];
   /** Optional. Receipt Document Reference. Maps to UBL: /Invoice/cac:ReceiptDocumentReference. */
-  ReceiptDocumentReference?: Array<UBLJsonDocumentReference>;
+  ReceiptDocumentReference?: UBLJsonDocumentReference[];
   /** Optional. Originator Document Reference. Maps to UBL: /Invoice/cac:OriginatorDocumentReference. */
-  OriginatorDocumentReference?: Array<UBLJsonDocumentReference>;
+  OriginatorDocumentReference?: UBLJsonDocumentReference[];
   /** Optional. Contract Document Reference. Maps to UBL: /Invoice/cac:ContractDocumentReference. */
-  ContractDocumentReference?: Array<UBLJsonDocumentReference>;
+  ContractDocumentReference?: UBLJsonDocumentReference[];
   /** Optional. Additional document references not covered by specific fields. Maps to UBL: /Invoice/cac:AdditionalDocumentReference. */
-  AdditionalDocumentReference?: Array<UBLJsonDocumentReference>;
+  AdditionalDocumentReference?: UBLJsonDocumentReference[];
 
   /** Supplier (Seller) information. Maps to UBL: /Invoice/cac:AccountingSupplierParty. Cardinality [1-1]. */
   AccountingSupplierParty: UBLJsonAccountingSupplierParty;
@@ -91,9 +90,9 @@ export interface UBLJsonSelfBilledInvoiceV1_1_Content {
   /** Optional. Prepaid payment information. Maps to UBL: /Invoice/cac:PrepaidPayment. Cardinality [0-1]. */
   PrepaidPayment?: UBLJsonPrepaidPayment;
   /** Optional. Document level allowances or charges (excluding Shipment level). Maps to UBL: /Invoice/cac:AllowanceCharge. Cardinality [0-*]. */
-  AllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  AllowanceCharge?: UBLJsonFreightAllowanceCharge[];
   /** Optional. Details of other charges (mapped to Delivery/Shipment/FreightAllowanceCharge in UBL). Maps to UBL: /ubl:Invoice / cac:Delivery / cac:Shipment / cac:FreightAllowanceCharge. Cardinality [0-1]. */
-  FreightAllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  FreightAllowanceCharge?: UBLJsonFreightAllowanceCharge[];
   /** Optional. Currency exchange rate information. Maps to UBL: /Invoice/cac:TaxExchangeRate. Mandatory where applicable [0-1]. */
   TaxExchangeRate?: UBLJsonTaxExchangeRate;
   /** Tax total information for the invoice. Maps to UBL: /Invoice/cac:TaxTotal. Cardinality [1-1]. */
@@ -101,13 +100,13 @@ export interface UBLJsonSelfBilledInvoiceV1_1_Content {
   /** Legal monetary total summary for the invoice. Maps to UBL: /Invoice/cac:LegalMonetaryTotal. Cardinality [1-1]. */
   LegalMonetaryTotal: UBLJsonLegalMonetaryTotal;
   /** Invoice line items. Maps to UBL: /Invoice/cac:InvoiceLine. Cardinality [1-*]. */
-  InvoiceLine: Array<UBLJsonInvoiceLine>;
+  InvoiceLine: UBLJsonInvoiceLine[];
 
   /**
    * Digital signature information. Maps to UBL: /Invoice/cac:Signature.
    * This is specific to Invoice v1.1. Cardinality [1-1].
    */
-  Signature: Array<UBLJsonSignature>;
+  Signature: UBLJsonSignature[];
 
   /** UBL Extensions, typically for digital signatures or other extended information. Maps to UBL: /Invoice/ext:UBLExtensions. Cardinality [1-1]. */
   UBLExtensions: UBLJsonExtensions;
@@ -137,7 +136,7 @@ export interface UBLJsonSelfBilledInvoiceDocumentV1_1 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" */
   _B: string;
   /** Array containing the main self-billed invoice content for version 1.1. */
-  Invoice: Array<UBLJsonSelfBilledInvoiceV1_1_Content>;
+  Invoice: UBLJsonSelfBilledInvoiceV1_1_Content[];
 }
 
 /**
@@ -153,5 +152,5 @@ export interface UBLJsonSelfBilledInvoiceDocumentV1_0 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" */
   _B: string;
   /** Array containing the main self-billed invoice content for version 1.0. */
-  Invoice: Array<UBLJsonSelfBilledInvoiceV1_0_Content>;
+  Invoice: UBLJsonSelfBilledInvoiceV1_0_Content[];
 }

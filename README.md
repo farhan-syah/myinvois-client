@@ -67,7 +67,7 @@ import { MyInvoisClient } from "myinvois-client";
 const CLIENT_ID = "your_client_id";
 const CLIENT_SECRET = "your_client_secret";
 
-if (CLIENT_ID === "your_client_id" || CLIENT_SECRET === "your_client_secret") {
+if (CLIENT_ID === "your_client_id" ?? CLIENT_SECRET === "your_client_secret") {
   console.warn(
     "Please replace 'your_client_id' and 'your_client_secret' with your actual credentials.",
   );
@@ -210,7 +210,7 @@ submissionResponse.acceptedDocuments.forEach((doc) => {
 });
 submissionResponse.rejectedDocuments.forEach((doc) => {
   console.log(
-    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS || doc.error.error}`,
+    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS ?? doc.error.error}`,
   );
 });
 ```

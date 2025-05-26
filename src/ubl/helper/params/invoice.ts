@@ -3,18 +3,17 @@
 import { InvoiceTypeCode } from "myinvois-client/codes";
 import { UBLJsonExtensions } from "../../json/ubl_json";
 import {
-  AddressParam,
-  SupplierPartyParam,
+  AdditionalDocRefParam,
+  AllowanceChargeParam,
   CustomerPartyParam,
+  DeliveryParam,
   ItemCommodityClassificationParam,
-  TaxSubtotalParam,
+  LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
   PrepaidPaymentParam,
-  AllowanceChargeParam,
-  DeliveryParam,
-  AdditionalDocRefParam,
-  LegalMonetaryTotalParam,
+  SupplierPartyParam,
+  TaxSubtotalParam,
 } from "../params/common";
 
 /**
@@ -50,7 +49,7 @@ export interface InvoiceLineParam {
     /** Total tax amount for this line item. E.g., 8.76. */
     taxAmount: number;
     /** Breakdown of taxes for this line item by category/rate. */
-    taxSubtotals: Array<TaxSubtotalParam>;
+    taxSubtotals: TaxSubtotalParam[];
   };
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
@@ -63,7 +62,7 @@ export interface InvoiceTaxTotalParam {
   /** Total tax amount for the entire invoice. E.g., 87.63. */
   totalTaxAmount: number;
   /** Breakdown of taxes by category/rate for the entire invoice. */
-  taxSubtotals: Array<TaxSubtotalParam>;
+  taxSubtotals: TaxSubtotalParam[];
   /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
   roundingAmount?: number;
 }

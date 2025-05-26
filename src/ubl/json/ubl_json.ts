@@ -21,23 +21,23 @@ export interface UBLJsonValue<TValue> {
 
 // --- Reusable JSON Primitive Types (Arrays of UBLJsonValue) ---
 /** Represents a UBL text value, typically for single string content. */
-export type UBLJsonText = Array<UBLJsonValue<string>>;
+export type UBLJsonText = UBLJsonValue<string>[];
 /** Represents a UBL identifier. */
-export type UBLJsonIdentifier = Array<UBLJsonValue<string>>;
+export type UBLJsonIdentifier = UBLJsonValue<string>[];
 /** Represents a UBL date value in YYYY-MM-DD format. */
-export type UBLJsonDate = Array<UBLJsonValue<string>>; // YYYY-MM-DD
+export type UBLJsonDate = UBLJsonValue<string>[]; // YYYY-MM-DD
 /** Represents a UBL time value in HH:MM:SSZ or HH:MM:SS+HH:MM format. */
-export type UBLJsonTime = Array<UBLJsonValue<string>>; // HH:MM:SSZ or HH:MM:SS+HH:MM
+export type UBLJsonTime = UBLJsonValue<string>[]; // HH:MM:SSZ or HH:MM:SS+HH:MM
 /** Represents a UBL quantity. */
-export type UBLJsonQuantity = Array<UBLJsonValue<number>>;
+export type UBLJsonQuantity = UBLJsonValue<number>[];
 /** Represents a UBL monetary amount. For amounts with specific currency, see UBLJsonCurrencyAmount. */
-export type UBLJsonAmount = Array<UBLJsonValue<number>>;
+export type UBLJsonAmount = UBLJsonValue<number>[];
 /** Represents a UBL numeric value. */
-export type UBLJsonNumeric = Array<UBLJsonValue<number>>;
+export type UBLJsonNumeric = UBLJsonValue<number>[];
 /** Represents a UBL code value. */
-export type UBLJsonCode = Array<UBLJsonValue<string>>;
+export type UBLJsonCode = UBLJsonValue<string>[];
 /** Represents a UBL boolean indicator (true/false). */
-export type UBLJsonIndicator = Array<UBLJsonValue<boolean>>;
+export type UBLJsonIndicator = UBLJsonValue<boolean>[];
 
 // --- Currency Specific Amount ---
 /**
@@ -49,7 +49,7 @@ export interface UBLJsonCurrencyObject extends UBLJsonValue<number> {
   currencyID: string;
 }
 /** Represents a UBL monetary amount that requires a currency identifier. */
-export type UBLJsonCurrencyAmount = Array<UBLJsonCurrencyObject>;
+export type UBLJsonCurrencyAmount = UBLJsonCurrencyObject[];
 
 // --- Address Structure ---
 /**
@@ -61,7 +61,7 @@ export interface UBLJsonPostalAddress {
    * Address lines. At least one line is mandatory.
    * Maps to UBL: cbc:Line within cac:AddressLine
    */
-  AddressLine: Array<{ Line: UBLJsonText }>;
+  AddressLine: { Line: UBLJsonText }[];
   /**
    * Postal zone or postcode.
    * Maps to UBL: cbc:PostalZone
@@ -76,19 +76,17 @@ export interface UBLJsonPostalAddress {
    * State or sub-entity of the country. For Malaysia, this is MalaysianStateCode.
    * Maps to UBL: cbc:CountrySubentityCode
    */
-  CountrySubentityCode: Array<UBLJsonValue<MalaysianStateCode>>;
+  CountrySubentityCode: UBLJsonValue<MalaysianStateCode>[];
   /**
    * Country identification.
    * Maps to UBL: cac:Country/cbc:IdentificationCode
    */
-  Country: Array<{
-    IdentificationCode: Array<
-      UBLJsonValue<CountryCodeISO3166Alpha3> & {
-        listID: "ISO3166-1";
-        listAgencyID: "6";
-      }
-    >;
-  }>;
+  Country: {
+    IdentificationCode: (UBLJsonValue<CountryCodeISO3166Alpha3> & {
+      listID: "ISO3166-1";
+      listAgencyID: "6";
+    })[];
+  }[];
 }
 
 // --- Party Identification Item ---
@@ -102,20 +100,18 @@ export interface UBLJsonPartyIdentificationItem {
    * The identification number/code.
    * The `schemeID` attribute specifies the type of identification.
    */
-  ID: Array<
-    UBLJsonValue<string> & {
-      /** Type of identification, e.g., 'TIN', 'NRIC', 'BRN', 'PASSPORT', 'ARMY', 'SST', 'TTX'. */
-      schemeID?:
-        | "TIN"
-        | "NRIC"
-        | "BRN"
-        | "PASSPORT"
-        | "ARMY"
-        | "SST"
-        | "TTX"
-        | string;
-    }
-  >;
+  ID: (UBLJsonValue<string> & {
+    /** Type of identification, e.g., 'TIN', 'NRIC', 'BRN', 'PASSPORT', 'ARMY', 'SST', 'TTX'. */
+    schemeID?:
+      | "TIN"
+      | "NRIC"
+      | "BRN"
+      | "PASSPORT"
+      | "ARMY"
+      | "SST"
+      | "TTX"
+      | string;
+  })[];
 }
 
 // --- Contact ---
@@ -206,12 +202,10 @@ export interface UBLJsonTaxScheme {
    * For MyInvois, common schemeID is "UN/ECE 5153" and schemeAgencyID is "6".
    * Maps to UBL: cbc:ID
    */
-  ID: Array<
-    UBLJsonValue<string> & {
-      schemeID?: "UN/ECE 5153" | string;
-      schemeAgencyID?: "6" | string;
-    }
-  >;
+  ID: (UBLJsonValue<string> & {
+    schemeID?: "UN/ECE 5153" | string;
+    schemeAgencyID?: "6" | string;
+  })[];
   /**
    * Name of the tax scheme. Optional.
    * Maps to UBL: cbc:Name
@@ -244,7 +238,7 @@ export interface UBLJsonPartyTaxScheme {
    * The tax scheme details.
    * Maps to UBL: cac:TaxScheme
    */
-  TaxScheme: Array<UBLJsonTaxScheme>;
+  TaxScheme: UBLJsonTaxScheme[];
 }
 
 // --- Party (Supplier/Customer/Payee) ---
@@ -258,22 +252,22 @@ export interface UBLJsonParty {
    * Legal entity information for the party.
    * Maps to UBL: cac:PartyLegalEntity
    */
-  PartyLegalEntity?: Array<UBLJsonPartyLegalEntity>;
+  PartyLegalEntity?: UBLJsonPartyLegalEntity[];
   /**
    * Party identification numbers (e.g., TIN, BRN).
    * Maps to UBL: cac:PartyIdentification
    */
-  PartyIdentification?: Array<UBLJsonPartyIdentificationItem>;
+  PartyIdentification?: UBLJsonPartyIdentificationItem[];
   /**
    * Postal address of the party.
    * Maps to UBL: cac:PostalAddress
    */
-  PostalAddress: Array<UBLJsonPostalAddress>;
+  PostalAddress: UBLJsonPostalAddress[];
   /**
    * Contact information for the party.
    * Maps to UBL: cac:Contact
    */
-  Contact?: Array<UBLJsonContact>;
+  Contact?: UBLJsonContact[];
 }
 
 // --- Party (Customer) ---
@@ -286,22 +280,22 @@ export interface UBLJsonCustomerParty {
    * Legal entity information for the customer.
    * Maps to UBL: cac:PartyLegalEntity
    */
-  PartyLegalEntity: Array<UBLJsonPartyLegalEntity>;
+  PartyLegalEntity: UBLJsonPartyLegalEntity[];
   /**
    * Customer's identification numbers (e.g., TIN, BRN).
    * Maps to UBL: cac:PartyIdentification
    */
-  PartyIdentification: Array<UBLJsonPartyIdentificationItem>; // Array of ID items
+  PartyIdentification: UBLJsonPartyIdentificationItem[]; // Array of ID items
   /**
    * Postal address of the customer.
    * Maps to UBL: cac:PostalAddress
    */
-  PostalAddress: Array<UBLJsonPostalAddress>;
+  PostalAddress: UBLJsonPostalAddress[];
   /**
    * Contact information for the customer.
    * Maps to UBL: cac:Contact
    */
-  Contact: Array<UBLJsonCustomerContact>;
+  Contact: UBLJsonCustomerContact[];
 }
 
 /**
@@ -314,30 +308,27 @@ export interface UBLJsonSupplierParty {
    * 5-digit numeric code, e.g., "01111". Includes a 'name' attribute for the description.
    * Maps to UBL: cbc:IndustryClassificationCode and @name attribute
    */
-  IndustryClassificationCode: Array<
-    // 5-digit numeric MSCI code e.g = "01111"
-    UBLJsonValue<string> & { name: string }
-  >;
+  IndustryClassificationCode: (UBLJsonValue<string> & { name: string })[];
   /**
    * Legal entity information for the supplier.
    * Maps to UBL: cac:PartyLegalEntity
    */
-  PartyLegalEntity: Array<UBLJsonPartyLegalEntity>;
+  PartyLegalEntity: UBLJsonPartyLegalEntity[];
   /**
    * Supplier's identification numbers (e.g., TIN, BRN, SST).
    * Maps to UBL: cac:PartyIdentification
    */
-  PartyIdentification: Array<UBLJsonPartyIdentificationItem>; // Array of ID items
+  PartyIdentification: UBLJsonPartyIdentificationItem[]; // Array of ID items
   /**
    * Postal address of the supplier.
    * Maps to UBL: cac:PostalAddress
    */
-  PostalAddress: Array<UBLJsonPostalAddress>;
+  PostalAddress: UBLJsonPostalAddress[];
   /**
    * Contact information for the supplier.
    * Maps to UBL: cac:Contact
    */
-  Contact: Array<UBLJsonSupplierContact>;
+  Contact: UBLJsonSupplierContact[];
 }
 
 // --- Customer/Buyer ---
@@ -350,7 +341,7 @@ export interface UBLJsonAccountingCustomerParty {
    * Contains the detailed party information for the customer.
    * Maps to UBL: cac:Party
    */
-  Party: Array<UBLJsonCustomerParty>;
+  Party: UBLJsonCustomerParty[];
 }
 
 // --- Customer/Buyer ---
@@ -363,12 +354,12 @@ export interface UBLJsonAccountingSupplierParty {
    * Contains the detailed party information for the supplier.
    * Maps to UBL: cac:Party
    */
-  Party: Array<UBLJsonSupplierParty>;
+  Party: UBLJsonSupplierParty[];
   /**
    * Optional. Additional account ID for the supplier, e.g., Authorisation Number for Certified Exporter.
    * Maps to UBL: cbc:AdditionalAccountID. The schemeAgencyName attribute can specify context like 'CertEx'.
    */
-  AdditionalAccountId?: Array<{ _: string; schemeAgencyName?: string }>;
+  AdditionalAccountId?: { _: string; schemeAgencyName?: string }[];
 }
 
 // --- Party (DeliveryParty) ---
@@ -381,17 +372,17 @@ export interface UBLJsonDeliveryParty {
    * Legal entity information for the delivery party. Optional.
    * Maps to UBL: cac:PartyLegalEntity
    */
-  PartyLegalEntity?: Array<UBLJsonPartyLegalEntity>;
+  PartyLegalEntity?: UBLJsonPartyLegalEntity[];
   /**
    * Delivery party's identification numbers. Optional.
    * Maps to UBL: cac:PartyIdentification
    */
-  PartyIdentification?: Array<UBLJsonPartyIdentificationItem>; // Array of ID items
+  PartyIdentification?: UBLJsonPartyIdentificationItem[]; // Array of ID items
   /**
    * Postal address of the delivery party. Optional.
    * Maps to UBL: cac:PostalAddress
    */
-  PostalAddress?: Array<UBLJsonPostalAddress>;
+  PostalAddress?: UBLJsonPostalAddress[];
 }
 
 // --- Tax Category ---
@@ -404,7 +395,7 @@ export interface UBLJsonTaxCategory {
    * Identifier for the tax category (Tax Type Code).
    * Maps to UBL: cbc:ID (e.g., '01' for Sales Tax, 'E' for Exempt)
    */
-  ID: Array<UBLJsonValue<TaxTypeCode>>;
+  ID: UBLJsonValue<TaxTypeCode>[];
   /**
    * Reason for tax exemption, if applicable. Optional.
    * Maps to UBL: cbc:TaxExemptionReason
@@ -414,7 +405,7 @@ export interface UBLJsonTaxCategory {
    * The tax scheme applicable to this category.
    * Maps to UBL: cac:TaxScheme
    */
-  TaxScheme: Array<UBLJsonTaxScheme>;
+  TaxScheme: UBLJsonTaxScheme[];
 }
 
 // --- Tax Subtotal ---
@@ -437,7 +428,7 @@ export interface UBLJsonTaxSubtotal {
    * Details of the tax category.
    * Maps to UBL: cac:TaxCategory
    */
-  TaxCategory: Array<UBLJsonTaxCategory>;
+  TaxCategory: UBLJsonTaxCategory[];
   /**
    * Tax rate percentage, if applicable. Optional.
    * Maps to UBL: cbc:Percent
@@ -460,7 +451,7 @@ export interface UBLJsonTaxTotal {
    * Array of tax subtotals, breaking down taxes by category/rate.
    * Maps to UBL: cac:TaxSubtotal
    */
-  TaxSubtotal: Array<UBLJsonTaxSubtotal>;
+  TaxSubtotal: UBLJsonTaxSubtotal[];
   /**
    * Optional rounding amount for the total tax.
    * This is not explicitly in the provided core documentation table but is a standard UBL field.
@@ -503,18 +494,18 @@ export interface UBLJsonItemIdentification {
    */
   ID: UBLJsonIdentifier;
   /** Physical attributes of the item. Optional. */
-  PhysicalAttribute?: Array<{
+  PhysicalAttribute?: {
     AttributeID: UBLJsonIdentifier;
     PositionCode?: UBLJsonCode;
     DescriptionCode?: UBLJsonCode;
     Description?: UBLJsonText;
-  }>;
+  }[];
   /** Measurement dimensions of the item. Optional. */
-  MeasurementDimension?: Array<{
+  MeasurementDimension?: {
     AttributeID: UBLJsonIdentifier;
-  }>;
+  }[];
   /** Party that issued this item identification. Optional. */
-  IssuerParty?: Array<UBLJsonParty>;
+  IssuerParty?: UBLJsonParty[];
 }
 
 // --- Commodity Classification ---
@@ -528,11 +519,9 @@ export interface UBLJsonCommodityClassification {
    * `listID` attribute can specify the classification system (e.g., 'CLASS' for general, 'PTC' for Product Tariff Code).
    * Maps to UBL: cbc:ItemClassificationCode
    */
-  ItemClassificationCode: Array<
-    UBLJsonValue<ClassificationCode | string> & {
-      listID?: "CLASS" | "PTC" | string;
-    }
-  >;
+  ItemClassificationCode: (UBLJsonValue<ClassificationCode | string> & {
+    listID?: "CLASS" | "PTC" | string;
+  })[];
 }
 
 // --- Item ---
@@ -545,7 +534,7 @@ export interface UBLJsonItem {
    * Commodity classification for the item.
    * Maps to UBL: cac:CommodityClassification
    */
-  CommodityClassification: Array<UBLJsonCommodityClassification>;
+  CommodityClassification: UBLJsonCommodityClassification[];
   /**
    * Description of the product or service. Mandatory for invoice line item.
    * Maps to UBL: cbc:Description
@@ -555,9 +544,9 @@ export interface UBLJsonItem {
    * Country of origin of the item. Optional.
    * Maps to UBL: cac:OriginCountry/cbc:IdentificationCode
    */
-  OriginCountry?: Array<{
-    IdentificationCode: Array<UBLJsonValue<CountryCodeISO3166Alpha3>>;
-  }>;
+  OriginCountry?: {
+    IdentificationCode: UBLJsonValue<CountryCodeISO3166Alpha3>[];
+  }[];
 }
 
 // --- Price ---
@@ -601,7 +590,7 @@ export interface UBLJsonInvoiceLine {
    * Quantity of items for this line. Includes unitCode attribute.
    * Maps to UBL: cbc:InvoicedQuantity
    */
-  InvoicedQuantity: Array<UBLJsonValue<number> & { unitCode?: string }>;
+  InvoicedQuantity: (UBLJsonValue<number> & { unitCode?: string })[];
   /**
    * Total amount for the line, excluding taxes (Quantity * UnitPrice).
    * Maps to UBL: cbc:LineExtensionAmount
@@ -611,27 +600,27 @@ export interface UBLJsonInvoiceLine {
    * Optional allowances or charges applicable to this line item.
    * Maps to UBL: cac:AllowanceCharge
    */
-  AllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  AllowanceCharge?: UBLJsonFreightAllowanceCharge[];
   /**
    * Optional tax total for this line item.
    * Maps to UBL: cac:TaxTotal
    */
-  TaxTotal?: Array<UBLJsonTaxTotal>;
+  TaxTotal?: UBLJsonTaxTotal[];
   /**
    * Details of the item being invoiced.
    * Maps to UBL: cac:Item
    */
-  Item: Array<UBLJsonItem>;
+  Item: UBLJsonItem[];
   /**
    * Price of the item.
    * Maps to UBL: cac:Price
    */
-  Price: Array<UBLJsonPrice>;
+  Price: UBLJsonPrice[];
   /**
    * Subtotal for the line item (often equivalent to LineExtensionAmount or PriceAmount * Quantity).
    * MyInvois documentation maps 'Subtotal' to this: /Invoice/cac:InvoiceLine/cac:ItemPriceExtension/cbc:Amount
    */
-  ItemPriceExtension: Array<UBLJsonItemPriceExtension>;
+  ItemPriceExtension: UBLJsonItemPriceExtension[];
 }
 
 // --- Payment Means ---
@@ -644,14 +633,14 @@ export interface UBLJsonPaymentMeans {
    * Code for the payment mode (e.g., cash, cheque, bank transfer).
    * Maps to UBL: cbc:PaymentMeansCode
    */
-  PaymentMeansCode: Array<UBLJsonValue<PaymentMode>>;
+  PaymentMeansCode: UBLJsonValue<PaymentMode>[];
   /**
    * Supplier's bank account number for payment. Optional.
    * Maps to UBL: cac:PayeeFinancialAccount/cbc:ID
    */
-  PayeeFinancialAccount?: Array<{
+  PayeeFinancialAccount?: {
     ID: UBLJsonIdentifier;
-  }>;
+  }[];
   /**
    * Payment reference number. Optional.
    * Maps to UBL: cbc:PaymentID (Note: This seems to be an identifier not a list of IDs as per MyInvois usage example)
@@ -773,12 +762,12 @@ export interface UBLJsonDocumentReference {
    * Type code of the referenced document. Optional.
    * Maps to UBL: cbc:DocumentTypeCode
    */
-  DocumentTypeCode?: Array<UBLJsonValue<string>>;
+  DocumentTypeCode?: UBLJsonValue<string>[];
   /**
    * Type name/description of the referenced document. Optional.
    * Maps to UBL: cbc:DocumentType
    */
-  DocumentType?: Array<UBLJsonValue<string>>;
+  DocumentType?: UBLJsonValue<string>[];
   /**
    * Description of the referenced document. Optional.
    * Maps to UBL: cbc:DocumentDescription
@@ -788,7 +777,7 @@ export interface UBLJsonDocumentReference {
    * Attachment containing the referenced document or a link to it. Optional.
    * Maps to UBL: cac:Attachment/cac:ExternalReference/cbc:URI
    */
-  Attachment?: Array<{ ExternalReference?: Array<{ URI: UBLJsonIdentifier }> }>;
+  Attachment?: { ExternalReference?: { URI: UBLJsonIdentifier }[] }[];
 }
 
 // --- Additional Document Reference ---
@@ -806,7 +795,7 @@ export interface UBLJsonAdditionalDocumentReference {
    * Type of the additional document (e.g., "CustomsImportForm", "FreeTradeAgreement", "K2"). Optional.
    * Maps to UBL: cbc:DocumentType
    */
-  DocumentType?: Array<UBLJsonValue<string>>;
+  DocumentType?: UBLJsonValue<string>[];
   /**
    * Description of the additional document. Optional.
    * Maps to UBL: cbc:DocumentDescription
@@ -821,18 +810,18 @@ export interface UBLJsonAdditionalDocumentReference {
  */
 export interface UBLJsonBillingReference {
   /** Reference to an invoice document. Optional. */
-  InvoiceDocumentReference?: Array<UBLJsonDocumentReference>;
+  InvoiceDocumentReference?: UBLJsonDocumentReference[];
   /** Reference to a self-billed invoice document. Optional. */
-  SelfBilledInvoiceDocumentReference?: Array<UBLJsonDocumentReference>;
+  SelfBilledInvoiceDocumentReference?: UBLJsonDocumentReference[];
   /** Reference to a credit note document. Optional. */
-  CreditNoteDocumentReference?: Array<UBLJsonDocumentReference>;
+  CreditNoteDocumentReference?: UBLJsonDocumentReference[];
   /** Reference to a debit note document. Optional. */
-  DebitNoteDocumentReference?: Array<UBLJsonDocumentReference>;
+  DebitNoteDocumentReference?: UBLJsonDocumentReference[];
   /**
    * Additional document references within billing context (e.g., Bill Reference Number).
    * Maps to UBL: cac:AdditionalDocumentReference/cbc:ID
    */
-  AdditionalDocumentReference?: Array<UBLJsonDocumentReference>; // Note: MyInvois maps Bill Reference to AdditionalDocumentReference/ID
+  AdditionalDocumentReference?: UBLJsonDocumentReference[]; // Note: MyInvois maps Bill Reference to AdditionalDocumentReference/ID
 }
 
 // --- Tax Exchange Rate ---
@@ -845,12 +834,12 @@ export interface UBLJsonTaxExchangeRate {
    * The currency code of the document being converted from (e.g., USD).
    * Maps to UBL: cbc:SourceCurrencyCode
    */
-  SourceCurrencyCode: Array<UBLJsonValue<string>>;
+  SourceCurrencyCode: UBLJsonValue<string>[];
   /**
    * The target currency code, typically the tax currency (e.g., MYR).
    * Maps to UBL: cbc:TargetCurrencyCode
    */
-  TargetCurrencyCode: Array<UBLJsonValue<string>>;
+  TargetCurrencyCode: UBLJsonValue<string>[];
   /**
    * The exchange rate applied.
    * Maps to UBL: cbc:CalculationRate
@@ -898,7 +887,7 @@ export interface UBLJsonShipment {
    * Used for 'Details of other charges' in MyInvois.
    * Maps to UBL: cac:FreightAllowanceCharge
    */
-  FreightAllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  FreightAllowanceCharge?: UBLJsonFreightAllowanceCharge[];
 }
 
 // --- Delivery ---
@@ -911,12 +900,12 @@ export interface UBLJsonDelivery {
    * The party to whom delivery is made. Optional.
    * Maps to UBL: cac:DeliveryParty
    */
-  DeliveryParty?: Array<UBLJsonDeliveryParty>;
+  DeliveryParty?: UBLJsonDeliveryParty[];
   /**
    * Shipment details related to this delivery. Optional.
    * Maps to UBL: cac:Shipment
    */
-  Shipment?: Array<UBLJsonShipment>;
+  Shipment?: UBLJsonShipment[];
 }
 
 // --- UBL Extensions ---
@@ -925,17 +914,14 @@ export interface UBLJsonDelivery {
  * Represents the data content within an \`ExtensionContent\` block.
  * Keys are typically prefixed (e.g., "sig:UBLDocumentSignatures"), and values are arrays of the specific extension structures.
  */
-export type UBLJsonExtensionContentData = {
-  // Example: "sig:UBLDocumentSignatures": Array<UBLJsonDocumentSignatureDetails>; (UBLJsonDocumentSignatureDetails would be defined elsewhere)
-  [key: string]: Array<any> | any; // Value is typically an array of complex objects for that extension element.
-};
+export type UBLJsonExtensionContentData = Record<string, any[] | any>;
 
 /**
  * Represents a single UBL extension in the JSON format.
  */
 export interface UBLJsonExtension {
   ExtensionURI?: UBLJsonText;
-  ExtensionContent: Array<UBLJsonExtensionContentData>; // ExtensionContent is an array of objects, each object being the content data.
+  ExtensionContent: UBLJsonExtensionContentData[]; // ExtensionContent is an array of objects, each object being the content data.
 }
 
 /**
@@ -943,18 +929,15 @@ export interface UBLJsonExtension {
  * It's an array containing one object, which in turn has a \`UBLExtension\` property holding an array of actual extensions.
  * e.g. \`"UBLExtensions": [ { "UBLExtension": [ {ext1}, {ext2} ] } ]\`
  */
-export type UBLJsonExtensions = Array<{
-  UBLExtension: Array<UBLJsonExtension>;
-}>;
+export type UBLJsonExtensions = {
+  UBLExtension: UBLJsonExtension[];
+}[];
 
 /**
  * Represents the content of a UBL extension specifically for UBLDocumentSignatures.
  * (Mirrors the definition from invoice.v1_1.types.ts for consistency as per samples)
  */
-export interface UBLJsonSignatureExtensionContent
-  extends UBLDocumentSignatureExtension {
-  // No additional properties needed here, it directly maps to UBLDocumentSignatureExtension
-}
+export type UBLJsonSignatureExtensionContent = UBLDocumentSignatureExtension;
 
 /**
  * Represents a digital signature within a UBL document.
@@ -963,5 +946,5 @@ export interface UBLJsonSignature {
   /** Identifies this signature block. Maps to UBL: /cbc:ID */
   ID: UBLJsonIdentifier;
   /** Method used for signature. Maps to UBL: /cbc:SignatureMethod */
-  SignatureMethod: Array<UBLJsonValue<string>>;
+  SignatureMethod: UBLJsonValue<string>[];
 }

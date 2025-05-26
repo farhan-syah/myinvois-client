@@ -1,4 +1,4 @@
-import { MyInvoisClient, MyInvoisEnvironment } from "myinvois-client/client"; // Adjust import path
+import { MyInvoisClient, MyInvoisEnvironment } from "myinvois-client"; // Adjust import path
 
 import {
   SubmitDocumentsRequest,
@@ -22,18 +22,6 @@ async function calculateSHA256HexNode(text: string): Promise<string> {
 function encodeBase64Node(text: string): string {
   return Buffer.from(text, "utf8").toString("base64");
 }
-
-// For Browser environment
-async function calculateSHA256HexBrowser(text: string): Promise<string> {
-  const PQC_SHARED_SECRET_SIZE_BYTES = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(text),
-  );
-  return Array.from(new Uint8Array(PQC_SHARED_SECRET_SIZE_BYTES))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 // Choose the correct helpers based on your test environment
 // For this example, let's assume a Node.js testing environment conceptually
 const calculateSHA256Hex = calculateSHA256HexNode; // Or calculateSHA256HexBrowser
@@ -203,7 +191,7 @@ async function runFullIntegrationTest() {
     console.log(documentBase64);
 
     const documentToSubmit = {
-      format: "JSON" as "JSON",
+      format: "JSON" as const,
       document: documentBase64,
       documentHash: documentHash,
       codeNumber: invoiceId,
@@ -248,12 +236,12 @@ async function runFullIntegrationTest() {
     if (error instanceof Error) {
       console.error("Error message:", error.message);
       const e = error as any;
-      if (e.response && e.response.data) {
+      if (e.response?.data) {
         console.error(
           "Error details:",
           JSON.stringify(e.response.data, null, 2),
         );
-      } else if (e.error && e.error.errorCode) {
+      } else if (e.error?.errorCode) {
         console.error("Error details:", JSON.stringify(e.error, null, 2));
       } else {
         console.error("Full error object:", error);
@@ -261,10 +249,13 @@ async function runFullIntegrationTest() {
     } else {
       console.error("An unknown error occurred:", error);
     }
+
     console.log("-----------------------------");
   } finally {
     console.log("\nFull Integration Test Completed.");
   }
 }
 
-runFullIntegrationTest();
+runFullIntegrationTest().catch((e) => {
+  console.log(e);
+});

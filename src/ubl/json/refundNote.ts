@@ -17,13 +17,11 @@ import {
   UBLJsonSignature,
   UBLJsonTaxExchangeRate,
   UBLJsonTaxTotal,
-  UBLJsonText,
   UBLJsonTime,
   // UBLJsonExtensionsContainer, // Will define a more specific structure
   UBLJsonValue,
 } from "./ubl_json";
 // Import for UBLDocumentSignatureExtension is for context; JSON structure handled by UBLJsonSignatureExtensionContent
-import { UBLDocumentSignatureExtension } from "./digitalSignature";
 
 // --- Main RefundNote v1.1 JSON Structure (Content of the "Invoice" array for a Refund Note) ---
 /**
@@ -57,26 +55,26 @@ export interface UBLJsonRefundNoteV1_1_Content {
    * TypeCode maps to UBL: /ubl:Invoice/cbc:InvoiceTypeCode (Value should be "04" for Refund Note).
    * listVersionID attribute maps to UBL: /ubl:Invoice/cbc:InvoiceTypeCode/@listVersionID.
    */
-  InvoiceTypeCode: Array<
-    UBLJsonValue<InvoiceTypeCode> & { listVersionID: string }
-  >;
+  InvoiceTypeCode: (UBLJsonValue<InvoiceTypeCode> & {
+    listVersionID: string;
+  })[];
   /**
    * Invoice Currency Code.
    * Specific currency that is used to represent the monetary value stated in the e-Invoice.
    * Maps to UBL: /ubl:Invoice/cbc:DocumentCurrencyCode
    */
-  DocumentCurrencyCode: Array<UBLJsonValue<string>>;
+  DocumentCurrencyCode: UBLJsonValue<string>[];
   /**
    * Optional Tax Currency Code.
    * Maps to UBL: /ubl:Invoice/cbc:TaxCurrencyCode
    */
-  TaxCurrencyCode?: Array<UBLJsonValue<string>>;
+  TaxCurrencyCode?: UBLJsonValue<string>[];
   /**
    * Optional. Billing period information.
    * Contains Frequency of Billing, Billing Period Start Date, and Billing Period End Date.
    * Maps to UBL: /ubl:Invoice/cac:InvoicePeriod
    */
-  InvoicePeriod?: Array<UBLJsonInvoicePeriod>;
+  InvoicePeriod?: UBLJsonInvoicePeriod[];
   /**
    * Billing reference information.
    * Crucial for Refund Note, typically containing Additional Document References.
@@ -84,82 +82,82 @@ export interface UBLJsonRefundNoteV1_1_Content {
    * Contains Bill Reference Number (mapping to /ubl:Invoice/cac:BillingReference/cac:AdditionalDocumentReference/cbc:ID).
    * Maps to UBL: /ubl:Invoice/cac:BillingReference
    */
-  BillingReference?: Array<UBLJsonBillingReference>;
+  BillingReference?: UBLJsonBillingReference[];
   /**
    * Optional. Additional document references.
    * Used for Reference Number of Customs Form No.1, 9, etc., Incoterms, Free Trade Agreement (FTA) Information, and Reference Number of Customs Form No.2.
    * Maps to UBL: /ubl:Invoice/cac:AdditionalDocumentReference
    */
-  AdditionalDocumentReference?: Array<UBLJsonDocumentReference>;
+  AdditionalDocumentReference?: UBLJsonDocumentReference[];
   /**
    * Supplier (Seller) information.
    * Contains Authorisation Number for Certified Exporter (mapping to /ubl:Invoice/cac:AccountingSupplierParty/cbc:AdditionalAccountID [@schemeAgencyName=’CertEx’]).
    * Maps to UBL: /ubl:Invoice/cac:AccountingSupplierParty
    */
-  AccountingSupplierParty: Array<UBLJsonParty>;
+  AccountingSupplierParty: UBLJsonParty[];
   /**
    * Buyer information.
    * Maps to UBL: /ubl:Invoice/cac:AccountingCustomerParty
    */
-  AccountingCustomerParty: Array<UBLJsonParty>;
+  AccountingCustomerParty: UBLJsonParty[];
   /**
    * Optional. Delivery information.
    * Contains Shipping Recipient’s Name, Shipping Recipient’s Address, Shipping Recipient’s TIN, Shipping Recipient’s Registration Number.\n   * Also contains Details of other charges (mapping to /ubl:Invoice/cac:Delivery/cac:Shipment/...).\n
    * Maps to UBL: /ubl:Invoice/cac:Delivery
    */
-  Delivery?: Array<UBLJsonDelivery>;
+  Delivery?: UBLJsonDelivery[];
   /**
    * Optional. Payment means information.
    * Contains Payment Mode (mapping to /ubl:Invoice/cac:PaymentMeans/cbc:PaymentMeansCode) and Supplier’s Bank Account Number (mapping to /ubl:Invoice/cac:PaymentMeans/cac:PayeeFinancialAccount/cbc:ID).
    * Maps to UBL: /ubl:Invoice/cac:PaymentMeans
    */
-  PaymentMeans?: Array<UBLJsonPaymentMeans>;
+  PaymentMeans?: UBLJsonPaymentMeans[];
   /**
    * Optional. Payment terms.
    * Contains Payment Terms note (mapping to /ubl:Invoice/cac:PaymentTerms/cbc:Note).
    * Maps to UBL: /ubl:Invoice/cac:PaymentTerms
    */
-  PaymentTerms?: Array<UBLJsonPaymentTerms>;
+  PaymentTerms?: UBLJsonPaymentTerms[];
   /**
    * Optional. Prepaid payment information.
    * Contains PrePayment Amount, PrePayment Date, PrePayment Time, and PrePayment Reference Number.
    * Maps to UBL: /ubl:Invoice/cac:PrepaidPayment
    */
-  PrepaidPayment?: Array<UBLJsonPrepaidPayment>;
+  PrepaidPayment?: UBLJsonPrepaidPayment[];
   /**
    * Optional. Document level allowances or charges.
    * Contains Invoice Additional Discount Amount and Invoice Additional Fee Amount.
    * Maps to UBL: /ubl:Invoice/cac:AllowanceCharge
    */
-  AllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  AllowanceCharge?: UBLJsonFreightAllowanceCharge[];
   /**
    * Optional. Currency exchange rate information.
    * Maps to UBL: /ubl:Invoice/cac:TaxExchangeRate
    */
-  TaxExchangeRate?: Array<UBLJsonTaxExchangeRate>;
+  TaxExchangeRate?: UBLJsonTaxExchangeRate[];
   /**
    * Tax total information for the refund note.
    * Contains Total Tax Amount, Total Taxable Amount Per Tax Type, Total Tax Amount Per Tax Type, Details of Tax Exemption, Amount Exempted from Tax, and Tax Type.
    * Maps to UBL: /ubl:Invoice/cac:TaxTotal
    */
-  TaxTotal: Array<UBLJsonTaxTotal>;
+  TaxTotal: UBLJsonTaxTotal[];
   /**
    * Legal monetary total summary for the refund note.
    * Contains Total Excluding Tax, Total Including Tax, Total Payable Amount, Total Net Amount, Total Discount Value, Total Fee / Charge Amount, and Rounding Amount.
    * Maps to UBL: /ubl:Invoice/cac:LegalMonetaryTotal
    */
-  LegalMonetaryTotal: Array<UBLJsonLegalMonetaryTotal>;
+  LegalMonetaryTotal: UBLJsonLegalMonetaryTotal[];
   /**
    * Refund note line items.
    * Maps to UBL: /ubl:Invoice/cac:InvoiceLine
    */
-  InvoiceLine: Array<UBLJsonInvoiceLine>; // Line items detailing the refund
+  InvoiceLine: UBLJsonInvoiceLine[]; // Line items detailing the refund
   /**
    * Digital signature information.
    * An electronic signature to authenticate the e-Invoice.
    * Maps to UBL: /ubl:Invoice/cac:Signature
    */
-  Signature: Array<UBLJsonSignature>;
+  Signature: UBLJsonSignature[];
   /**
    * UBL Extensions, typically for digital signatures or other extended information.
    * Maps to UBL: /ubl:Invoice/ubl:UBLExtensions
@@ -192,7 +190,7 @@ export interface UBLJsonRefundNoteDocumentV1_1 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2". Maps to UBL: /ubl:Invoice/@xmlns:cbc */
   _B: string;
   /** Array containing the main refund note content. The key is "Invoice" as per MyInvois samples. */
-  Invoice: Array<UBLJsonRefundNoteV1_1_Content>;
+  Invoice: UBLJsonRefundNoteV1_1_Content[];
 }
 
 // --- Root RefundNote Document Structure v1.0 (following Invoice-like structure from sample) ---
@@ -208,5 +206,5 @@ export interface UBLJsonRefundNoteDocumentV1_0 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2". Maps to UBL: /ubl:Invoice/@xmlns:cbc */
   _B: string;
   /** Array containing the main refund note content for version 1.0. The key is "Invoice" as per MyInvois samples. */
-  Invoice: Array<UBLJsonRefundNoteV1_0_Content>;
+  Invoice: UBLJsonRefundNoteV1_0_Content[];
 }

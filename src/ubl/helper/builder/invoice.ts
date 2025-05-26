@@ -95,10 +95,10 @@ export function createUblJsonInvoiceDocument(
   version: "1.1" | "1.0" = "1.1",
 ): UBLJsonInvoiceDocumentV1_0 | UBLJsonInvoiceDocumentV1_1 {
   const docCurrency = params.documentCurrencyCode;
-  const taxCurrency = params.taxCurrencyCode || docCurrency;
+  const taxCurrency = params.taxCurrencyCode ?? docCurrency;
 
-  const supplierParty = buildSupplier(params.supplier, docCurrency);
-  const customerParty = buildCustomerParty(params.customer, docCurrency);
+  const supplierParty = buildSupplier(params.supplier);
+  const customerParty = buildCustomerParty(params.customer);
 
   const accountingSupplierParty: UBLJsonAccountingSupplierParty = {
     Party: [supplierParty],
@@ -145,7 +145,7 @@ export function createUblJsonInvoiceDocument(
             ItemClassificationCode: [
               {
                 _: lineParam.itemCommodityClassification.code,
-                listID: lineParam.itemCommodityClassification.listID || "CLASS",
+                listID: lineParam.itemCommodityClassification.listID ?? "CLASS",
               },
             ],
           },
@@ -273,7 +273,7 @@ export function createUblJsonInvoiceDocument(
       ),
       Delivery: params.delivery?.map((d) => {
         const deliveryParty = [];
-        if (d.partyName || d.address) {
+        if (d.partyName ?? d.address) {
           const partyLegalEntities = [];
           if (d.partyName) {
             partyLegalEntities.push({
@@ -324,13 +324,13 @@ export function createUblJsonInvoiceDocument(
 
   if (version === "1.1") {
     (invoiceContent as UBLJsonInvoiceV1_1_Content).UBLExtensions =
-      params.ublExtensions || [];
+      params.ublExtensions ?? [];
     (invoiceContent as UBLJsonInvoiceV1_1_Content).Signature = [
       {
         ID: [
           {
             _:
-              params.signatureId ||
+              params.signatureId ??
               "urn:oasis:names:specification:ubl:signature:Invoice",
           },
         ],

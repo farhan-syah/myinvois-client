@@ -102,10 +102,10 @@ export function createUblJsonCreditNoteDocument(
   version: "1.1" | "1.0" = "1.1",
 ): UBLJsonCreditNoteDocumentV1_0 | UBLJsonCreditNoteDocumentV1_1 {
   const docCurrency = params.documentCurrencyCode;
-  const taxCurrency = params.taxCurrencyCode || docCurrency;
+  const taxCurrency = params.taxCurrencyCode ?? docCurrency;
 
-  const supplierParty = buildSupplier(params.supplier, docCurrency);
-  const customerParty = buildCustomerParty(params.customer, docCurrency);
+  const supplierParty = buildSupplier(params.supplier);
+  const customerParty = buildCustomerParty(params.customer);
 
   const accountingSupplierParty: UBLJsonAccountingSupplierParty = {
     Party: [supplierParty],
@@ -158,7 +158,7 @@ export function createUblJsonCreditNoteDocument(
             ItemClassificationCode: [
               {
                 _: lineParam.itemCommodityClassification.code,
-                listID: lineParam.itemCommodityClassification.listID || "CLASS",
+                listID: lineParam.itemCommodityClassification.listID ?? "CLASS",
               },
             ],
           },
@@ -347,13 +347,13 @@ export function createUblJsonCreditNoteDocument(
   if (version === "1.1") {
     // These fields are only present in v1.1
     (creditNoteContent as UBLJsonCreditNoteV1_1_Content).UBLExtensions =
-      params.ublExtensions || [];
+      params.ublExtensions ?? [];
     (creditNoteContent as UBLJsonCreditNoteV1_1_Content).Signature = [
       {
         ID: [
           {
             _:
-              params.signatureId ||
+              params.signatureId ??
               "urn:oasis:names:specification:ubl:signature:CreditNote", // Default Signature ID for Credit Note
           },
         ],

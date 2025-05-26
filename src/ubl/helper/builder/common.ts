@@ -85,7 +85,6 @@ export const toUblIndicator = (
  */
 export const buildCustomerParty = (
   customer: CustomerPartyParam,
-  docCurrency: string, // Kept for consistency, though not directly used for currency amounts in this func
 ): UBLJsonCustomerParty => {
   const postalAddress: UBLJsonPostalAddress = {
     AddressLine: customer.address.addressLines.map((line) => ({
@@ -171,7 +170,6 @@ export const buildCustomerParty = (
  */
 export const buildSupplier = (
   supplierParam: SupplierPartyParam,
-  docCurrency: string, // Kept for consistency
 ): UBLJsonSupplierParty => {
   const postalAddress: UBLJsonPostalAddress = {
     AddressLine: supplierParam.address.addressLines.map((line) => ({
