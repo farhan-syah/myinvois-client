@@ -1,0 +1,10 @@
+# .prettierignore
+node_modules/
+dist/
+build/
+coverage/
+.env
+.husky/
+*.log
+*.lock
+logs

@@ -6,8 +6,11 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "lint": "eslint . --ext .ts",
-    "prepare": "bun run build"
+    "prepare": "husky",
+    "lint": "eslint . --ext .ts,.tsx,.json",
+    "lint:fix": "eslint . --ext .ts,.tsx,.json --fix",
+    "format": "prettier --write .",
+    "check-format": "prettier --check ."
   },
   "repository": {
     "type": "git",
@@ -31,6 +34,11 @@
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "eslint": "^9.27.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.5.3",
     "typescript": "^5.8.3"
   },
   "files": [
@@ -41,5 +49,14 @@
   ],
   "engines": {
     "node": ">=16"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write --cache --ignore-unknown"
+    ],
+    "*.{js,jsx,json,mjs,cjs,css,scss,less,html,md,yaml,yml}": [
+      "prettier --write --cache --ignore-unknown"
+    ]
   }
 }
