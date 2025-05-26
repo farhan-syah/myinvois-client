@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "prepare": "husky",
+    "prepare": "bunx husky && bun run build",
     "lint": "eslint . --ext .ts,.tsx,.json",
     "lint:fix": "eslint . --ext .ts,.tsx,.json --fix",
     "format": "prettier --write .",
