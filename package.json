@@ -1,6 +1,6 @@
 {
   "name": "myinvois-client",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "A TypeScript client library (SDK) for seamless integration with the Malaysian MyInvois REST API, enabling developers to build custom e-invoicing solutions.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
