@@ -36,7 +36,11 @@ export class AuthService {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: new URLSearchParams(Object.fromEntries(Object.entries(requestBody).filter(([_, v]) => v !== undefined))).toString(),
+        body: new URLSearchParams(
+          Object.fromEntries(
+            Object.entries(requestBody).filter(([_, v]) => v !== undefined),
+          ),
+        ).toString(),
       });
 
       if (!response.ok) {
@@ -58,7 +62,6 @@ export class AuthService {
 
       return responseData;
     } catch (error) {
-
       throw error;
     }
   }
@@ -91,7 +94,11 @@ export class AuthService {
           "Content-Type": "application/x-www-form-urlencoded",
           onbehalfof: onBehalfOfTIN,
         },
-        body: new URLSearchParams(Object.fromEntries(Object.entries(requestBody).filter(([_, v]) => v !== undefined))).toString(),
+        body: new URLSearchParams(
+          Object.fromEntries(
+            Object.entries(requestBody).filter(([_, v]) => v !== undefined),
+          ),
+        ).toString(),
       });
 
       if (!response.ok) {
@@ -104,7 +111,7 @@ export class AuthService {
           );
         }
         throw new Error(
-          `API Error: ${errorData.error} - ${errorData.error_description || response.statusText || "Unknown error"}`,
+          `API Error: ${errorData.error} - ${errorData.error_description ?? response.statusText ?? "Unknown error"}`,
         );
       }
 

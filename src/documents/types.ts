@@ -6,28 +6,28 @@ export interface DocumentTypeVersion {
   invoiceTypeCode?: InvoiceTypeCode;
   name: string;
   description: string;
-  activeFrom: string; 
-  activeTo?: string; 
-  versionNumber: number; 
+  activeFrom: string;
+  activeTo?: string;
+  versionNumber: number;
   status: "draft" | "published" | "deactivated";
 }
 
 export interface WorkflowParameter {
   id: number;
-  parameter: string; 
+  parameter: string;
   value: number;
-  activeFrom: string; 
-  activeTo?: string; 
+  activeFrom: string;
+  activeTo?: string;
 }
 
 export interface DocumentType {
   id: number;
   invoiceTypeCode: InvoiceTypeCode;
   description: string;
-  activeFrom: string; 
-  activeTo?: string; 
+  activeFrom: string;
+  activeTo?: string;
   documentTypeVersions: DocumentTypeVersion[];
-  workflowParameters?: WorkflowParameter[]; 
+  workflowParameters?: WorkflowParameter[];
 }
 
 export interface GetAllDocumentTypesResponse {
@@ -36,9 +36,9 @@ export interface GetAllDocumentTypesResponse {
 
 export interface DocumentSubmissionItem {
   format: "XML" | "JSON";
-  document: string; 
-  documentHash: string; 
-  codeNumber: string; 
+  document: string;
+  documentHash: string;
+  codeNumber: string;
 }
 
 export interface SubmitDocumentsRequest {
@@ -46,52 +46,52 @@ export interface SubmitDocumentsRequest {
 }
 
 export interface AcceptedDocumentInfo {
-  uuid: string; 
-  invoiceCodeNumber: string; 
+  uuid: string;
+  invoiceCodeNumber: string;
 }
 
 export interface RejectedDocumentInfo {
-  invoiceCodeNumber: string; 
-  error: MyInvoisDetailedError; 
+  invoiceCodeNumber: string;
+  error: MyInvoisDetailedError;
 }
 
 export interface SubmitDocumentsResponse {
-  submissionUID: string; 
+  submissionUID: string;
   acceptedDocuments: AcceptedDocumentInfo[];
   rejectedDocuments: RejectedDocumentInfo[];
 }
 
 export interface CancelDocumentRequest {
-  status: "cancelled"; 
-  reason: string; 
+  status: "cancelled";
+  reason: string;
 }
 
 export interface CancelDocumentResponse {
-  uuid: string; 
-  status: "Cancelled"; 
+  uuid: string;
+  status: "Cancelled";
 }
 
 export interface RejectDocumentRequest {
-  status: "rejected"; 
-  reason: string;    
+  status: "rejected";
+  reason: string;
 }
 
 export interface RejectDocumentResponse {
-  uuid: string; 
-  status: "Requested for Rejection"; 
+  uuid: string;
+  status: "Requested for Rejection";
 }
 
 // Types for Get Recent Documents API
 export interface GetRecentDocumentsRequestParams {
   pageNo?: number;
   pageSize?: number;
-  submissionDateFrom?: string; 
-  submissionDateTo?: string;   
-  issueDateFrom?: string;      
-  issueDateTo?: string;        
+  submissionDateFrom?: string;
+  submissionDateTo?: string;
+  issueDateFrom?: string;
+  issueDateTo?: string;
   InvoiceDirection?: "Sent" | "Received";
   status?: "Valid" | "Invalid" | "Cancelled" | "Submitted";
-  documentType?: InvoiceTypeCode; 
+  documentType?: InvoiceTypeCode;
   receiverIdType?: "BRN" | "PASSPORT" | "NRIC" | "ARMY";
   receiverId?: string;
   issuerIdType?: "BRN" | "PASSPORT" | "NRIC" | "ARMY";
@@ -104,41 +104,50 @@ export interface RecentDocumentInfo {
   uuid: string;
   submissionUID: string;
   longId: string;
-  internalId: string; 
-  typeName: string; 
-  typeVersionName: string; 
+  internalId: string;
+  typeName: string;
+  typeVersionName: string;
   issuerTin: string;
-  issuerName?: string; 
+  issuerName?: string;
   receiverTin?: string; // Added this based on typical search results, aligns with supplier/buyer TIN
   receiverId?: string;
   receiverName?: string;
-  dateTimeIssued: string; 
-  dateTimeReceived: string; 
-  dateTimeValidated?: string; 
+  dateTimeIssued: string;
+  dateTimeReceived: string;
+  dateTimeValidated?: string;
   totalSales?: number; // Changed from totalExcludingTax to align with RecentDocumentInfo output field name
   totalDiscount?: number;
   netAmount?: number; // Changed from totalNetAmount to align with RecentDocumentInfo output field name
   total: number; // This is totalPayableAmount in some contexts, ensuring consistency or using a more generic term
-  status: "Submitted" | "Valid" | "Invalid" | "Cancelled" | "Requested for Rejection"; 
-  cancelDateTime?: string; 
-  rejectRequestDateTime?: string; 
+  status:
+    | "Submitted"
+    | "Valid"
+    | "Invalid"
+    | "Cancelled"
+    | "Requested for Rejection";
+  cancelDateTime?: string;
+  rejectRequestDateTime?: string;
   documentStatusReason?: string;
   createdByUserId?: string;
   supplierTin?: string; // Explicitly keeping as per doc output which differentiates issuer/supplier sometimes
-  supplierName?: string; 
-  submissionChannel?: "ERP" | "Invoicing Portal" | "InvoicingMobileApp" | string; 
+  supplierName?: string;
+  submissionChannel?:
+    | "ERP"
+    | "Invoicing Portal"
+    | "InvoicingMobileApp"
+    | string;
   intermediaryName?: string;
   intermediaryTin?: string;
   intermediaryRob?: string;
-  buyerName?: string; 
+  buyerName?: string;
   buyerTin?: string; // Explicitly keeping as per doc output
 }
 
 export interface RecentDocumentsMetadata {
   totalPages: number;
   totalCount: number;
-  pageSize: number; 
-  pageNo: number;   
+  pageSize: number;
+  pageNo: number;
 }
 
 export interface GetRecentDocumentsResponse {
@@ -154,8 +163,8 @@ export interface GetSubmissionDetailsRequestParams {
 
 export interface DocumentSummary {
   uuid: string;
-  submissionUid: string; 
-  longId?: string; 
+  submissionUid: string;
+  longId?: string;
   internalId: string;
   typeName: string;
   typeVersionName: string;
@@ -163,33 +172,33 @@ export interface DocumentSummary {
   issuerName: string;
   receiverId?: string;
   receiverName?: string;
-  dateTimeIssued: string; 
-  dateTimeReceived: string; 
-  dateTimeValidated?: string; 
-  totalExcludingTax: number; 
+  dateTimeIssued: string;
+  dateTimeReceived: string;
+  dateTimeValidated?: string;
+  totalExcludingTax: number;
   totalDiscount: number;
   totalNetAmount: number;
   totalPayableAmount: number;
-  status: "Submitted" | "Valid" | "Invalid" | "Cancelled"; 
-  cancelDateTime?: string; 
-  rejectRequestDateTime?: string; 
+  status: "Submitted" | "Valid" | "Invalid" | "Cancelled";
+  cancelDateTime?: string;
+  rejectRequestDateTime?: string;
   documentStatusReason?: string;
   createdByUserId?: string;
 }
 
 export interface GetSubmissionDetailsResponse {
-  submissionUid: string; 
+  submissionUid: string;
   documentCount: number;
-  dateTimeReceived: string; 
+  dateTimeReceived: string;
   overallStatus: "in progress" | "valid" | "partially valid" | "invalid";
-  documentSummary: DocumentSummary[]; 
+  documentSummary: DocumentSummary[];
 }
 
 // Types for Get Document By UUID API (RAW Document)
 export interface GetDocumentResponse {
   uuid: string;
   submissionUid: string;
-  longId?: string; 
+  longId?: string;
   internalId: string;
   typeName: string;
   typeVersionName: string;
@@ -197,26 +206,26 @@ export interface GetDocumentResponse {
   issuerName: string;
   receiverId?: string;
   receiverName?: string;
-  dateTimeIssued: string; 
-  dateTimeReceived: string; 
-  dateTimeValidated?: string; 
-  totalExcludingTax: number; 
+  dateTimeIssued: string;
+  dateTimeReceived: string;
+  dateTimeValidated?: string;
+  totalExcludingTax: number;
   totalDiscount: number;
   totalNetAmount: number;
   totalPayableAmount: number;
-  status: "Submitted" | "Valid" | "Cancelled"; 
-  cancelDateTime?: string; 
-  rejectRequestDateTime?: string; 
+  status: "Submitted" | "Valid" | "Cancelled";
+  cancelDateTime?: string;
+  rejectRequestDateTime?: string;
   documentStatusReason?: string;
   createdByUserId?: string;
-  document: string; 
+  document: string;
 }
 
 // Types for Get Document Details By UUID API
 export interface ValidationStepResult {
   name: string;
   status: "Submitted" | "Valid" | "Invalid";
-  error?: MyInvoisDetailedError; 
+  error?: MyInvoisDetailedError;
 }
 
 export interface DocumentValidationResults {
@@ -227,7 +236,7 @@ export interface DocumentValidationResults {
 export interface DocumentDetailsResponse {
   uuid: string;
   submissionUid: string;
-  longId?: string; 
+  longId?: string;
   internalId: string;
   typeName: string;
   typeVersionName: string;
@@ -235,30 +244,30 @@ export interface DocumentDetailsResponse {
   issuerName: string;
   receiverId?: string;
   receiverName?: string;
-  dateTimeIssued: string; 
-  dateTimeReceived: string; 
-  dateTimeValidated?: string; 
-  totalExcludingTax: number; 
+  dateTimeIssued: string;
+  dateTimeReceived: string;
+  dateTimeValidated?: string;
+  totalExcludingTax: number;
   totalDiscount: number;
   totalNetAmount: number;
   totalPayableAmount: number;
-  status: "Submitted" | "Valid" | "Invalid" | "Cancelled"; 
-  cancelDateTime?: string; 
-  rejectRequestDateTime?: string; 
+  status: "Submitted" | "Valid" | "Invalid" | "Cancelled";
+  cancelDateTime?: string;
+  rejectRequestDateTime?: string;
   documentStatusReason?: string;
   createdByUserId?: string;
-  validationResults?: DocumentValidationResults; 
+  validationResults?: DocumentValidationResults;
 }
 
 // Types for Search Documents API
 export interface SearchDocumentsRequestParams {
   uuid?: string;
   submissionDateFrom?: string; // Mandatory if issueDateFrom/To not used
-  submissionDateTo?: string;   // Mandatory if issueDateFrom/To not used
-  pageSize?: number;           // Default 100, max 100
+  submissionDateTo?: string; // Mandatory if issueDateFrom/To not used
+  pageSize?: number; // Default 100, max 100
   pageNo?: number;
-  issueDateFrom?: string;      // Mandatory if submissionDateFrom/To not used
-  issueDateTo?: string;        // Mandatory if submissionDateFrom/To not used
+  issueDateFrom?: string; // Mandatory if submissionDateFrom/To not used
+  issueDateTo?: string; // Mandatory if submissionDateFrom/To not used
   invoiceDirection?: "Sent" | "Received";
   status?: "Valid" | "Invalid" | "Cancelled" | "Submitted";
   documentType?: InvoiceTypeCode; // Using existing InvoiceTypeCode

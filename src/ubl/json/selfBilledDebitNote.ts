@@ -19,12 +19,10 @@ import {
   UBLJsonSignature,
   UBLJsonTaxExchangeRate,
   UBLJsonTaxTotal,
-  UBLJsonText,
   UBLJsonTime,
   UBLJsonValue,
 } from "./ubl_json";
 // Import for UBLDocumentSignatureExtension is for context; JSON structure handled by UBLJsonSignatureExtensionContent
-import { UBLDocumentSignatureExtension } from "./digitalSignature";
 
 // --- Main SelfBilledDebitNote v1.1 JSON Structure (Content of the "Invoice" array for a Self-Billed Debit Note) ---
 /**
@@ -60,34 +58,34 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * /ubl:Invoice / cbc:InvoiceTypeCode / @listVersionID.
    * Cardinality: [1-1]
    */
-  InvoiceTypeCode: Array<
-    UBLJsonValue<InvoiceTypeCode> & { listVersionID: string }
-  >;
+  InvoiceTypeCode: (UBLJsonValue<InvoiceTypeCode> & {
+    listVersionID: string;
+  })[];
   /**
    * Specific currency that is used to represent the monetary value stated in the e-Invoice.
    * Maps to UBL: /ubl:Invoice / cbc:DocumentCurrencyCode
    * Cardinality: [1-1]
    */
-  DocumentCurrencyCode: Array<UBLJsonValue<string>>;
+  DocumentCurrencyCode: UBLJsonValue<string>[];
   /**
    * Optional Tax Currency Code.
    * Maps to UBL: /ubl:Invoice / cbc:TaxCurrencyCode
    * Cardinality: [0-1]
    */
-  TaxCurrencyCode?: Array<UBLJsonValue<string>>;
+  TaxCurrencyCode?: UBLJsonValue<string>[];
 
   /**
    * Structure representing the supplier information (Supplier on whose behalf Buyer issues).
    * Maps to UBL: /ubl:Invoice / cac:AccountingSupplierParty
    * Cardinality: [1-1]
    */
-  AccountingSupplierParty: Array<UBLJsonAccountingSupplierParty>;
+  AccountingSupplierParty: UBLJsonAccountingSupplierParty[];
   /**
    * Structure representing the buyer information (Buyer issuing the note).
    * Maps to UBL: /ubl:Invoice / cac:AccountingCustomerParty
    * Cardinality: [1-1]
    */
-  AccountingCustomerParty: Array<UBLJsonAccountingCustomerParty>;
+  AccountingCustomerParty: UBLJsonAccountingCustomerParty[];
 
   /**
    * Billing reference information, typically referencing the original Invoice, including Original e-Invoice Reference Number and Bill Reference Number.
@@ -96,7 +94,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Note: Original e-Invoice Reference Number maps to cac:InvoiceDocumentReference/cbc:UUID and cbc:ID.
    * Note: Bill Reference Number maps to cac:AdditionalDocumentReference/cbc:ID.
    */
-  BillingReference: Array<UBLJsonBillingReference>;
+  BillingReference: UBLJsonBillingReference[];
 
   /**
    * Optional. Additional document references, including Customs Form references, Incoterms, and Free Trade Agreement information.
@@ -106,7 +104,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Note: Incoterms map to cbc:ID with cbc:DocumentType="Incoterms" (based on common practice, deviating from doc's /cac:ID mapping which UBLJsonDocumentReference does not support).
    * Note: Free Trade Agreement info maps to cbc:DocumentType="FreeTradeAgreement", cbc:ID="FTA", and cbc:DocumentDescription.
    */
-  AdditionalDocumentReference?: Array<UBLJsonDocumentReference>;
+  AdditionalDocumentReference?: UBLJsonDocumentReference[];
 
   /**
    * Optional. Billing period information, including frequency, start and end dates.
@@ -114,7 +112,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Cardinality: [0-1]
    * Note: Frequency of Billing maps to cbc:Description.
    */
-  InvoicePeriod?: Array<UBLJsonInvoicePeriod>;
+  InvoicePeriod?: UBLJsonInvoicePeriod[];
 
   /**
    * Optional. Delivery information, including shipping recipient details and other charges.
@@ -123,7 +121,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Note: Shipping Recipient details map to cac:DeliveryParty nested elements.
    * Note: Details of other charges map to cac:Shipment/cac:FreightAllowanceCharge, linked by Shipment/cbc:ID matching the e-Invoice Code / Number.
    */
-  Delivery?: Array<UBLJsonDelivery>;
+  Delivery?: UBLJsonDelivery[];
 
   /**
    * Optional. Payment means information, including payment mode and supplier's bank account.
@@ -132,13 +130,13 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Note: Payment Mode maps to cbc:PaymentMeansCode.
    * Note: Supplier's Bank Account Number maps to cac:PayeeFinancialAccount/cbc:ID.
    */
-  PaymentMeans?: Array<UBLJsonPaymentMeans>;
+  PaymentMeans?: UBLJsonPaymentMeans[];
   /**
    * Optional. Payment terms and conditions.
    * Maps to UBL: /ubl:Invoice / cac:PaymentTerms
    * Cardinality: [0-1]
    */
-  PaymentTerms?: Array<UBLJsonPaymentTerms>;
+  PaymentTerms?: UBLJsonPaymentTerms[];
   /**
    * Optional. Prepaid payment information, including amount, date, time, and reference number.
    * Maps to UBL: /ubl:Invoice / cac:PrepaidPayment
@@ -148,7 +146,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Note: PrePayment Time maps to cbc:PaidTime.
    * Note: PrePayment Reference Number maps to cbc:ID.
    */
-  PrepaidPayment?: Array<UBLJsonPrepaidPayment>;
+  PrepaidPayment?: UBLJsonPrepaidPayment[];
   /**
    * Optional. Document level allowances or charges, including Invoice Additional Discount Amount and Invoice Additional Fee Amount.
    * Maps to UBL: /ubl:Invoice / cac:AllowanceCharge
@@ -157,7 +155,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Note: Fee/Charge maps to cbc:ChargeIndicator = true.
    * Note: Documentation mentions MultiplierFactorNumeric for rates, but UBLJsonFreightAllowanceCharge only includes Amount and optional AllowanceChargeReason.
    */
-  AllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  AllowanceCharge?: UBLJsonFreightAllowanceCharge[];
 
   /**
    * Optional. Currency exchange rate information. Mandatory where applicable (non-MYR document currency).
@@ -165,7 +163,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Cardinality: [0-1]
    * Note: Currency Exchange Rate maps to cbc:CalculationRate, cbc:SourceCurrencyCode, and cbc:TargetCurrencyCode.
    */
-  TaxExchangeRate?: Array<UBLJsonTaxExchangeRate>; // Mandatory where applicable
+  TaxExchangeRate?: UBLJsonTaxExchangeRate[]; // Mandatory where applicable
 
   /**
    * Tax total information for the debit note, including total tax amount and subtotals per tax type.
@@ -175,7 +173,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Total Tax Amount Per Tax Type (cac:TaxSubtotal/cbc:TaxAmount), Details of Tax Exemption (cac:TaxSubtotal/cac:TaxCategory/cbc:TaxExemptionReason and conditions),
    * Amount Exempted from Tax (cac:TaxSubtotal/cbc:TaxableAmount under exemption conditions), and Tax Type (cac:TaxSubtotal/cac:TaxCategory/cbc:ID and TaxScheme).
    */
-  TaxTotal: Array<UBLJsonTaxTotal>;
+  TaxTotal: UBLJsonTaxTotal[];
   /**
    * Legal monetary total summary for the debit note, including various total amounts.
    * Maps to UBL: /ubl:Invoice / cac:LegalMonetaryTotal.
@@ -185,14 +183,14 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Total Discount Value (cbc:AllowanceTotalAmount), Total Fee / Charge Amount (cbc:ChargeTotalAmount),
    * PrePayment Amount (cbc:PrepaidAmount - summary reference), and Rounding Amount (cbc:PayableRoundingAmount).
    */
-  LegalMonetaryTotal: Array<UBLJsonLegalMonetaryTotal>;
+  LegalMonetaryTotal: UBLJsonLegalMonetaryTotal[];
 
   /**
    * Debit note line items, detailing the debit.
    * Maps to UBL: /ubl:Invoice / cac:InvoiceLine.
    * Cardinality: [1-*]
    */
-  InvoiceLine: Array<UBLJsonInvoiceLine>;
+  InvoiceLine: UBLJsonInvoiceLine[];
 
   /**
    * Digital signature information. Mandatory for V1.1.
@@ -200,7 +198,7 @@ export interface UBLJsonSelfBilledDebitNoteV1_1_Content {
    * Cardinality: [1-1]
    * Note: Structure includes cbc:ID and cac:SignatureMethod/cbc:ID (corrected from debitNote.ts sample).
    */
-  Signature: Array<UBLJsonSignature>;
+  Signature: UBLJsonSignature[];
 
   /**
    * UBL Extensions, typically for digital signatures or other extended information.
@@ -234,7 +232,7 @@ export interface UBLJsonSelfBilledDebitNoteDocumentV1_1 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2". */
   _B: string;
   /** Array containing the main self-billed debit note content for version 1.1. Even for a Self-Billed Debit Note, the sample uses "Invoice" as the main array key. */
-  Invoice: Array<UBLJsonSelfBilledDebitNoteV1_1_Content>;
+  Invoice: UBLJsonSelfBilledDebitNoteV1_1_Content[];
 }
 
 // --- Root SelfBilledDebitNote Document Structure v1.0 ---
@@ -251,5 +249,5 @@ export interface UBLJsonSelfBilledDebitNoteDocumentV1_0 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2". */
   _B: string;
   /** Array containing the main self-billed debit note content for version 1.0. */
-  Invoice: Array<UBLJsonSelfBilledDebitNoteV1_0_Content>;
+  Invoice: UBLJsonSelfBilledDebitNoteV1_0_Content[];
 }

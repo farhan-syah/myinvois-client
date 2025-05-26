@@ -1,7 +1,6 @@
 import { AuthService } from "./auth";
 import { DocumentsService } from "./documents";
 import { TaxpayerService } from "./taxpayer"; // Added import
-import { DocumentType } from "./documents/types";
 
 export type MyInvoisEnvironment = "PROD" | "SANDBOX";
 

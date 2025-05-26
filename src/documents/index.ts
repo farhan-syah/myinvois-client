@@ -499,11 +499,11 @@ export class DocumentsService {
         Authorization: `Bearer ${accessToken}`,
       };
       if (preferredFormat === "JSON") {
-        headers["Accept"] = "application/json";
+        headers.Accept = "application/json";
       } else if (preferredFormat === "XML") {
-        headers["Accept"] = "application/xml";
+        headers.Accept = "application/xml";
       } else {
-        headers["Accept"] = "application/json";
+        headers.Accept = "application/json";
       }
 
       const url = `${this.baseUrl}/api/v1.0/documents/${uuid}/raw`;

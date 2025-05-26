@@ -19,12 +19,10 @@ import {
   UBLJsonSignature,
   UBLJsonTaxExchangeRate,
   UBLJsonTaxTotal,
-  UBLJsonText,
   UBLJsonTime,
   UBLJsonValue,
 } from "./ubl_json";
 // Import for UBLDocumentSignatureExtension is for context; JSON structure handled by UBLJsonSignatureExtensionContent
-import { UBLDocumentSignatureExtension } from "./digitalSignature";
 
 // --- Main SelfBilledRefundNote v1.1 JSON Structure (Content of the "Invoice" array for a Self-Billed Refund Note) ---
 /**
@@ -60,21 +58,21 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * /ubl:Invoice / cbc:InvoiceTypeCode / @listVersionID.
    * Cardinality: [1-1]
    */
-  InvoiceTypeCode: Array<
-    UBLJsonValue<InvoiceTypeCode> & { listVersionID: string }
-  >;
+  InvoiceTypeCode: (UBLJsonValue<InvoiceTypeCode> & {
+    listVersionID: string;
+  })[];
   /**
    * Specific currency that is used to represent the monetary value stated in the e-Invoice.
    * Maps to UBL: /ubl:Invoice / cbc:DocumentCurrencyCode
    * Cardinality: [1-1]
    */
-  DocumentCurrencyCode: Array<UBLJsonValue<string>>;
+  DocumentCurrencyCode: UBLJsonValue<string>[];
   /**
    * Optional Tax Currency Code.
    * Maps to UBL: /ubl:Invoice / cbc:TaxCurrencyCode
    * Cardinality: [0-1]
    */
-  TaxCurrencyCode?: Array<UBLJsonValue<string>>;
+  TaxCurrencyCode?: UBLJsonValue<string>[];
 
   /**
    * Structure representing the supplier information (Supplier on whose behalf Buyer issues).
@@ -82,13 +80,13 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Cardinality: [1-1]
    * Note: Includes Authorisation Number for Certified Exporter mapped to cbc:AdditionalAccountID[@schemeAgencyName='CertEx'] within UBLJsonAccountingSupplierParty.
    */
-  AccountingSupplierParty: Array<UBLJsonAccountingSupplierParty>;
+  AccountingSupplierParty: UBLJsonAccountingSupplierParty[];
   /**
    * Structure representing the buyer information (Buyer issuing the note).
    * Maps to UBL: /ubl:Invoice / cac:AccountingCustomerParty
    * Cardinality: [1-1]
    */
-  AccountingCustomerParty: Array<UBLJsonAccountingCustomerParty>;
+  AccountingCustomerParty: UBLJsonAccountingCustomerParty[];
 
   /**
    * Billing reference information, typically referencing the original Invoice, including Original e-Invoice Reference Number and Bill Reference Number.
@@ -97,7 +95,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Note: Original e-Invoice Reference Number maps to cac:InvoiceDocumentReference/cbc:UUID and cbc:ID within UBLJsonBillingReference.
    * Note: Bill Reference Number maps to cac:AdditionalDocumentReference/cbc:ID within UBLJsonBillingReference.
    */
-  BillingReference: Array<UBLJsonBillingReference>;
+  BillingReference: UBLJsonBillingReference[];
 
   /**
    * Optional. Additional document references, including Customs Form references, Incoterms, and Free Trade Agreement information.
@@ -108,7 +106,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Note: Free Trade Agreement info maps to cbc:DocumentType="FreeTradeAgreement", cbc:ID="FTA", and cbc:DocumentDescription within UBLJsonDocumentReference.
    * The documentation's specific index references (e.g., [1], [2], [3], [4]) are unusual for UBL JSON and should not be interpreted as requiring a specific order or fixed array size for different document types within this array.
    */
-  AdditionalDocumentReference?: Array<UBLJsonDocumentReference>;
+  AdditionalDocumentReference?: UBLJsonDocumentReference[];
 
   /**
    * Optional. Billing period information, including frequency, start and end dates.
@@ -116,7 +114,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Cardinality: [0-1]
    * Note: Frequency of Billing maps to cbc:Description within UBLJsonInvoicePeriod.
    */
-  InvoicePeriod?: Array<UBLJsonInvoicePeriod>;
+  InvoicePeriod?: UBLJsonInvoicePeriod[];
 
   /**
    * Optional. Delivery information, including shipping recipient details and other charges.
@@ -126,7 +124,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Note: Details of other charges map to cac:Shipment/cac:FreightAllowanceCharge within UBLJsonDelivery, linked by Shipment/cbc:ID matching the e-Invoice Code / Number.
    * Although the type structure allows for arrays for DeliveryParty and Shipment (from ubl_json.ts), the documentation implies a [0-1] cardinality for the overall Delivery element.
    */
-  Delivery?: Array<UBLJsonDelivery>; // Note: Documentation implies [0-1] cardinality for the element itself
+  Delivery?: UBLJsonDelivery[]; // Note: Documentation implies [0-1] cardinality for the element itself
 
   /**
    * Optional. Payment means information, including payment mode and supplier's bank account.
@@ -135,21 +133,21 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Note: Payment Mode maps to cbc:PaymentMeansCode within UBLJsonPaymentMeans.
    * Note: Supplier's Bank Account Number maps to cac:PayeeFinancialAccount/cbc:ID within UBLJsonPaymentMeans.
    */
-  PaymentMeans?: Array<UBLJsonPaymentMeans>;
+  PaymentMeans?: UBLJsonPaymentMeans[];
   /**
    * Optional. Payment terms and conditions.
    * Maps to UBL: /ubl:Invoice / cac:PaymentTerms
    * Cardinality: [0-1]
    * Note: Maps to cbc:Note within UBLJsonPaymentTerms.
    */
-  PaymentTerms?: Array<UBLJsonPaymentTerms>;
+  PaymentTerms?: UBLJsonPaymentTerms[];
   /**
    * Optional. Prepaid payment information, including amount, date, time, and reference number.
    * Maps to UBL: /ubl:Invoice / cac:PrepaidPayment
    * Cardinality: [0-1]
    * Note: PrePayment Amount maps to cbc:PaidAmount, PrePayment Date maps to cbc:PaidDate, PrePayment Time maps to cbc:PaidTime, and PrePayment Reference Number maps to cbc:ID, all within UBLJsonPrepaidPayment.
    */
-  PrepaidPayment?: Array<UBLJsonPrepaidPayment>;
+  PrepaidPayment?: UBLJsonPrepaidPayment[];
   /**
    * Optional. Document level allowances or charges, including Invoice Additional Discount Amount and Invoice Additional Fee Amount.
    * Maps to UBL: /ubl:Invoice / cac:AllowanceCharge
@@ -157,7 +155,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Note: Discount maps to cbc:ChargeIndicator = false. Fee/Charge maps to cbc:ChargeIndicator = true. The amount maps to cbc:Amount and reason to cbc:AllowanceChargeReason.
    * The documentation mentions MultiplierFactorNumeric for rates, which is not included in the UBLJsonFreightAllowanceCharge type definition and cannot be mapped with the current types.
    */
-  AllowanceCharge?: Array<UBLJsonFreightAllowanceCharge>;
+  AllowanceCharge?: UBLJsonFreightAllowanceCharge[];
 
   /**
    * Optional. Currency exchange rate information. Mandatory where applicable (non-MYR document currency).
@@ -165,7 +163,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Cardinality: [0-1]
    * Note: Currency Exchange Rate maps to cbc:CalculationRate, cbc:SourceCurrencyCode, and cbc:TargetCurrencyCode within UBLJsonTaxExchangeRate.
    */
-  TaxExchangeRate?: Array<UBLJsonTaxExchangeRate>;
+  TaxExchangeRate?: UBLJsonTaxExchangeRate[];
 
   /**
    * Tax total information for the refund note, including total tax amount and subtotals per tax type.
@@ -175,7 +173,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Details of Tax Exemption (cac:TaxCategory/cbc:TaxExemptionReason and conditions like TaxAmount=0, TaxCategory/ID='E', TaxScheme/ID='OTH'),
    * and Amount Exempted from Tax (cbc:TaxableAmount under exemption conditions).
    */
-  TaxTotal: Array<UBLJsonTaxTotal>;
+  TaxTotal: UBLJsonTaxTotal[];
   /**
    * Legal monetary total summary for the refund note, including various total amounts.
    * Maps to UBL: /ubl:Invoice / cac:LegalMonetaryTotal.
@@ -185,7 +183,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Total Discount Value (cbc:AllowanceTotalAmount), Total Fee / Charge Amount (cbc:ChargeTotalAmount),
    * PrePayment Amount (cbc:PrepaidAmount - summary reference), and Rounding Amount (cbc:PayableRoundingAmount).
    */
-  LegalMonetaryTotal: Array<UBLJsonLegalMonetaryTotal>;
+  LegalMonetaryTotal: UBLJsonLegalMonetaryTotal[];
 
   /**
    * Refund note line items, detailing the refund.
@@ -194,7 +192,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Note: The UBLJsonInvoiceLine structure includes fields for line-specific Classification, Description, Unit Price, Quantity, Measurement, Tax Total (including Tax Amount, Tax Type, Tax Rate, Exemption details, Amount Exempted), Subtotal, Total Excluding Tax (Line Extension Amount), Discount/Fee/Charge Amount/Rate, Product Tariff Code, and Country of Origin.
    * Based on the documentation, the 'Description' and 'TaxTotal' fields within UBLJsonInvoiceLine should be mandatory, and the AllowanceCharge within InvoiceLine should support MultiplierFactorNumeric for rates, which may not be fully reflected in the current UBLJsonInvoiceLine definition from ubl_json.ts.
    */
-  InvoiceLine: Array<UBLJsonInvoiceLine>;
+  InvoiceLine: UBLJsonInvoiceLine[];
 
   /**
    * Digital signature information. Mandatory for V1.1.
@@ -202,7 +200,7 @@ export interface UBLJsonSelfBilledRefundNoteV1_1_Content {
    * Cardinality: [1-1]
    * Note: Structure includes cbc:ID and cac:SignatureMethod/cbc:ID.
    */
-  Signature: Array<UBLJsonSignature>;
+  Signature: UBLJsonSignature[];
 
   /**
    * UBL Extensions, typically for digital signatures or other extended information.
@@ -236,7 +234,7 @@ export interface UBLJsonSelfBilledRefundNoteDocumentV1_1 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2". */
   _B: string;
   /** Array containing the main self-billed refund note content for version 1.1. Even for a Self-Billed Refund Note, the sample uses "Invoice" as the main array key. */
-  Invoice: Array<UBLJsonSelfBilledRefundNoteV1_1_Content>;
+  Invoice: UBLJsonSelfBilledRefundNoteV1_1_Content[];
 }
 
 // --- Root SelfBilledRefundNote Document Structure v1.0 ---
@@ -253,5 +251,5 @@ export interface UBLJsonSelfBilledRefundNoteDocumentV1_0 {
   /** Common Basic Components namespace. Value: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2". */
   _B: string;
   /** Array containing the main self-billed refund note content for version 1.0. */
-  Invoice: Array<UBLJsonSelfBilledRefundNoteV1_0_Content>;
+  Invoice: UBLJsonSelfBilledRefundNoteV1_0_Content[];
 }

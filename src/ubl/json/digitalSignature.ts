@@ -69,15 +69,15 @@ export interface CertificateEnhancedKeyUsage {
 // Attributes are direct properties. Complex elements are often wrapped in arrays.
 
 // Helper interfaces for common MyInvois JSON value wrapping patterns
-/** 
+/**
  * @internal
- * Helper for elements that are simple string values in JSON, wrapped as `{"_": "value"}`. 
+ * Helper for elements that are simple string values in JSON, wrapped as `{"_": "value"}`.
  */
 export interface StringValueWrapper {
   _: string;
 }
 
-/** 
+/**
  * @internal
  * Helper for algorithm identifier elements, often structured as `{"_": "", "Algorithm": "uri"}`.
  */
@@ -192,16 +192,16 @@ export interface UBLDocumentSignatureExtension {
  * @param keysToExclude Top-level keys to remove (e.g., "UBLExtensions", "Signature" as per MyInvois Step 2).
  * @returns The minified JSON as a Uint8Array (this is the input for DocDigest generation).
  */
-export async function prepareDocumentForHashing<T extends object>(
+export function prepareDocumentForHashing<T extends object>(
   originalDocument: T,
   keysToExclude: string[] = [],
-): Promise<Uint8Array> {
+): Uint8Array {
   const documentCopy = JSON.parse(JSON.stringify(originalDocument)); // Deep clone
 
   // Step 2: Remove specified elements (simplified for top-level keys)
   for (const key of keysToExclude) {
     if (key in documentCopy) {
-      delete (documentCopy as any)[key];
+      delete documentCopy[key];
     }
   }
 
@@ -288,7 +288,7 @@ export async function generateDigitalSignatureJSON<T extends object>(
   const signatureValueId = `DocSigValue-${Date.now()}`;
 
   // Step 2 & 3 (JSON parts): Apply transformations, canonicalize (minify), and hash document
-  const documentBytesToHash = await prepareDocumentForHashing(
+  const documentBytesToHash = prepareDocumentForHashing(
     documentToSign,
     documentTransformationKeys,
   );
