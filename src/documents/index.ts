@@ -661,3 +661,5 @@ export class DocumentsService {
     }
   }
 }
+
+export * from "./types";
