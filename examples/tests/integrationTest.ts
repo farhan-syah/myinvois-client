@@ -1,15 +1,13 @@
-import { MyInvoisClient, MyInvoisEnvironment } from "myinvois-client"; // Adjust import path
-
 import {
-  SubmitDocumentsRequest,
-  SubmitDocumentsResponse,
-} from "myinvois-client/documents/types"; // Adjust path
-import {
+  MyInvoisClient,
+  MyInvoisEnvironment,
   CreateInvoiceDocumentParams,
   createUblJsonInvoiceDocument,
   IdentificationScheme,
+  SubmitDocumentsRequest,
+  SubmitDocumentsResponse,
   UBLJsonInvoiceDocumentV1_0,
-} from "myinvois-client/ubl";
+} from "myinvois-client"; // Adjust path
 
 // --- Environment-Specific Helper Implementations (YOU NEED TO PROVIDE THESE) ---
 
