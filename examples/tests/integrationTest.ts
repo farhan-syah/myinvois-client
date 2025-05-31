@@ -1,3 +1,4 @@
+import 'dotenv/config';  // module to read .env file abb 250531 - abb = added by boyd
 import {
   MyInvoisClient,
   MyInvoisEnvironment,
@@ -8,6 +9,7 @@ import {
   SubmitDocumentsResponse,
   UBLJsonInvoiceDocumentV1_0,
 } from "myinvois-client"; // Adjust path
+import { writeFileSync } from "fs"; // module to save local file abb 250531
 
 // --- Environment-Specific Helper Implementations (YOU NEED TO PROVIDE THESE) ---
 
@@ -177,6 +179,12 @@ async function runFullIntegrationTest() {
 
     console.log("UBL Invoice 1.0 Document generated.");
     // console.log(JSON.stringify(fullUblDocument, null, 2)); // For debugging the generated structure
+    
+    // abb 250531 save .json file
+    // Save JSON to file before submission
+    const invoiceFilePath = `./generated-invoice-${invoiceId}.json`;
+    writeFileSync(invoiceFilePath, JSON.stringify(fullUblDocument, null, 2), "utf8");
+    console.log(`UBL JSON invoice saved to: ${invoiceFilePath}`);
 
     console.log("\nStep 3 : Preparing Document for API Submission..."); // Renumbering step
     const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
