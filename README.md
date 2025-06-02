@@ -81,10 +81,27 @@ const myInvoiceClientProd = new MyInvoisClient(CLIENT_ID, CLIENT_SECRET);
 // const myInvoiceClientProd = new MyInvoisClient(CLIENT_ID, CLIENT_SECRET, "PROD");
 
 // Instantiate for SANDBOX environment
+The `MyInvoisClient` can optionally be instantiated with a Redis client to cache access tokens. This can improve performance by reducing the number of calls to the authentication server. The Redis client must implement the `MyInvoisRedisClient` interface, which includes `get` and `set` methods for interacting with the Redis server. We recommend using a library like `redis` or `ioredis` to create the Redis client.
+
 const myInvoiceClientSandbox = new MyInvoisClient(
   CLIENT_ID,
   CLIENT_SECRET,
+  "SANDBOX"
+);
+
+// Optional: Enable Redis caching (requires ioredis or similar)
+import Redis from 'ioredis';
+
+const redisClient = new Redis({
+  host: 'localhost',
+  port: 6379,
+});
+
+const myInvoiceClientWithCache = new MyInvoisClient(
+  CLIENT_ID,
+  CLIENT_SECRET,
   "SANDBOX",
+  redisClient // Pass the Redis client instance
 );
 ```
 

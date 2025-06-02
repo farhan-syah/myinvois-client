@@ -212,3 +212,5 @@ export class TaxpayerService {
     }
   }
 }
+
+export * from "./types";
