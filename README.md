@@ -131,7 +131,7 @@ To authenticate as an intermediary system on behalf of a taxpayer:
 
 const token = await myInvoiceClient.auth.loginAsIntermediary(
   ON_BEHALF_OF_TIN,
-  "InvoicingAPI",
+  "InvoicingAPI"
 );
 ```
 
@@ -173,7 +173,7 @@ const versionId = 41235; // Replace with an actual version ID for the document t
 const documentTypeVersion =
   await myInvoiceClient.documents.getDocumentTypeVersionById(
     docTypeId,
-    versionId,
+    versionId
   );
 ```
 
@@ -189,7 +189,7 @@ const idValueForValidation = "201901234567";
 const isValid = await myInvoiceClient.taxpayer.validateTaxpayerTIN(
   tinToValidate,
   idTypeForValidation,
-  idValueForValidation,
+  idValueForValidation
 );
 ```
 
@@ -205,7 +205,7 @@ const documentToSubmit = {
   format: "JSON" as "JSON", // or "XML"
   // For a real implementation, you would generate the base64 document string and its hash
   document: btoa(
-    JSON.stringify({ invoiceDetails: "Sample e-Invoice Content" }),
+    JSON.stringify({ invoiceDetails: "Sample e-Invoice Content" })
   ),
   documentHash:
     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Placeholder hash for example
@@ -222,12 +222,12 @@ const submissionResponse =
 
 submissionResponse.acceptedDocuments.forEach((doc) => {
   console.log(
-    `Accepted: CodeNumber=${doc.invoiceCodeNumber}, UUID=${doc.uuid}`,
+    `Accepted: CodeNumber=${doc.invoiceCodeNumber}, UUID=${doc.uuid}`
   );
 });
 submissionResponse.rejectedDocuments.forEach((doc) => {
   console.log(
-    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS ?? doc.error.error}`,
+    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS ?? doc.error.error}`
   );
 });
 ```
@@ -267,7 +267,7 @@ const invoiceParams: CreateInvoiceDocumentParams = {
       countryCode: "MYS",
     },
     industryClassificationCode: "46510",
-    industryClassficationName: "Wholesale of computers and software",
+    industryClassificationName: "Wholesale of computers and software",
   },
 
   // Customer information
@@ -435,7 +435,7 @@ const signedProperties: XadesSignedProperties = createSignedProperties(
   issuerName,
   serialNumber,
   signedPropsId,
-  new Date(), // Signing time, defaults to now if omitted
+  new Date() // Signing time, defaults to now if omitted
 );
 
 // const signedPropertiesBytes = new TextEncoder().encode(JSON.stringify(signedProperties));

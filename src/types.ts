@@ -45,7 +45,7 @@ export interface MyInvoisRedisClient {
   set(
     key: string,
     value: string,
-    commandOptions?: { EX: number } /* TTL in seconds */,
+    commandOptions?: { EX: number } /* TTL in seconds */
   ): Promise<unknown>; // Return type can vary
 }
 

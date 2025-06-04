@@ -4,3 +4,4 @@ export * from "./taxpayer";
 export * from "./ubl";
 export * from "./codes";
 export * from "./client";
+export * from "./utils";

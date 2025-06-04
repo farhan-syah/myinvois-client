@@ -30,7 +30,7 @@ const encodeBase64 = encodeBase64Node; // Or encodeBase64Browser
 // --- Main Test Function ---
 async function runFullIntegrationTest() {
   console.log(
-    "Starting Full Integration Test for MyInvoisClient (Invoice 1.0)...",
+    "Starting Full Integration Test for MyInvoisClient (Invoice 1.0)..."
   );
 
   const CLIENT_ID = process.env.SANDBOX_CLIENT_ID ?? "your_sandbox_client_id";
@@ -52,7 +52,7 @@ async function runFullIntegrationTest() {
     CLIENT_SECRET === "your_sandbox_client_secret"
   ) {
     console.warn(
-      "Please replace with actual SANDBOX credentials to run this test against the API.",
+      "Please replace with actual SANDBOX credentials to run this test against the API."
     );
     // return;
   }
@@ -60,7 +60,7 @@ async function runFullIntegrationTest() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -69,11 +69,11 @@ async function runFullIntegrationTest() {
       await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI");
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     console.log(
-      "\nStep 2: Constructing UBL Invoice JSON using createUblJsonInvoiceDocument (Version 1.0)...",
+      "\nStep 2: Constructing UBL Invoice JSON using createUblJsonInvoiceDocument (Version 1.0)..."
     );
     const currentDate = new Date();
     const issueDateStr = currentDate.toISOString().split("T")[0];
@@ -86,7 +86,6 @@ async function runFullIntegrationTest() {
       id: invoiceId,
       issueDate: issueDateStr,
       issueTime: issueTimeStr,
-      invoiceTypeCode: "01", // Assuming '01' is a valid InvoiceTypeCode
       documentCurrencyCode: "MYR",
       taxCurrencyCode: "MYR",
       supplier: {
@@ -104,7 +103,7 @@ async function runFullIntegrationTest() {
           SUPPLIER_IDENTIFICATION_SCHEME as IdentificationScheme,
         telephone: "+60123456789",
         industryClassificationCode: "46510",
-        industryClassficationName:
+        industryClassificationName:
           "Wholesale of computer hardware, software and peripherals",
       },
       customer: {
@@ -172,7 +171,7 @@ async function runFullIntegrationTest() {
     // The type assertion is safe because we are passing "1.0"
     const fullUblDocument = createUblJsonInvoiceDocument(
       invoiceParams,
-      "1.0",
+      "1.0"
     ) as UBLJsonInvoiceDocumentV1_0;
 
     console.log("UBL Invoice 1.0 Document generated.");
@@ -204,7 +203,7 @@ async function runFullIntegrationTest() {
       await myInvoiceClient.documents.submitDocuments(submissionRequest);
     console.log(
       "Submission Response:",
-      JSON.stringify(submissionResponse, null, 2),
+      JSON.stringify(submissionResponse, null, 2)
     );
     if (
       submissionResponse.acceptedDocuments &&
@@ -213,7 +212,7 @@ async function runFullIntegrationTest() {
       console.log("\nTEST SUCCEEDED (API ACCEPTED THE DOCUMENT CONCEPTUALLY)");
       console.log(
         "Accepted Document UUID:",
-        submissionResponse.acceptedDocuments[0].uuid,
+        submissionResponse.acceptedDocuments[0].uuid
       );
     } else if (
       submissionResponse.rejectedDocuments &&
@@ -222,11 +221,11 @@ async function runFullIntegrationTest() {
       console.error("\nTEST FAILED (API REJECTED THE DOCUMENT):");
       console.error(
         "Rejection Details:",
-        JSON.stringify(submissionResponse.rejectedDocuments, null, 2),
+        JSON.stringify(submissionResponse.rejectedDocuments, null, 2)
       );
     } else {
       console.warn(
-        "\nTEST UNCERTAIN (NO CLEAR ACCEPTANCE/REJECTION IN RESPONSE)",
+        "\nTEST UNCERTAIN (NO CLEAR ACCEPTANCE/REJECTION IN RESPONSE)"
       );
     }
   } catch (error) {
@@ -237,7 +236,7 @@ async function runFullIntegrationTest() {
       if (e.response?.data) {
         console.error(
           "Error details:",
-          JSON.stringify(e.response.data, null, 2),
+          JSON.stringify(e.response.data, null, 2)
         );
       } else if (e.error?.errorCode) {
         console.error("Error details:", JSON.stringify(e.error, null, 2));

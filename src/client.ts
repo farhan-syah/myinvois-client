@@ -31,7 +31,7 @@ export class MyInvoisClient {
     loginAsTaxpayer: (scope?: string) => Promise<string>; // Returns access token string
     loginAsIntermediary: (
       onBehalfOfTIN: string,
-      scope?: string,
+      scope?: string
     ) => Promise<string>;
   };
 
@@ -39,7 +39,7 @@ export class MyInvoisClient {
     clientId: string,
     clientSecret: string,
     environment: MyInvoisEnvironment = "PROD",
-    redisClient?: MyInvoisRedisClient, // Optional: User provides their Redis client instance
+    redisClient?: MyInvoisRedisClient // Optional: User provides their Redis client instance
   ) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
@@ -67,7 +67,7 @@ export class MyInvoisClient {
         await this.authServiceInstance.loginAsTaxpayer(
           this.clientId,
           this.clientSecret,
-          scope,
+          scope
         );
       this.accessToken = loginResponse.access_token;
       // Date.now() + (remaining_expires_in * 1000) is correct
@@ -85,7 +85,7 @@ export class MyInvoisClient {
   // This method also benefits similarly
   private async _performIntermediaryLoginAndStoreToken(
     onBehalfOfTIN: string,
-    scope?: string,
+    scope?: string
   ): Promise<void> {
     try {
       const loginResponse: LoginResponse =
@@ -93,7 +93,7 @@ export class MyInvoisClient {
           this.clientId,
           this.clientSecret,
           onBehalfOfTIN,
-          scope,
+          scope
         );
       this.accessToken = loginResponse.access_token;
       this.tokenExpiryTime = Date.now() + loginResponse.expires_in * 1000;
@@ -122,7 +122,7 @@ export class MyInvoisClient {
     }
     if (!this.accessToken) {
       throw new Error(
-        "MyInvoisClient: Unable to retrieve taxpayer access token.",
+        "MyInvoisClient: Unable to retrieve taxpayer access token."
       );
     }
     return this.accessToken;
@@ -130,7 +130,7 @@ export class MyInvoisClient {
 
   async getIntermediaryAccessToken(
     onBehalfOfTIN: string,
-    scope?: string,
+    scope?: string
   ): Promise<string> {
     // Token must be valid AND for the correct TIN if already an intermediary token
     if (!this.isTokenValid() || this.currentOnBehalfOfTIN !== onBehalfOfTIN) {
@@ -138,7 +138,7 @@ export class MyInvoisClient {
     }
     if (!this.accessToken) {
       throw new Error(
-        "MyInvoisClient: Unable to retrieve intermediary access token.",
+        "MyInvoisClient: Unable to retrieve intermediary access token."
       );
     }
     return this.accessToken;

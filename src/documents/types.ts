@@ -150,11 +150,6 @@ export interface RecentDocumentsMetadata {
   pageNo: number;
 }
 
-export interface GetRecentDocumentsResponse {
-  result: RecentDocumentInfo[];
-  metadata: RecentDocumentsMetadata;
-}
-
 // Types for Get Submission Details API
 export interface GetSubmissionDetailsRequestParams {
   pageNo?: number;
@@ -279,4 +274,49 @@ export interface SearchDocumentsRequestParams {
 export interface SearchDocumentsResponse {
   result: RecentDocumentInfo[];
   metadata: RecentDocumentsMetadata;
+}
+
+export interface GetRecentDocumentsResponse {
+  result: {
+    uuid: string;
+    submissionUid: string;
+    longId: string;
+    internalId: string;
+    typeName: string;
+    typeVersionName: string;
+    issuerTIN: string;
+    issuerName?: string;
+    receiverTIN: string | null;
+    receiverId?: string;
+    receiverName: string | null;
+    dateTimeIssued: string;
+    dateTimeReceived: string;
+    dateTimeValidated: string | null;
+    totalSales: number | null;
+    totalDiscount: number | null;
+    netAmount: number | null;
+    total: number;
+    status:
+      | "Submitted"
+      | "Valid"
+      | "Invalid"
+      | "Cancelled"
+      | "Requested for Rejection";
+    cancelDateTime: string | null;
+    rejectRequestDateTime: string | null;
+    documentStatusReason: string | null;
+    createdByUserId: string | null;
+    supplierTIN: string | null;
+    supplierName: string | null;
+    submissionChannel: string | null;
+    intermediaryName: string | null;
+    intermediaryTIN: string | null;
+    intermediaryROB: string | null;
+    buyerName: string | null;
+    buyerTIN: string | null;
+  }[];
+  metadata: {
+    totalPages: number;
+    totalCount: number;
+  };
 }

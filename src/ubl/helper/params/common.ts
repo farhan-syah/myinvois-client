@@ -34,28 +34,28 @@ export interface SupplierPartyParam {
   identificationNumber: string;
   /** Scheme for the `identificationNumber` (NRIC, BRN, PASSPORT, ARMY). */
   identificationScheme: IdentificationScheme;
-  /** Supplier's Tourism Tax Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "123-4567-89012345". */
-  tourismTaxRegistrationNumber?: string;
-  /** Supplier's SST Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "A01-2345-67891012". */
-  sstRegistrationNumber?: string;
   /** Supplier's contact telephone number. E.g., "+60123456789". */
   telephone: string;
   /** Supplier's legal name. E.g., "AMS Setia Jaya Sdn. Bhd.". */
   legalName: string;
   /** Supplier's address details. */
   address: AddressParam;
+  /** Supplier's Malaysia Standard Industrial Classification (MSIC) Code (5-digit numeric). E.g., "01111". */
+  industryClassificationCode: string;
+  /** Description of the supplier's business activity, corresponding to the MSIC code. E.g., "Growing of maize". */
+  industryClassificationName: string;
   /**
    * Supplier's additional account ID. Can be used for specific purposes like
    * Authorisation Number for Certified Exporter (e.g., ATIGA number).
    * E.g., "CPT-CCN-W-211111-KL-000002".
    */
+  /** Supplier's Tourism Tax Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "123-4567-89012345". */
+  tourismTaxRegistrationNumber?: string;
+  /** Supplier's SST Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "A01-2345-67891012". */
+  sstRegistrationNumber?: string;
   additionalAccountId?: string;
   /** Supplier's e-mail address. Optional. E.g., "general.ams@supplier.com". */
   electronicMail?: string;
-  /** Supplier's Malaysia Standard Industrial Classification (MSIC) Code (5-digit numeric). E.g., "01111". */
-  industryClassificationCode: string;
-  /** Description of the supplier's business activity, corresponding to the MSIC code. E.g., "Growing of maize". */
-  industryClassficationName: string;
 }
 
 /**
@@ -68,16 +68,16 @@ export interface CustomerPartyParam {
   identificationNumber: string;
   /** Scheme for the `identificationNumber` (NRIC, BRN, PASSPORT, ARMY). */
   identificationScheme: IdentificationScheme;
-  /** Customer's Tourism Tax Registration Number. Optional. */
-  tourismTaxRegistrationNumber?: string;
-  /** Customer's SST Registration Number. Optional. Input "NA" if not available/provided and schema requires it. */
-  sstRegistrationNumber?: string;
   /** Customer's contact telephone number. E.g., "+60123456789". Can be "NA" for consolidated e-Invoices. */
   telephone: string;
   /** Customer's legal name. E.g., "Hebat Group". */
   legalName: string;
   /** Customer's address details. */
   address: AddressParam;
+  /** Customer's Tourism Tax Registration Number. Optional. */
+  tourismTaxRegistrationNumber?: string;
+  /** Customer's SST Registration Number. Optional. Input "NA" if not available/provided and schema requires it. */
+  sstRegistrationNumber?: string;
   /** Customer's additional account ID. Optional, less common than for supplier. */
   additionalAccountId?: string;
   /** Customer's e-mail address. Optional. E.g., "name@buyer.com". */
@@ -108,6 +108,11 @@ export interface TaxSubtotalParam {
   taxAmount: number;
   /** Tax type code (e.g., Sales Tax, Service Tax, Exempt). */
   taxCategoryCode: TaxTypeCode;
+  /** Description of tax exemption applicable on the invoice level.
+   * (e.g., Buyer’s sales tax exemption certificate number, special exemption as per gazette orders, etc.).
+   * The input is limited to the following special characters:
+   * period “.”, dash “-“, comma “,” and parenthesis “() */
+  taxExemptReason?: string;
   /** Tax rate percentage, if applicable (e.g., 10 for 10%). Optional. */
   percent?: number;
 }
@@ -147,7 +152,7 @@ export interface PrepaidPaymentParam {
 }
 
 /**
- * User-friendly parameters for defining an allowance or a charge (can be at document or line item level).
+ * Parameters for defining an allowance or a charge (can be at document or line item level).
  */
 export interface AllowanceChargeParam {
   /** True if this is a charge, false if it is an allowance (discount). */
@@ -211,7 +216,7 @@ export interface LegalMonetaryTotalParam {
   taxInclusiveAmount: number;
   /** Total document-level discount amount. Optional. E.g., 100.00. */
   allowanceTotalAmount?: number;
-  /** Total document-level charge amount. Optional. E.g., 50.00. */
+  /** Total document-level fee/charge amount. Optional. E.g., 50.00. */
   chargeTotalAmount?: number;
   /** Total prepaid amount. Optional. E.g., 200.00. */
   prepaidAmount?: number;

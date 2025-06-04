@@ -29,7 +29,7 @@ export class AuthService {
   }
 
   private async getCachedToken(
-    key: string,
+    key: string
   ): Promise<MyInvoisLoginResponse | null> {
     if (!this.redisClient) {
       return null;
@@ -62,7 +62,7 @@ export class AuthService {
       // console.debug(`AuthService: Token in Redis for key ${key} expired or nearing expiry (remaining: ${remainingExpiresIn}s).`);
     } catch (error) {
       console.error(
-        `AuthService: Error getting/parsing token from Redis for key ${key}. Error: ${error instanceof Error ? error.message : String(error)}`,
+        `AuthService: Error getting/parsing token from Redis for key ${key}. Error: ${error instanceof Error ? error.message : String(error)}`
       );
       // Optional: delete the invalid cache entry: await this.redisClient.del(key);
     }
@@ -71,7 +71,7 @@ export class AuthService {
 
   private async storeTokenInCache(
     key: string,
-    loginResponse: MyInvoisLoginResponse,
+    loginResponse: MyInvoisLoginResponse
   ): Promise<void> {
     if (
       !this.redisClient ||
@@ -104,7 +104,7 @@ export class AuthService {
       // console.debug(`AuthService: Token stored/updated in Redis for key ${key} with TTL ${redisTTL}s`);
     } catch (error) {
       console.error(
-        `AuthService: Error storing token in Redis for key ${key}. Error: ${error instanceof Error ? error.message : String(error)}`,
+        `AuthService: Error storing token in Redis for key ${key}. Error: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
@@ -112,7 +112,7 @@ export class AuthService {
   async loginAsTaxpayer(
     clientId: string,
     clientSecret: string,
-    scope?: string,
+    scope?: string
   ): Promise<MyInvoisLoginResponse> {
     const redisKey = this.generateRedisKey(clientId);
     if (this.redisClient) {
@@ -138,8 +138,8 @@ export class AuthService {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(
           Object.fromEntries(
-            Object.entries(requestBody).filter(([_, v]) => v !== undefined),
-          ) as Record<string, string>,
+            Object.entries(requestBody).filter(([_, v]) => v !== undefined)
+          ) as Record<string, string>
         ).toString(),
       });
 
@@ -151,11 +151,11 @@ export class AuthService {
         } catch (e) {
           console.error(e);
           throw new Error(
-            `API Error: HTTP ${response.status} ${response.statusText}`,
+            `API Error: HTTP ${response.status} ${response.statusText}`
           );
         }
         throw new Error(
-          `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`,
+          `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`
         );
       }
       const responseData: MyInvoisLoginResponse = await response.json();
@@ -176,7 +176,7 @@ export class AuthService {
     clientId: string,
     clientSecret: string,
     onBehalfOfTIN: string,
-    scope?: string,
+    scope?: string
   ): Promise<MyInvoisLoginResponse> {
     const redisKey = this.generateRedisKey(clientId, onBehalfOfTIN);
     if (this.redisClient) {
@@ -206,8 +206,8 @@ export class AuthService {
         },
         body: new URLSearchParams(
           Object.fromEntries(
-            Object.entries(requestBody).filter(([_, v]) => v !== undefined),
-          ) as Record<string, string>,
+            Object.entries(requestBody).filter(([_, v]) => v !== undefined)
+          ) as Record<string, string>
         ).toString(),
       });
 
@@ -218,11 +218,11 @@ export class AuthService {
           errorData = await response.json();
         } catch (e) {
           throw new Error(
-            `API Error: HTTP ${response.status} ${response.statusText}`,
+            `API Error: HTTP ${response.status} ${response.statusText}`
           );
         }
         throw new Error(
-          `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`,
+          `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`
         );
       }
       const responseData: MyInvoisLoginResponse = await response.json();

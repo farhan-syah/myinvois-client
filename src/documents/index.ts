@@ -89,7 +89,7 @@ export class DocumentsService {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -125,7 +125,7 @@ export class DocumentsService {
    */
   async getDocumentTypeVersionById(
     documentTypeId: number,
-    versionId: number,
+    versionId: number
   ): Promise<DocumentTypeVersion> {
     try {
       const accessToken =
@@ -139,7 +139,7 @@ export class DocumentsService {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -175,15 +175,12 @@ export class DocumentsService {
    */
   async submitDocuments(
     submissionRequest: SubmitDocumentsRequest,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<SubmitDocumentsResponse> {
     try {
       const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI",
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
+        : await this.apiClient.getTaxpayerAccessToken();
 
       const response = await fetch(
         `${this.baseUrl}/api/v1.0/documentsubmissions/`,
@@ -194,7 +191,7 @@ export class DocumentsService {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(submissionRequest),
-        },
+        }
       );
 
       if (response.status === 202) {
@@ -238,13 +235,13 @@ export class DocumentsService {
   async cancelDocument(
     uuid: string,
     reason: string,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<CancelDocumentResponse> {
     try {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -262,7 +259,7 @@ export class DocumentsService {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestBody),
-        },
+        }
       );
 
       if (response.status === 200) {
@@ -300,13 +297,13 @@ export class DocumentsService {
   async rejectDocument(
     uuid: string,
     reason: string,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<RejectDocumentResponse> {
     try {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -324,7 +321,7 @@ export class DocumentsService {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestBody),
-        },
+        }
       );
 
       if (response.status === 200) {
@@ -360,13 +357,13 @@ export class DocumentsService {
    */
   async getRecentDocuments(
     params: GetRecentDocumentsRequestParams = {},
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<GetRecentDocumentsResponse> {
     try {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -422,13 +419,13 @@ export class DocumentsService {
   async getSubmissionDetails(
     submissionUid: string,
     params: GetSubmissionDetailsRequestParams = {},
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<GetSubmissionDetailsResponse> {
     try {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -485,13 +482,13 @@ export class DocumentsService {
   async getDocumentByUuid(
     uuid: string,
     preferredFormat?: "JSON" | "XML",
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<GetDocumentResponse> {
     try {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -546,13 +543,13 @@ export class DocumentsService {
    */
   async getDocumentDetailsByUuid(
     uuid: string,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<DocumentDetailsResponse> {
     try {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -600,14 +597,14 @@ export class DocumentsService {
    */
   async searchDocuments(
     params: SearchDocumentsRequestParams,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<SearchDocumentsResponse> {
     if (
       !(params.submissionDateFrom && params.submissionDateTo) &&
       !(params.issueDateFrom && params.issueDateTo)
     ) {
       throw new Error(
-        "Either submissionDateFrom/submissionDateTo or issueDateFrom/issueDateTo must be provided for searching documents.",
+        "Either submissionDateFrom/submissionDateTo or issueDateFrom/issueDateTo must be provided for searching documents."
       );
     }
 
@@ -615,7 +612,7 @@ export class DocumentsService {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
