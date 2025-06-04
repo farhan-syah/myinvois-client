@@ -1,4 +1,4 @@
-import { MyInvoisRedisClient, RedisTokenData } from "myinvois-client/types";
+import { MyInvoisRedisClient, RedisTokenData } from "../types";
 import {
   MyInvoisLoginRequest,
   MyInvoisLoginResponse,

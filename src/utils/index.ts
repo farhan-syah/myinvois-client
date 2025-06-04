@@ -1,9 +1,9 @@
+import crypto from "crypto";
 import {
   CreateInvoiceDocumentParams,
   createUblJsonInvoiceDocument,
-} from "myinvois-client/ubl";
-import crypto from "crypto";
-import { DocumentSubmissionItem } from "myinvois-client/documents";
+  DocumentSubmissionItem,
+} from "..";
 
 export function calculateSHA256Hex(text: string): string {
   return crypto.createHash("sha256").update(text, "utf8").digest("hex");

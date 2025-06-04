@@ -4,7 +4,7 @@ import {
   ClassificationCode,
   TaxTypeCode,
   PaymentMode,
-} from "myinvois-client/codes";
+} from "../../../codes";
 
 /**
  * User-friendly parameters for defining a postal address.
