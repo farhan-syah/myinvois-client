@@ -39,3 +39,25 @@ export interface MyInvoisGenericApiResponseError {
   error: MyInvoisDetailedError;
   name?: string; // Optional, e.g., "Step03-Duplicated Submission Validator"
 }
+
+export interface MyInvoisRedisClient {
+  get(key: string): Promise<string | null>;
+  set(
+    key: string,
+    value: string,
+    commandOptions?: { EX: number } /* TTL in seconds */
+  ): Promise<unknown>; // Return type can vary
+}
+
+// Structure of the data to be stored in Redis
+export interface RedisTokenData {
+  accessToken: string;
+  originalExpiresIn: number; // The 'expires_in' value from the auth server (seconds)
+  fetchedAt: number; // Timestamp (ms) when the token was fetched via API
+}
+
+// Standard LoginResponse your AuthService currently deals with
+export interface LoginResponse {
+  access_token: string;
+  expires_in: number; // in seconds
+}

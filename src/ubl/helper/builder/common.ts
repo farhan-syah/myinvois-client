@@ -33,7 +33,7 @@ export const toUblText = (value?: string): UBLJsonText | undefined =>
  * Converts a string to a UBLJsonIdentifier structure.
  */
 export const toUblIdentifier = (
-  value?: string,
+  value?: string
 ): UBLJsonIdentifier | undefined =>
   value !== undefined ? [{ _: value }] : undefined;
 /**
@@ -55,7 +55,7 @@ export const toUblTime = (value?: string): UBLJsonTime | undefined =>
  */
 export const toUblCurrencyAmount = (
   amount: number | undefined,
-  currencyID: string,
+  currencyID: string
 ): UBLJsonCurrencyAmount | undefined =>
   amount !== undefined ? [{ _: amount, currencyID }] : undefined;
 /**
@@ -63,7 +63,7 @@ export const toUblCurrencyAmount = (
  * Converts a number to a UBLJsonNumeric structure.
  */
 export const toUblNumeric = (
-  value: number | undefined,
+  value: number | undefined
 ): UBLJsonNumeric | undefined =>
   value !== undefined ? [{ _: value }] : undefined;
 /**
@@ -71,7 +71,7 @@ export const toUblNumeric = (
  * Converts a boolean to a UBLJsonIndicator structure.
  */
 export const toUblIndicator = (
-  value: boolean | undefined,
+  value: boolean | undefined
 ): UBLJsonIndicator | undefined =>
   value !== undefined ? [{ _: value }] : undefined;
 
@@ -84,7 +84,7 @@ export const toUblIndicator = (
  * @returns UBLJsonCustomerParty structure.
  */
 export const buildCustomerParty = (
-  customer: CustomerPartyParam,
+  customer: CustomerPartyParam
 ): UBLJsonCustomerParty => {
   const postalAddress: UBLJsonPostalAddress = {
     AddressLine: customer.address.addressLines.map((line) => ({
@@ -169,7 +169,7 @@ export const buildCustomerParty = (
  * @returns UBLJsonSupplierParty structure.
  */
 export const buildSupplier = (
-  supplierParam: SupplierPartyParam,
+  supplierParam: SupplierPartyParam
 ): UBLJsonSupplierParty => {
   const postalAddress: UBLJsonPostalAddress = {
     AddressLine: supplierParam.address.addressLines.map((line) => ({
@@ -205,7 +205,7 @@ export const buildSupplier = (
     IndustryClassificationCode: [
       {
         _: supplierParam.industryClassificationCode,
-        name: supplierParam.industryClassficationName,
+        name: supplierParam.industryClassificationName,
       },
     ],
     PartyLegalEntity: [
@@ -261,7 +261,7 @@ export const buildSupplier = (
  */
 export const buildAllowanceCharges = (
   params: AllowanceChargeParam[] | undefined,
-  currencyID: string,
+  currencyID: string
 ): UBLJsonFreightAllowanceCharge[] | undefined => {
   if (!params || params.length === 0) return undefined;
   return params.map((ac) => ({
@@ -278,7 +278,7 @@ export const buildAllowanceCharges = (
  * @returns UBLJsonPostalAddress structure.
  */
 export const buildPostalAddressFromAddressParam = (
-  addressParam: AddressParam,
+  addressParam: AddressParam
 ): UBLJsonPostalAddress => {
   return {
     AddressLine: addressParam.addressLines.map((line) => ({

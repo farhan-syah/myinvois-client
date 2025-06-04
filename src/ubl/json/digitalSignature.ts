@@ -194,7 +194,7 @@ export interface UBLDocumentSignatureExtension {
  */
 export function prepareDocumentForHashing<T extends object>(
   originalDocument: T,
-  keysToExclude: string[] = [],
+  keysToExclude: string[] = []
 ): Uint8Array {
   const documentCopy = JSON.parse(JSON.stringify(originalDocument)); // Deep clone
 
@@ -224,7 +224,7 @@ export function createSignedProperties(
   issuerName: string,
   serialNumber: string,
   id: string,
-  signingTime: Date = new Date(),
+  signingTime: Date = new Date()
 ): XadesSignedProperties {
   return {
     Id: id,
@@ -280,7 +280,7 @@ export async function generateDigitalSignatureJSON<T extends object>(
   certDigestBase64: string, // Input from Step 5 (CertDigest)
   certIssuerName: string, // For Step 6 & X509Data
   certSerialNumber: string, // For Step 6 & X509Data
-  documentTransformationKeys: string[] = ["UBLExtensions", "Signature"], // Default exclusions for Step 2
+  documentTransformationKeys: string[] = ["UBLExtensions", "Signature"] // Default exclusions for Step 2
 ): Promise<DigitalSignature> {
   const signatureId = `DocSig-${Date.now()}`;
   const signedPropertiesId = `id-xades-signed-props-${Date.now()}`;
@@ -290,14 +290,14 @@ export async function generateDigitalSignatureJSON<T extends object>(
   // Step 2 & 3 (JSON parts): Apply transformations, canonicalize (minify), and hash document
   const documentBytesToHash = prepareDocumentForHashing(
     documentToSign,
-    documentTransformationKeys,
+    documentTransformationKeys
   );
   const documentDigestSha256 = await crypto.subtle.digest(
     "SHA-256",
-    documentBytesToHash,
+    documentBytesToHash
   );
   const documentDigestBase64 = btoa(
-    String.fromCharCode(...new Uint8Array(documentDigestSha256)),
+    String.fromCharCode(...new Uint8Array(documentDigestSha256))
   ); // "DocDigest"
 
   // Step 6: Populate the signed properties section
@@ -306,17 +306,17 @@ export async function generateDigitalSignatureJSON<T extends object>(
     certIssuerName,
     certSerialNumber,
     signedPropertiesId, // ID for this XadesSignedProperties block
-    new Date(), // SigningTime
+    new Date() // SigningTime
   );
 
   // Step 7: Generate Signed Properties Hash ("PropsDigest")
   const signedPropertiesBytes = jsonMinifyAndEncode(signedPropertiesObject); // Minify SignedProperties
   const signedPropertiesHashSha256 = await crypto.subtle.digest(
     "SHA-256",
-    signedPropertiesBytes,
+    signedPropertiesBytes
   );
   const signedPropertiesDigestBase64 = btoa(
-    String.fromCharCode(...new Uint8Array(signedPropertiesHashSha256)),
+    String.fromCharCode(...new Uint8Array(signedPropertiesHashSha256))
   ); // "PropsDigest"
 
   // Construct SignedInfo (part of Step 8 assembly)
@@ -354,10 +354,10 @@ export async function generateDigitalSignatureJSON<T extends object>(
   const signatureValueArrayBuffer = await crypto.subtle.sign(
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     privateKey,
-    documentBytesToHash, // This is the (transformed + minified) document data
+    documentBytesToHash // This is the (transformed + minified) document data
   );
   const signatureValueBase64 = btoa(
-    String.fromCharCode(...new Uint8Array(signatureValueArrayBuffer)),
+    String.fromCharCode(...new Uint8Array(signatureValueArrayBuffer))
   ); // "Sig"
 
   // Step 8: Populate the information in the document to create the signed document structure

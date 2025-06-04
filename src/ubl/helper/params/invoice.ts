@@ -1,6 +1,5 @@
 // --- User-Friendly Parameter Interfaces - Invoice Specific ---
 
-import { InvoiceTypeCode } from "myinvois-client/codes";
 import { UBLJsonExtensions } from "../../json/ubl_json";
 import {
   AdditionalDocRefParam,
@@ -24,33 +23,33 @@ export interface InvoiceLineParam {
   id: string;
   /** Number of units of the product or service. E.g., 1.00. */
   quantity: number;
-  /**
-   * Standard unit or system used to measure the product or service (UN/ECE Recommendation 20).
-   * E.g., "KGM" for kilograms, "UNT" for unit. Optional.
-   */
-  unitCode?: string;
+  /** Price assigned to a single unit of the product or service. E.g., 17.00. */
+  unitPrice: number;
   /**
    * Subtotal for the line item: Amount of each individual item/service, excluding taxes, charges, or discounts.
    * This maps to `ItemPriceExtension/Amount` in UBL, which is used for line item subtotal in MyInvois.
    * E.g., 100.00.
    */
   subtotal: number;
+
   /** Description of the product or service. E.g., "Laptop Peripherals". Mandatory. */
-  itemDescription?: string;
+  itemDescription: string;
   /** Commodity classification details for the item. */
   itemCommodityClassification: ItemCommodityClassificationParam;
-  /** Price assigned to a single unit of the product or service. E.g., 17.00. */
-  unitPrice: number;
   /**
-   * Tax details for this specific line item. Optional.
-   * If provided, `taxAmount` and at least one `taxSubtotal` are expected.
+   * Tax details for this specific line item. .
    */
-  lineTaxTotal?: {
+  lineTaxTotal: {
+    /** Breakdown of taxes for this line item by category/rate. At least one item is required*/
+    taxSubtotals: TaxSubtotalParam[];
     /** Total tax amount for this line item. E.g., 8.76. */
     taxAmount: number;
-    /** Breakdown of taxes for this line item by category/rate. */
-    taxSubtotals: TaxSubtotalParam[];
   };
+  /**
+   * Standard unit or system used to measure the product or service (UN/ECE Recommendation 20).
+   * E.g., "KGM" for kilograms, "UNT" for unit. Optional.
+   */
+  unitCode?: string;
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
 }
@@ -102,11 +101,6 @@ export interface CreateInvoiceDocumentParams {
    * E.g., "15:30:00Z". Mandatory.
    */
   issueTime: string;
-  /**
-   * e-Invoice Type Code: Identifies the document type (e.g., invoice, credit note).
-   * E.g., "01" for a standard invoice. Mandatory.
-   */
-  invoiceTypeCode: InvoiceTypeCode;
   /**
    * Invoice Currency Code: Specific currency for monetary values in the e-Invoice.
    * E.g., "MYR". Mandatory.

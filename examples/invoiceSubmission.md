@@ -56,7 +56,7 @@ async function submitInvoiceExample() {
     CLIENT_SECRET === "your_client_secret"
   ) {
     console.warn(
-      "Please replace 'your_client_id' and 'your_client_secret' with your actual credentials.",
+      "Please replace 'your_client_id' and 'your_client_secret' with your actual credentials."
     );
     // return; // Optional: exit if credentials are not set
   }
@@ -64,7 +64,7 @@ async function submitInvoiceExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -74,7 +74,7 @@ async function submitInvoiceExample() {
       await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI");
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     // Proceed to Step 2: Constructing the Invoice
@@ -189,7 +189,7 @@ const invoiceParamsV1_0: CreateInvoiceDocumentParams = {
       countryCode: "MYS",
     },
     industryClassificationCode: "62010",
-    industryClassficationName: "Computer programming activities",
+    industryClassificationName: "Computer programming activities",
   },
   customer: {
     TIN: "C98765432100",
@@ -220,7 +220,7 @@ const invoiceParamsV1_0: CreateInvoiceDocumentParams = {
 
 const helperInvoiceV1_0 = createUblJsonInvoiceDocument(
   invoiceParamsV1_0,
-  "1.0",
+  "1.0"
 );
 
 const invoiceParamsV1_1: CreateInvoiceDocumentParams = {
@@ -243,7 +243,7 @@ const invoiceParamsV1_1: CreateInvoiceDocumentParams = {
       countryCode: "MYS",
     },
     industryClassificationCode: "62010",
-    industryClassficationName: "Computer programming activities",
+    industryClassificationName: "Computer programming activities",
   },
   customer: {
     TIN: "C98765432100",
@@ -274,13 +274,13 @@ const invoiceParamsV1_1: CreateInvoiceDocumentParams = {
 
 const helperInvoiceV1_1 = createUblJsonInvoiceDocument(
   invoiceParamsV1_1,
-  "1.1",
+  "1.1"
 );
 
 async function constructAndSubmitInvoice(
   client: MyInvoisClient,
   invoiceData: any,
-  version: "1.1" | "1.0",
+  version: "1.1" | "1.0"
 ) {
   // Now proceed to Step 3: Digital Signature
   if (version === "1.1") {
@@ -308,7 +308,7 @@ For this example, we'll simulate adding a placeholder signature extension.
 
 async function signAndPrepareForSubmission(
   client: MyInvoisClient,
-  invoiceData: UBLInvoiceV1_1,
+  invoiceData: UBLInvoiceV1_1
 ) {
   // --- Conceptual Digital Signature Step ---
   console.log("Conceptual Step: Performing digital signature...");
@@ -323,7 +323,7 @@ async function signAndPrepareForSubmission(
   const digitalSignatureObject = await generateDigitalSignatureJSON(
     invoiceData,
     privateKey,
-    certificate,
+    certificate
   );
   //
   // Embed the signature into the invoice
@@ -392,7 +392,7 @@ The API expects each document to be:
 
 async function prepareAndSubmit(
   client: MyInvoisClient,
-  signedInvoiceData: any,
+  signedInvoiceData: any
 ) {
   console.log("Preparing document for submission...");
 
@@ -408,7 +408,7 @@ async function prepareAndSubmit(
   const documentBase64 = encodeBase64(invoiceJsonString);
   console.log(
     "Document Base64 (first 50 chars):",
-    documentBase64.substring(0, 50) + "...",
+    documentBase64.substring(0, 50) + "..."
   );
 
   // 4. Create the submission request payload.
@@ -442,7 +442,7 @@ import {
 
 async function submitToApi(
   client: MyInvoisClient,
-  submissionPayload: SubmitDocumentsRequest,
+  submissionPayload: SubmitDocumentsRequest
 ) {
   console.log("Submitting documents to MyInvois API...");
   try {
@@ -473,7 +473,7 @@ function handleApiResponse(response: SubmitDocumentsResponse) {
     console.log("\nAccepted Documents:");
     response.acceptedDocuments.forEach((doc) => {
       console.log(
-        `  - Code Number: ${doc.invoiceCodeNumber}, Assigned UUID: ${doc.uuid}`,
+        `  - Code Number: ${doc.invoiceCodeNumber}, Assigned UUID: ${doc.uuid}`
       );
     });
   } else {

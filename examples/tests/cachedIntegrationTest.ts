@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import {
   MyInvoisClient,
   MyInvoisEnvironment,
@@ -24,6 +25,62 @@ function encodeBase64Node(text: string): string {
 // For this example, let's assume a Node.js testing environment conceptually
 const calculateSHA256Hex = calculateSHA256HexNode; // Or calculateSHA256HexBrowser
 const encodeBase64 = encodeBase64Node; // Or encodeBase64Browser
+
+// --- Mock Redis Client for Testing Cache ---
+class MockRedisClient {
+  private store = new Map<string, string>();
+  private ttlStore = new Map<string, number>(); // To simulate TTL expiry
+
+  async get(key: string): Promise<string | null> {
+    const expiryTime = this.ttlStore.get(key);
+    if (expiryTime && Date.now() > expiryTime) {
+      console.log(`MockRedisClient: TTL expired for key "${key}". Deleting.`);
+      this.store.delete(key);
+      this.ttlStore.delete(key);
+      return null;
+    }
+    const value = this.store.get(key);
+    // Shorten logged value if it's very long (like a token)
+    const loggedValue = value
+      ? value.length > 100
+        ? `"${value.substring(0, 30)}...${value.substring(value.length - 10)} (length ${value.length})"`
+        : `"${value}"`
+      : "null";
+    console.log(`MockRedisClient: GET key "${key}", value: ${loggedValue}`);
+    return value ?? null;
+  }
+
+  async set(
+    key: string,
+    value: string,
+    commandOptions?: { EX: number }
+  ): Promise<unknown> {
+    // Shorten logged value
+    const loggedValue =
+      value.length > 100
+        ? `"${value.substring(0, 30)}...${value.substring(value.length - 10)} (length ${value.length})"`
+        : `"${value}"`;
+    console.log(
+      `MockRedisClient: SET key "${key}", value: ${loggedValue}, TTL: ${commandOptions?.EX}s`
+    );
+    this.store.set(key, value);
+    if (commandOptions?.EX) {
+      this.ttlStore.set(key, Date.now() + commandOptions.EX * 1000);
+    }
+    return "OK";
+  }
+
+  clear() {
+    this.store.clear();
+    this.ttlStore.clear();
+    console.log("MockRedisClient: Store cleared.");
+  }
+
+  // Helper to inspect a key without affecting TTL logic for testing
+  peek(key: string): string | undefined {
+    return this.store.get(key);
+  }
+}
 
 // --- Dummy Cryptographic Materials & Setup (REMOVED as Invoice 1.0 doesn't use UBLExtensions/Signature) ---
 
@@ -57,19 +114,55 @@ async function runFullIntegrationTest() {
     // return;
   }
 
+  const mockRedisClient = new MockRedisClient(); // Instantiate the mock
+
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT
+    ENVIRONMENT,
+    mockRedisClient // Pass the mock client
   );
 
   try {
-    console.log("\nStep 1: Authenticating as taxpayer...");
-    const accessToken =
+    console.log("\nStep 1: Authenticating as taxpayer (first attempt)...");
+    let accessToken = // Changed to let
       await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI");
     console.log(
-      "Authentication successful. Token (first 20 chars):",
+      "First authentication successful. Token (first 20 chars):",
       accessToken.substring(0, 20) + "..."
+    );
+
+    console.log(
+      "\nStep 1a: Authenticating as taxpayer (second attempt - should use cache)..."
+    );
+    const accessTokenFromCacheAttempt =
+      await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI");
+    console.log(
+      "Second authentication attempt. Token (first 20 chars):",
+      accessTokenFromCacheAttempt.substring(0, 20) + "..."
+    );
+
+    if (accessToken === accessTokenFromCacheAttempt) {
+      console.log(
+        "Tokens match, cache likely used as expected by MyInvoisClient."
+      );
+    } else {
+      console.warn(
+        "WARN: Access tokens from first and second (cached) calls MISMATCH. " +
+          "This implies MyInvoisClient initiated a new token fetch despite AuthService potentially having a cache. " +
+          "Check MockRedisClient logs for GET/SET operations. " +
+          `Token1: ${accessToken.substring(0, 20)}... Token2: ${accessTokenFromCacheAttempt.substring(0, 20)}...`
+      );
+      // The MyInvoisClient manages its own accessToken state. If it decided the cached token (via AuthService)
+      // wasn't suitable (e.g., expired by its own check AFTER AuthService returned it), it would fetch a new one.
+      // This new one would then be cached by AuthService.
+      // For the test to proceed, use the latest token obtained.
+      accessToken = accessTokenFromCacheAttempt;
+    }
+    console.log(
+      "Proceeding with Access Token (first 20 chars): " +
+        accessToken.substring(0, 20) +
+        "..."
     );
 
     console.log(

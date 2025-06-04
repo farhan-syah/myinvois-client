@@ -1,6 +1,7 @@
 import { AuthService } from "./auth";
 import { DocumentsService } from "./documents";
 import { TaxpayerService } from "./taxpayer"; // Added import
+import { LoginResponse, MyInvoisRedisClient } from "./types";
 
 export type MyInvoisEnvironment = "PROD" | "SANDBOX";
 
@@ -19,20 +20,18 @@ export class MyInvoisClient {
   private clientId: string;
   private clientSecret: string;
   private accessToken: string | null = null;
-  private tokenExpiryTime: number | null = null;
+  private tokenExpiryTime: number | null = null; // Timestamp in ms when token expires
   private currentOnBehalfOfTIN: string | null = null;
 
   private authServiceInstance: AuthService;
   public documents: DocumentsService;
-  public taxpayer: TaxpayerService; // Added TaxpayerService instance
-
-  private identityBaseUrl: string;
+  public taxpayer: TaxpayerService;
 
   public auth: {
-    loginAsTaxpayer: (scope?: string) => Promise<string>;
+    loginAsTaxpayer: (scope?: string) => Promise<string>; // Returns access token string
     loginAsIntermediary: (
       onBehalfOfTIN: string,
-      scope?: string,
+      scope?: string
     ) => Promise<string>;
   };
 
@@ -40,16 +39,18 @@ export class MyInvoisClient {
     clientId: string,
     clientSecret: string,
     environment: MyInvoisEnvironment = "PROD",
+    redisClient?: MyInvoisRedisClient // Optional: User provides their Redis client instance
   ) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
 
-    this.identityBaseUrl = ENV_URLS[environment].identity;
-    const documentsBaseUrl = ENV_URLS[environment].documents; // This URL is used for documents and taxpayer APIs
+    const identityBaseUrl = ENV_URLS[environment].identity;
+    const documentsBaseUrl = ENV_URLS[environment].documents;
 
-    this.authServiceInstance = new AuthService(this.identityBaseUrl);
+    // Pass the redisClient to the AuthService
+    this.authServiceInstance = new AuthService(identityBaseUrl, redisClient);
     this.documents = new DocumentsService(this, documentsBaseUrl);
-    this.taxpayer = new TaxpayerService(this, documentsBaseUrl); // Instantiate TaxpayerService
+    this.taxpayer = new TaxpayerService(this, documentsBaseUrl); // Assuming TaxpayerService exists
 
     this.auth = {
       loginAsTaxpayer: (scope?: string) => this.getTaxpayerAccessToken(scope),
@@ -58,30 +59,55 @@ export class MyInvoisClient {
     };
   }
 
-  /**
-   * Performs taxpayer login, stores token.
-   * @param scope Optional scope for access.
-   */
+  // This method now benefits from AuthService's caching.
+  // The LoginResponse will have `expires_in` correctly set to remaining time.
   private async _loginAsTaxpayerAndStoreToken(scope?: string): Promise<void> {
     try {
-      const loginResponse = await this.authServiceInstance.loginAsTaxpayer(
-        this.clientId,
-        this.clientSecret,
-        scope,
-      );
+      const loginResponse: LoginResponse =
+        await this.authServiceInstance.loginAsTaxpayer(
+          this.clientId,
+          this.clientSecret,
+          scope
+        );
       this.accessToken = loginResponse.access_token;
+      // Date.now() + (remaining_expires_in * 1000) is correct
       this.tokenExpiryTime = Date.now() + loginResponse.expires_in * 1000;
-      this.currentOnBehalfOfTIN = null; // Reset for taxpayer login
-      // console.log("Login successful. Token stored in MyInvoisClient."); // Removed
+      this.currentOnBehalfOfTIN = null;
     } catch (error) {
       this.accessToken = null;
       this.tokenExpiryTime = null;
       this.currentOnBehalfOfTIN = null;
-      // console.error("MyInvoisClient: Failed to perform login:", error); // Removed
+      // console.error("MyInvoisClient: Failed to perform taxpayer login:", error);
       throw error;
     }
   }
 
+  // This method also benefits similarly
+  private async _performIntermediaryLoginAndStoreToken(
+    onBehalfOfTIN: string,
+    scope?: string
+  ): Promise<void> {
+    try {
+      const loginResponse: LoginResponse =
+        await this.authServiceInstance.loginAsIntermediary(
+          this.clientId,
+          this.clientSecret,
+          onBehalfOfTIN,
+          scope
+        );
+      this.accessToken = loginResponse.access_token;
+      this.tokenExpiryTime = Date.now() + loginResponse.expires_in * 1000;
+      this.currentOnBehalfOfTIN = onBehalfOfTIN;
+    } catch (error) {
+      this.accessToken = null;
+      this.tokenExpiryTime = null;
+      this.currentOnBehalfOfTIN = null;
+      // console.error("MyInvoisClient: Failed to perform intermediary login:", error);
+      throw error;
+    }
+  }
+
+  // isTokenValid remains crucial for the client's internal logic.
   private isTokenValid(): boolean {
     return (
       this.accessToken !== null &&
@@ -92,79 +118,53 @@ export class MyInvoisClient {
 
   async getTaxpayerAccessToken(scope?: string): Promise<string> {
     if (!this.isTokenValid()) {
-      // console.log(
-      //   "Access token is invalid, expired, or not yet fetched. Performing login.",
-      // ); // Removed
       await this._loginAsTaxpayerAndStoreToken(scope);
     }
     if (!this.accessToken) {
-      // This case should ideally be handled by _loginAsTaxpayerAndStoreToken throwing an error
       throw new Error(
-        "MyInvoisClient: Unable to retrieve access token after login attempt.",
+        "MyInvoisClient: Unable to retrieve taxpayer access token."
       );
     }
     return this.accessToken;
-  }
-
-  /**
-   * Performs intermediary login, stores token.
-   * @param onBehalfOfTIN The Tax Identification Number (TIN) of the taxpayer the intermediary is representing.
-   * @param scope Optional scope for access.
-   */
-  private async _performIntermediaryLoginAndStoreToken(
-    onBehalfOfTIN: string,
-    scope?: string,
-  ): Promise<void> {
-    try {
-      const loginResponse = await this.authServiceInstance.loginAsIntermediary(
-        this.clientId,
-        this.clientSecret,
-        onBehalfOfTIN,
-        scope,
-      );
-      this.accessToken = loginResponse.access_token;
-      this.tokenExpiryTime = Date.now() + loginResponse.expires_in * 1000;
-      this.currentOnBehalfOfTIN = onBehalfOfTIN; // Store TIN for intermediary token
-      // console.log(
-      //   "Intermediary login successful. Token stored in MyInvoisClient.",
-      // ); // Removed
-    } catch (error) {
-      this.accessToken = null;
-      this.tokenExpiryTime = null;
-      this.currentOnBehalfOfTIN = null;
-      // console.error(
-      //   "MyInvoisClient: Failed to perform intermediary login:",
-      //   error,
-      // ); // Removed
-      throw error;
-    }
   }
 
   async getIntermediaryAccessToken(
     onBehalfOfTIN: string,
-    scope?: string,
+    scope?: string
   ): Promise<string> {
-    // Check if the current token is valid AND for the correct onBehalfOfTIN
+    // Token must be valid AND for the correct TIN if already an intermediary token
     if (!this.isTokenValid() || this.currentOnBehalfOfTIN !== onBehalfOfTIN) {
-      // console.log(
-      //   `Access token is invalid, expired, not for the correct TIN (${onBehalfOfTIN}), or not yet fetched. Performing intermediary login.`,
-      // ); // Removed
       await this._performIntermediaryLoginAndStoreToken(onBehalfOfTIN, scope);
-    } else {
-      // console.log(
-      //   `Using cached access token for TIN: ${onBehalfOfTIN}.`,
-      // ); // Removed
     }
-
     if (!this.accessToken) {
-      // This case should ideally be handled by _performIntermediaryLoginAndStoreToken throwing an error
       throw new Error(
-        "MyInvoisClient: Unable to retrieve access token after intermediary login attempt.",
+        "MyInvoisClient: Unable to retrieve intermediary access token."
       );
     }
     return this.accessToken;
   }
 
-  // getAllDocumentTypes() is removed. It will be accessed via client.documents.getAllDocumentTypes()
-  // getDocumentsService() is removed as DocumentsService is instantiated in constructor.
+  // Expose a way to get the current token for external use if needed, e.g., for DocumentsService
+  public async getCurrentAccessToken(): Promise<string | null> {
+    // This method might need to ensure authentication if no token is present,
+    // but it depends on how DocumentsService is intended to work.
+    // For now, just return the current token.
+    // If this.currentOnBehalfOfTIN is set, it implies an intermediary login was last.
+    // Otherwise, a taxpayer login was last (or no login yet).
+    // This method is called by DocumentsService, which should have already ensured
+    // that the MyInvoisClient is properly authenticated by calling one of the
+    // client.auth.loginAs... methods.
+    if (!this.isTokenValid()) {
+      // This case should ideally be prevented by DocumentService ensuring login first.
+      // Or, you could trigger a default login type if appropriate, but that's complex.
+      // For now, erroring out if no valid token is available seems safest if DocumentService
+      // relies on this method *after* authentication.
+      if (this.currentOnBehalfOfTIN) {
+        await this.getIntermediaryAccessToken(this.currentOnBehalfOfTIN);
+      } else {
+        await this.getTaxpayerAccessToken();
+      }
+    }
+    return this.accessToken;
+  }
 }

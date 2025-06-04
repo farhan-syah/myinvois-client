@@ -28,13 +28,13 @@ export class TaxpayerService {
     tin: string,
     idType: TaxpayerIdType,
     idValue: string,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<boolean> {
     try {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -46,7 +46,7 @@ export class TaxpayerService {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (response.status === 200) {
@@ -81,11 +81,11 @@ export class TaxpayerService {
    */
   async searchTaxpayerTIN(
     params: SearchTaxpayerTINRequestParams,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<SearchTaxpayerTINResponse> {
     if (!params.taxpayerName && !(params.idType && params.idValue)) {
       throw new Error(
-        "Search criteria incomplete: Provide either taxpayerName OR (idType AND idValue).",
+        "Search criteria incomplete: Provide either taxpayerName OR (idType AND idValue)."
       );
     }
     if (params.idType && !params.idValue) {
@@ -99,7 +99,7 @@ export class TaxpayerService {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -151,7 +151,7 @@ export class TaxpayerService {
    */
   async getTaxpayerInfoByQRCode(
     qrCodeText: string,
-    onBehalfOfTIN?: string,
+    onBehalfOfTIN?: string
   ): Promise<GetTaxpayerInfoByQRCodeResponse> {
     if (!qrCodeText) {
       throw new Error("qrCodeText (decoded QR code string) is mandatory.");
@@ -161,7 +161,7 @@ export class TaxpayerService {
       const accessToken = onBehalfOfTIN
         ? await this.apiClient.getIntermediaryAccessToken(
             onBehalfOfTIN,
-            "InvoicingAPI",
+            "InvoicingAPI"
           )
         : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
@@ -212,3 +212,5 @@ export class TaxpayerService {
     }
   }
 }
+
+export * from "./types";

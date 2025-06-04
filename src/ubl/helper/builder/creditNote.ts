@@ -40,7 +40,7 @@ import {
  * @returns Array of UBLJsonBillingReference structures, or undefined if params is empty.
  */
 const buildBillingReferences = (
-  params: BillingReferenceParam[],
+  params: BillingReferenceParam[]
 ): UBLJsonBillingReference[] => {
   return params.map((br) => ({
     InvoiceDocumentReference: [
@@ -99,7 +99,7 @@ const buildBillingReferences = (
  */
 export function createUblJsonCreditNoteDocument(
   params: CreateCreditNoteDocumentParams,
-  version: "1.1" | "1.0" = "1.1",
+  version: "1.1" | "1.0" = "1.1"
 ): UBLJsonCreditNoteDocumentV1_0 | UBLJsonCreditNoteDocumentV1_1 {
   const docCurrency = params.documentCurrencyCode;
   const taxCurrency = params.taxCurrencyCode ?? docCurrency;
@@ -145,7 +145,7 @@ export function createUblJsonCreditNoteDocument(
           {
             TaxAmount: toUblCurrencyAmount(
               lineParam.lineTaxTotal.taxAmount,
-              taxCurrency,
+              taxCurrency
             )!,
             TaxSubtotal: subTotals,
           },
@@ -173,7 +173,7 @@ export function createUblJsonCreditNoteDocument(
         ],
         LineExtensionAmount: toUblCurrencyAmount(
           lineParam.subtotal,
-          docCurrency,
+          docCurrency
         )!,
         TaxTotal: lineTaxTotals,
         Item: [item],
@@ -184,7 +184,7 @@ export function createUblJsonCreditNoteDocument(
         ],
         AllowanceCharge: buildAllowanceCharges(
           lineParam.allowanceCharges,
-          docCurrency,
+          docCurrency
         ),
         ItemPriceExtension: [
           // Using ItemPriceExtension for line subtotal in Credit Notes as per MyInvois
@@ -193,14 +193,14 @@ export function createUblJsonCreditNoteDocument(
           },
         ],
       };
-    },
+    }
   );
 
   const taxTotal: UBLJsonTaxTotal[] = [
     {
       TaxAmount: toUblCurrencyAmount(
         params.taxTotal.totalTaxAmount,
-        taxCurrency,
+        taxCurrency
       )!,
       TaxSubtotal: params.taxTotal.taxSubtotals.map((st) => ({
         TaxableAmount: toUblCurrencyAmount(st.taxableAmount, taxCurrency)!,
@@ -216,7 +216,7 @@ export function createUblJsonCreditNoteDocument(
       })),
       RoundingAmount: toUblCurrencyAmount(
         params.taxTotal.roundingAmount,
-        taxCurrency,
+        taxCurrency
       ),
     },
   ];
@@ -226,35 +226,35 @@ export function createUblJsonCreditNoteDocument(
     {
       LineExtensionAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.lineExtensionAmount,
-        docCurrency,
+        docCurrency
       )!,
       TaxExclusiveAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.taxExclusiveAmount,
-        docCurrency,
+        docCurrency
       )!,
       TaxInclusiveAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.taxInclusiveAmount,
-        docCurrency,
+        docCurrency
       )!,
       AllowanceTotalAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.allowanceTotalAmount,
-        docCurrency,
+        docCurrency
       ),
       ChargeTotalAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.chargeTotalAmount,
-        docCurrency,
+        docCurrency
       ),
       PrepaidAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.prepaidAmount,
-        docCurrency,
+        docCurrency
       ),
       PayableRoundingAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.payableRoundingAmount,
-        docCurrency,
+        docCurrency
       ),
       PayableAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.payableAmount,
-        docCurrency,
+        docCurrency
       )!,
     },
   ];
@@ -288,7 +288,7 @@ export function createUblJsonCreditNoteDocument(
         ID: [{ _: adr.id }],
         DocumentType: toUblText(adr.documentType),
         DocumentDescription: toUblText(adr.documentDescription),
-      }),
+      })
     ),
     Delivery: params.delivery?.map((d) => {
       const deliveryParty = [];
@@ -340,7 +340,7 @@ export function createUblJsonCreditNoteDocument(
     })),
     AllowanceCharge: buildAllowanceCharges(
       params.allowanceCharges,
-      docCurrency,
+      docCurrency
     ), // Using common buildAllowanceCharges
   };
 

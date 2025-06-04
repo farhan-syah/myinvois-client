@@ -59,7 +59,7 @@ import {
  *      TIN: "TIN123", identificationNumber: "ID123", identificationScheme: "BRN",
  *      telephone: "+60123456789", legalName: "Supplier Sdn Bhd",
  *      address: { addressLines: ["Line 1"], cityName: "KL", countrySubentityCode: "14", countryCode: "MYS" },
- *      industryClassificationCode: "0111", industryClassficationName: "Test"
+ *      industryClassificationCode: "0111", industryClassificationName: "Test"
  *   },
  *   customer: { // Populate CustomerPartyParam
  *      TIN: "TIN456", identificationNumber: "ID456", identificationScheme: "NRIC",
@@ -92,7 +92,7 @@ import {
  */
 export function createUblJsonInvoiceDocument(
   params: CreateInvoiceDocumentParams,
-  version: "1.1" | "1.0" = "1.1",
+  version: "1.1" | "1.0" = "1.1"
 ): UBLJsonInvoiceDocumentV1_0 | UBLJsonInvoiceDocumentV1_1 {
   const docCurrency = params.documentCurrencyCode;
   const taxCurrency = params.taxCurrencyCode ?? docCurrency;
@@ -132,7 +132,7 @@ export function createUblJsonInvoiceDocument(
           {
             TaxAmount: toUblCurrencyAmount(
               lineParam.lineTaxTotal.taxAmount,
-              taxCurrency,
+              taxCurrency
             )!,
             TaxSubtotal: subTotals,
           },
@@ -160,7 +160,7 @@ export function createUblJsonInvoiceDocument(
         ],
         LineExtensionAmount: toUblCurrencyAmount(
           lineParam.subtotal,
-          docCurrency,
+          docCurrency
         )!,
         TaxTotal: lineTaxTotals,
         Item: [item],
@@ -171,7 +171,7 @@ export function createUblJsonInvoiceDocument(
         ],
         AllowanceCharge: buildAllowanceCharges(
           lineParam.allowanceCharges,
-          docCurrency,
+          docCurrency
         ),
         ItemPriceExtension: [
           {
@@ -179,14 +179,14 @@ export function createUblJsonInvoiceDocument(
           },
         ],
       };
-    },
+    }
   );
 
   const taxTotal: UBLJsonTaxTotal[] = [
     {
       TaxAmount: toUblCurrencyAmount(
         params.taxTotal.totalTaxAmount,
-        taxCurrency,
+        taxCurrency
       )!,
       TaxSubtotal: params.taxTotal.taxSubtotals.map((st) => ({
         TaxableAmount: toUblCurrencyAmount(st.taxableAmount, taxCurrency)!,
@@ -202,7 +202,7 @@ export function createUblJsonInvoiceDocument(
       })),
       RoundingAmount: toUblCurrencyAmount(
         params.taxTotal.roundingAmount,
-        taxCurrency,
+        taxCurrency
       ),
     },
   ];
@@ -211,35 +211,35 @@ export function createUblJsonInvoiceDocument(
     {
       LineExtensionAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.lineExtensionAmount,
-        docCurrency,
+        docCurrency
       )!,
       TaxExclusiveAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.taxExclusiveAmount,
-        docCurrency,
+        docCurrency
       )!,
       TaxInclusiveAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.taxInclusiveAmount,
-        docCurrency,
+        docCurrency
       )!,
       AllowanceTotalAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.allowanceTotalAmount,
-        docCurrency,
+        docCurrency
       ),
       ChargeTotalAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.chargeTotalAmount,
-        docCurrency,
+        docCurrency
       ),
       PrepaidAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.prepaidAmount,
-        docCurrency,
+        docCurrency
       ),
       PayableRoundingAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.payableRoundingAmount,
-        docCurrency,
+        docCurrency
       ),
       PayableAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.payableAmount,
-        docCurrency,
+        docCurrency
       )!,
     },
   ];
@@ -249,7 +249,7 @@ export function createUblJsonInvoiceDocument(
       ID: [{ _: params.id }],
       IssueDate: [{ _: params.issueDate }],
       IssueTime: [{ _: params.issueTime }],
-      InvoiceTypeCode: [{ _: params.invoiceTypeCode, listVersionID: version }],
+      InvoiceTypeCode: [{ _: "01", listVersionID: version }],
       DocumentCurrencyCode: [{ _: params.documentCurrencyCode }],
       TaxCurrencyCode: params.taxCurrencyCode
         ? [{ _: params.taxCurrencyCode }]
@@ -269,7 +269,7 @@ export function createUblJsonInvoiceDocument(
           ID: [{ _: adr.id }],
           DocumentType: toUblText(adr.documentType),
           DocumentDescription: toUblText(adr.documentDescription),
-        }),
+        })
       ),
       Delivery: params.delivery?.map((d) => {
         const deliveryParty = [];
@@ -318,7 +318,7 @@ export function createUblJsonInvoiceDocument(
       })),
       AllowanceCharge: buildAllowanceCharges(
         params.allowanceCharges,
-        docCurrency,
+        docCurrency
       ),
     };
 

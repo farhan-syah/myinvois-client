@@ -81,10 +81,27 @@ const myInvoiceClientProd = new MyInvoisClient(CLIENT_ID, CLIENT_SECRET);
 // const myInvoiceClientProd = new MyInvoisClient(CLIENT_ID, CLIENT_SECRET, "PROD");
 
 // Instantiate for SANDBOX environment
+The `MyInvoisClient` can optionally be instantiated with a Redis client to cache access tokens. This can improve performance by reducing the number of calls to the authentication server. The Redis client must implement the `MyInvoisRedisClient` interface, which includes `get` and `set` methods for interacting with the Redis server. We recommend using a library like `redis` or `ioredis` to create the Redis client.
+
 const myInvoiceClientSandbox = new MyInvoisClient(
   CLIENT_ID,
   CLIENT_SECRET,
+  "SANDBOX"
+);
+
+// Optional: Enable Redis caching (requires ioredis or similar)
+import Redis from 'ioredis';
+
+const redisClient = new Redis({
+  host: 'localhost',
+  port: 6379,
+});
+
+const myInvoiceClientWithCache = new MyInvoisClient(
+  CLIENT_ID,
+  CLIENT_SECRET,
   "SANDBOX",
+  redisClient // Pass the Redis client instance
 );
 ```
 
@@ -114,7 +131,7 @@ To authenticate as an intermediary system on behalf of a taxpayer:
 
 const token = await myInvoiceClient.auth.loginAsIntermediary(
   ON_BEHALF_OF_TIN,
-  "InvoicingAPI",
+  "InvoicingAPI"
 );
 ```
 
@@ -156,7 +173,7 @@ const versionId = 41235; // Replace with an actual version ID for the document t
 const documentTypeVersion =
   await myInvoiceClient.documents.getDocumentTypeVersionById(
     docTypeId,
-    versionId,
+    versionId
   );
 ```
 
@@ -172,7 +189,7 @@ const idValueForValidation = "201901234567";
 const isValid = await myInvoiceClient.taxpayer.validateTaxpayerTIN(
   tinToValidate,
   idTypeForValidation,
-  idValueForValidation,
+  idValueForValidation
 );
 ```
 
@@ -188,7 +205,7 @@ const documentToSubmit = {
   format: "JSON" as "JSON", // or "XML"
   // For a real implementation, you would generate the base64 document string and its hash
   document: btoa(
-    JSON.stringify({ invoiceDetails: "Sample e-Invoice Content" }),
+    JSON.stringify({ invoiceDetails: "Sample e-Invoice Content" })
   ),
   documentHash:
     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Placeholder hash for example
@@ -205,12 +222,12 @@ const submissionResponse =
 
 submissionResponse.acceptedDocuments.forEach((doc) => {
   console.log(
-    `Accepted: CodeNumber=${doc.invoiceCodeNumber}, UUID=${doc.uuid}`,
+    `Accepted: CodeNumber=${doc.invoiceCodeNumber}, UUID=${doc.uuid}`
   );
 });
 submissionResponse.rejectedDocuments.forEach((doc) => {
   console.log(
-    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS ?? doc.error.error}`,
+    `Rejected: CodeNumber=${doc.invoiceCodeNumber}, Error: ${doc.error.errorMS ?? doc.error.error}`
   );
 });
 ```
@@ -250,7 +267,7 @@ const invoiceParams: CreateInvoiceDocumentParams = {
       countryCode: "MYS",
     },
     industryClassificationCode: "46510",
-    industryClassficationName: "Wholesale of computers and software",
+    industryClassificationName: "Wholesale of computers and software",
   },
 
   // Customer information
@@ -418,7 +435,7 @@ const signedProperties: XadesSignedProperties = createSignedProperties(
   issuerName,
   serialNumber,
   signedPropsId,
-  new Date(), // Signing time, defaults to now if omitted
+  new Date() // Signing time, defaults to now if omitted
 );
 
 // const signedPropertiesBytes = new TextEncoder().encode(JSON.stringify(signedProperties));
