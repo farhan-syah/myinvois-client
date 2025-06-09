@@ -1,12 +1,11 @@
 import {
-  MyInvoisClient,
-  MyInvoisEnvironment,
   CreateInvoiceDocumentParams,
   createUblJsonInvoiceDocument,
   IdentificationScheme,
+  MyInvoisClient,
+  MyInvoisEnvironment,
   SubmitDocumentsRequest,
   SubmitDocumentsResponse,
-  UBLJsonInvoiceDocumentV1_0,
 } from "myinvois-client"; // Adjust path
 
 // --- Environment-Specific Helper Implementations (YOU NEED TO PROVIDE THESE) ---
@@ -169,12 +168,18 @@ async function runFullIntegrationTest() {
 
     // Generate the full UBL Invoice Document for version 1.0
     // The type assertion is safe because we are passing "1.0"
-    const fullUblDocument = createUblJsonInvoiceDocument(
+    const fullUblDocument = await createUblJsonInvoiceDocument(
       invoiceParams,
       "1.0"
-    ) as UBLJsonInvoiceDocumentV1_0;
+    );
 
-    console.log("UBL Invoice 1.0 Document generated.");
+    if ("Invoice" in fullUblDocument) {
+      console.log("UBL Invoice 1.0 Document generated.");
+    } else {
+      throw new Error(
+        "Generated document is not Invoice 1.0 as expected.  Check createUblJsonInvoiceDocument parameters and version."
+      );
+    }
     // console.log(JSON.stringify(fullUblDocument, null, 2)); // For debugging the generated structure
 
     console.log("\nStep 3 : Preparing Document for API Submission..."); // Renumbering step
