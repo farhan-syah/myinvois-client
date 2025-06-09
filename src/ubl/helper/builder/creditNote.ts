@@ -7,7 +7,6 @@ import {
 import {
   UBLJsonAccountingCustomerParty,
   UBLJsonAccountingSupplierParty,
-  UBLJsonBillingReference,
   UBLJsonInvoiceLine,
   UBLJsonItem,
   UBLJsonLegalMonetaryTotal,
@@ -15,11 +14,11 @@ import {
   UBLJsonTaxSubtotal,
   UBLJsonTaxTotal,
 } from "../../json/ubl_json";
-import { BillingReferenceParam } from "../params/common";
 
 import { CreateCreditNoteDocumentParams } from "../params/creditNote"; // Import credit note specific parameters
 import {
   buildAllowanceCharges,
+  buildBillingReferences,
   buildCustomerParty,
   buildPostalAddressFromAddressParam,
   buildSupplier,
@@ -30,25 +29,6 @@ import {
   toUblText,
   toUblTime,
 } from "./common"; // Import common builder helpers
-
-/**
- * @internal
- * Constructs an array of UBL `BillingReference` JSON structures from simplified `BillingReferenceParam` objects.
- * @param params Array of billing reference parameters.
- * @returns Array of UBLJsonBillingReference structures, or undefined if params is empty.
- */
-const buildBillingReferences = (
-  params: BillingReferenceParam[]
-): UBLJsonBillingReference[] => {
-  return params.map((br) => ({
-    InvoiceDocumentReference: [
-      {
-        UUID: toUblIdentifier(br.uuid)!,
-        ID: toUblIdentifier(br.internalId)!,
-      },
-    ],
-  }));
-};
 
 /**
  * Creates a UBL Credit Note JSON document (supports v1.0 and v1.1) from user-friendly parameters.
@@ -300,7 +280,6 @@ export function createUblJsonCreditNoteDocument(
           : undefined;
 
         deliveryParty.push({
-          // Using common buildPostalAddressFromAddressParam
           PartyLegalEntity:
             partyLegalEntities.length > 0 ? partyLegalEntities : undefined,
           PostalAddress: deliveryPostalAddressArray,
@@ -349,7 +328,7 @@ export function createUblJsonCreditNoteDocument(
           {
             _:
               params.signatureId ??
-              "urn:oasis:names:specification:ubl:signature:CreditNote", // Default Signature ID for Credit Note
+              "urn:oasis:names:specification:ubl:signature:Invoice",
           },
         ],
         SignatureMethod: params.signatureMethod
@@ -361,7 +340,7 @@ export function createUblJsonCreditNoteDocument(
 
   // Root UBL JSON structure for Credit Note
   return {
-    _D: "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2", // Namespace for Credit Note
+    _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
     _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
     _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
     Invoice: [creditNoteContent], // Note: The root element is still 'Invoice' in the JSON schema

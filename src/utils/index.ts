@@ -2,6 +2,7 @@ import crypto from "crypto";
 import {
   CreateCreditNoteDocumentParams,
   CreateInvoiceDocumentParams,
+  createUblJsonCreditNoteDocument,
   createUblJsonInvoiceDocument,
   DocumentSubmissionItem,
 } from "..";
@@ -36,7 +37,7 @@ export function createDocumentSubmissionItemFromCreditNote(
   params: CreateCreditNoteDocumentParams,
   version: "1.1" | "1.0" = "1.1"
 ): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonInvoiceDocument(params, version);
+  const fullUblDocument = createUblJsonCreditNoteDocument(params, version);
   const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
   const documentHash = calculateSHA256Hex(finalInvoiceJsonString);
   const documentBase64 = encodeBase64(finalInvoiceJsonString);
