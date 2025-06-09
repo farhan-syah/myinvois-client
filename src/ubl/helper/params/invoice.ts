@@ -1,6 +1,5 @@
 // --- User-Friendly Parameter Interfaces - Invoice Specific ---
 
-import { UBLJsonExtensions } from "../../json/ubl_json";
 import {
   AdditionalDocRefParam,
   AllowanceChargeParam,
@@ -15,6 +14,7 @@ import {
   SupplierPartyParam,
   TaxSubtotalParam,
 } from "../params/common";
+import { SignatureExtensionParams } from "../params/signatureExtension";
 
 /**
  * User-friendly parameters for defining an invoice line item.
@@ -129,12 +129,12 @@ export interface CreateInvoiceDocumentParams {
   allowanceCharges?: AllowanceChargeParam[];
 
   /**
-   * UBL Extensions. Primarily used for digital signatures in v1.1 invoices.
-   * Users needing complex extensions might need to construct `UBLJsonExtensions` objects directly.
-   * For v1.1, if a signature is applied by the builder, this will be populated.
-   * Optional.
+   * Optional. Parameters for creating a UBL digital signature extension.
+   * This is typically used for v1.1 invoices that require a digital signature.
+   * If provided, the builder will attempt to create and embed a signature extension
+   * into the `UBLExtensions` of the invoice.
    */
-  ublExtensions?: UBLJsonExtensions;
+  signatureExtension?: SignatureExtensionParams;
 
   // BillingReference is complex and less common for basic invoice creation via simple params, omitted for simplicity.
   // TaxExchangeRate is also omitted for simplicity; the builder handles it if currencies differ and taxCurrencyCode is MYR.

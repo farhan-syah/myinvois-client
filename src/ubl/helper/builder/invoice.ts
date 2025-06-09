@@ -8,6 +8,7 @@ import {
 import {
   UBLJsonAccountingCustomerParty,
   UBLJsonAccountingSupplierParty,
+  UBLJsonExtensions,
   UBLJsonInvoiceLine,
   UBLJsonItem,
   UBLJsonLegalMonetaryTotal,
@@ -27,9 +28,12 @@ import {
   toUblText,
   toUblTime,
 } from "./common"; // Import common builder helpers
+import { buildSignatureExtension } from "./signatureExtension";
 
 /**
- * Creates a UBL Invoice JSON document (supports v1.0 and v1.1) from user-friendly parameters.
+ * Asynchronously creates a UBL Invoice JSON document (supports v1.0 and v1.1) from user-friendly parameters.
+ * If `signatureExtension` parameters are provided for a v1.1 invoice, this function will internally call
+ * an asynchronous signature generation process.
  * This function simplifies the construction of complex UBL JSON structures by:
  * - Using clear, high-level parameter objects (`CreateInvoiceDocumentParams`).
  * - Handling the repetitive array and object wrapping required by UBL JSON.
@@ -43,7 +47,7 @@ import {
  *
  * @param params The {@link CreateInvoiceDocumentParams} object containing all necessary invoice data.
  * @param version Specifies the UBL e-Invoice version to generate ("1.0" or "1.1"). Defaults to "1.1".
- * @returns The constructed UBL Invoice JSON document (`UBLJsonInvoiceDocumentV1_0` or `UBLJsonInvoiceDocumentV1_1`).
+ * @returns A Promise that resolves to the constructed UBL Invoice JSON document (`UBLJsonInvoiceDocumentV1_0` or `UBLJsonInvoiceDocumentV1_1`).
  * @example
  * ```typescript
  * import { createUblJsonInvoiceDocument } from "./ubl/helper/builder/invoice";
@@ -83,17 +87,22 @@ import {
  *   },
  * };
  *
- * // Create a version 1.1 invoice
- * const ublInvoiceV1_1 = createUblJsonInvoiceDocument(invoiceParams, "1.1");
+ * // Example of creating an invoice (assuming an async context to use await)
+ * async function generateInvoices() {
+ *   // Create a version 1.1 invoice
+ *   const ublInvoiceV1_1 = await createUblJsonInvoiceDocument(invoiceParams, "1.1");
+ *   console.log("Generated UBL Invoice v1.1:", ublInvoiceV1_1);
  *
- * // Create a version 1.0 invoice
- * const ublInvoiceV1_0 = createUblJsonInvoiceDocument(invoiceParams, "1.0");
+ *   // Create a version 1.0 invoice
+ *   const ublInvoiceV1_0 = await createUblJsonInvoiceDocument(invoiceParams, "1.0");
+ *   console.log("Generated UBL Invoice v1.0:", ublInvoiceV1_0);
+ * }
  * ```
  */
-export function createUblJsonInvoiceDocument(
+export async function createUblJsonInvoiceDocument(
   params: CreateInvoiceDocumentParams,
   version: "1.1" | "1.0" = "1.1"
-): UBLJsonInvoiceDocumentV1_0 | UBLJsonInvoiceDocumentV1_1 {
+): Promise<UBLJsonInvoiceDocumentV1_0 | UBLJsonInvoiceDocumentV1_1> {
   const docCurrency = params.documentCurrencyCode;
   const taxCurrency = params.taxCurrencyCode ?? docCurrency;
 
@@ -322,23 +331,79 @@ export function createUblJsonInvoiceDocument(
     };
 
   if (version === "1.1") {
+    let finalExtensionsArray: UBLJsonExtensions = [];
+
+    if (params.signatureExtension) {
+      // Create a temporary invoice content object specifically for the signing process.
+      // This object should represent the state of the Invoice's content *before*
+      // the new signature (being generated now) is embedded.
+      const tempInvoiceContentForSigning: Omit<
+        UBLJsonInvoiceV1_1_Content,
+        "Signature"
+      > = {
+        // Copy all common properties from the `invoiceContent` object built so far
+        ID: invoiceContent.ID,
+        IssueDate: invoiceContent.IssueDate,
+        IssueTime: invoiceContent.IssueTime,
+        InvoiceTypeCode: invoiceContent.InvoiceTypeCode,
+        DocumentCurrencyCode: invoiceContent.DocumentCurrencyCode,
+        TaxCurrencyCode: invoiceContent.TaxCurrencyCode,
+        AccountingSupplierParty: invoiceContent.AccountingSupplierParty,
+        AccountingCustomerParty: invoiceContent.AccountingCustomerParty,
+        InvoiceLine: invoiceContent.InvoiceLine,
+        TaxTotal: invoiceContent.TaxTotal,
+        LegalMonetaryTotal: invoiceContent.LegalMonetaryTotal,
+        InvoicePeriod: invoiceContent.InvoicePeriod,
+        AdditionalDocumentReference: invoiceContent.AdditionalDocumentReference,
+        Delivery: invoiceContent.Delivery,
+        PaymentMeans: invoiceContent.PaymentMeans,
+        PaymentTerms: invoiceContent.PaymentTerms,
+        PrepaidPayment: invoiceContent.PrepaidPayment,
+        AllowanceCharge: invoiceContent.AllowanceCharge,
+        // UBLExtensions for signing should ONLY contain pre-existing extensions,
+        // structured correctly.
+        UBLExtensions: [],
+        // The cac:Signature block itself is NOT included in the data to be signed.
+      };
+
+      const documentToSign: UBLJsonInvoiceDocumentV1_1 = {
+        _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+        _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+        _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+        Invoice: [tempInvoiceContentForSigning as UBLJsonInvoiceV1_1_Content],
+      };
+
+      const signatureExtensionInstance = await buildSignatureExtension({
+        ...params.signatureExtension,
+        documentToSign: documentToSign,
+      });
+      // Add the newly created signature extension to the array for the final document.
+      finalExtensionsArray.push({
+        UBLExtension: [signatureExtensionInstance],
+      });
+    }
+
+    // Set the UBLExtensions on the main invoiceContent, ensuring correct structure.
+    // If finalExtensionsArray is empty, UBLExtensions will be { UBLExtension: [] }.
     (invoiceContent as UBLJsonInvoiceV1_1_Content).UBLExtensions =
-      params.ublExtensions ?? [];
-    (invoiceContent as UBLJsonInvoiceV1_1_Content).Signature = [
-      {
-        ID: [
-          {
-            _:
-              params.signatureId ??
-              "urn:oasis:names:specification:ubl:signature:Invoice",
-          },
-        ],
-        SignatureMethod: params.signatureMethod
-          ? [{ _: params.signatureMethod }]
-          : [{ _: "urn:oasis:names:specification:ubl:dsig:enveloped:xades" }],
-      },
-    ];
+      finalExtensionsArray;
   }
+
+  // Add the main cac:Signature block to the `invoiceContent`.
+  (invoiceContent as UBLJsonInvoiceV1_1_Content).Signature = [
+    {
+      ID: [
+        {
+          _:
+            params.signatureId ??
+            "urn:oasis:names:specification:ubl:signature:Invoice",
+        },
+      ],
+      SignatureMethod: params.signatureMethod
+        ? [{ _: params.signatureMethod }]
+        : [{ _: "urn:oasis:names:specification:ubl:dsig:enveloped:xades" }],
+    },
+  ];
 
   return {
     _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
