@@ -195,7 +195,7 @@ export function createUblJsonInvoiceDocument(
           {
             ID: [{ _: st.taxCategoryCode }],
             // Defaulting TaxScheme as it's usually standard
-            TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }], // TODO: Make TaxScheme configurable if needed
+            TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }],
           },
         ],
         Percent: toUblNumeric(st.percent),
@@ -305,7 +305,6 @@ export function createUblJsonInvoiceDocument(
         PayeeFinancialAccount: pm.payeeFinancialAccountId
           ? [{ ID: [{ _: pm.payeeFinancialAccountId }] }]
           : undefined,
-        PaymentID: toUblIdentifier(pm.paymentId),
       })),
       PaymentTerms: params.paymentTerms?.map((pt) => ({
         Note: [{ _: pt.note }],

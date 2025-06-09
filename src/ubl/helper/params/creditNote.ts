@@ -4,6 +4,7 @@ import { UBLJsonExtensions } from "../../json/ubl_json"; // Reused for v1.1 exte
 import {
   AdditionalDocRefParam,
   AllowanceChargeParam,
+  BillingReferenceParam,
   CustomerPartyParam,
   DeliveryParam,
   ItemCommodityClassificationParam,
@@ -81,19 +82,6 @@ export interface CreditNotePeriodParam {
 }
 
 /**
- * User-friendly parameters for defining a billing reference, linking the credit note to the original invoice.
- * A credit note can reference one or more original invoices.
- */
-export interface BillingReferenceParam {
-  /** The ID of the original invoice being referenced. */
-  invoiceId: string;
-  /** The issue date of the original invoice being referenced (YYYY-MM-DD). Optional but recommended. */
-  invoiceIssueDate?: string;
-  // More fields from UBLJsonDocumentReference could be added here if needed,
-  // but ID and IssueDate are the most common for BillingReference/InvoiceDocumentReference.
-}
-
-/**
  * Comprehensive user-friendly parameters for creating a full UBL Credit Note document (supports v1.0 and v1.1).
  * This interface is designed to abstract many of the complexities of direct UBL JSON construction.
  */
@@ -115,12 +103,6 @@ export interface CreateCreditNoteDocumentParams {
    * E.g., "10:00:00Z". Mandatory.
    */
   issueTime: string;
-  /**
-   * Document Type Code: Identifies the document type.
-   * For a Credit Note, this must be "02". This parameter will be set by the builder.
-   */
-  invoiceTypeCode?: "02"; // Explicitly setting the expected value
-
   /**
    * Credit Note Currency Code: Specific currency for monetary values in the Credit Note.
    * E.g., "MYR". Mandatory.
@@ -157,9 +139,9 @@ export interface CreateCreditNoteDocumentParams {
   creditNotePeriod?: CreditNotePeriodParam[];
   /** Optional. List of additional document references. */
   additionalDocumentReferences?: AdditionalDocRefParam[];
-  /** Optional. Delivery information. */
+  /** Optional. Delivery information. Can be an array if multiple deliveries are involved, though typically one. */
   delivery?: DeliveryParam[];
-  /** Optional. Payment means information related to the credit. */
+  /** Optional. Delivery information. */
   paymentMeans?: PaymentMeansParam[];
   /** Optional. Payment terms description for the credit. */
   paymentTerms?: PaymentTermsParam[];

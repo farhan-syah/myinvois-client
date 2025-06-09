@@ -125,8 +125,6 @@ export interface PaymentMeansParam {
   paymentMeansCode: PaymentMode;
   /** Supplier’s bank account number for payment. Optional. E.g., "1234567890123". */
   payeeFinancialAccountId?: string;
-  /** Payment reference number. Optional. E.g., "E12345678912". */
-  paymentId?: string;
 }
 
 /**
@@ -227,4 +225,26 @@ export interface LegalMonetaryTotalParam {
    * E.g., 1324.13 (if taxInclusiveAmount is 1524.13 and prepaidAmount is 200.00).
    */
   payableAmount: number;
+}
+
+/**
+ * User-friendly parameters for defining a billing reference, linking the document to the original document.
+ */
+export interface BillingReferenceParam {
+  /** The ID of the original document being referenced. */
+  uuid: string;
+  /** User's internal identifier for the invoice */
+  internalId: string;
+}
+
+/**
+ * User-friendly parameters for defining a billing period.
+ */
+export interface PeriodParam {
+  /** Start date of the billing period (YYYY-MM-DD). Optional. E.g., "2017-11-26". */
+  startDate?: string;
+  /** End date of the billing period (YYYY-MM-DD). Optional. E.g., "2017-11-30". */
+  endDate?: string;
+  /** Description of the billing frequency (e.g., "Monthly"). Optional. */
+  description?: string;
 }

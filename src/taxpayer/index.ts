@@ -32,11 +32,8 @@ export class TaxpayerService {
   ): Promise<boolean> {
     try {
       const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
+        : await this.apiClient.getTaxpayerAccessToken();
 
       const response = await fetch(
         `${this.baseUrl}/api/v1.0/taxpayer/validate/${tin}?idType=${idType}&idValue=${idValue}`,
@@ -126,16 +123,12 @@ export class TaxpayerService {
 
       let errorData: MyInvoisGenericApiResponseError | string;
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      try {
-        errorData = await response.json();
-        if (typeof errorData === "object" && errorData.error) {
-          errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-          if (errorData.error.errorMS) {
-            errorMessage += ` - ${errorData.error.errorMS}`;
-          }
+      errorData = await response.json();
+      if (typeof errorData === "object" && errorData.error) {
+        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
+        if (errorData.error.errorMS) {
+          errorMessage += ` - ${errorData.error.errorMS}`;
         }
-      } catch (e) {
-        // If parsing JSON fails or no JSON body for some errors
       }
       throw new Error(errorMessage);
     } catch (error) {
@@ -159,14 +152,13 @@ export class TaxpayerService {
 
     try {
       const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
+        : await this.apiClient.getTaxpayerAccessToken();
 
       // The qrCodeText is part of the path, ensure it's properly encoded for a URL path segment if necessary (though typically UUIDs are URL-safe)
       const url = `${this.baseUrl}/api/v1.0/taxpayer/qrcodeinfo/${encodeURIComponent(qrCodeText)}`;
+
+      console.log(url);
 
       const response = await fetch(url, {
         method: "GET",

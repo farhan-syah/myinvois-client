@@ -10,6 +10,7 @@ import {
   LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
+  PeriodParam,
   PrepaidPaymentParam,
   SupplierPartyParam,
   TaxSubtotalParam,
@@ -67,18 +68,6 @@ export interface InvoiceTaxTotalParam {
 }
 
 /**
- * User-friendly parameters for defining an invoice period.
- */
-export interface InvoicePeriodParam {
-  /** Start date of the billing period (YYYY-MM-DD). Optional. E.g., "2017-11-26". */
-  startDate?: string;
-  /** End date of the billing period (YYYY-MM-DD). Optional. E.g., "2017-11-30". */
-  endDate?: string;
-  /** Description of the billing frequency (e.g., "Monthly"). Optional. */
-  description?: string;
-}
-
-/**
  * Comprehensive user-friendly parameters for creating a full UBL Invoice document (supports v1.0 and v1.1).
  * The `createUblJsonInvoiceDocument` builder function uses these parameters to simplify invoice generation.
  * This interface is designed to abstract many of the complexities of direct UBL JSON construction.
@@ -125,7 +114,7 @@ export interface CreateInvoiceDocumentParams {
   legalMonetaryTotal: LegalMonetaryTotalParam;
 
   /** Optional. Billing period information. */
-  invoicePeriod?: InvoicePeriodParam[];
+  invoicePeriod?: PeriodParam[];
   /** Optional. List of additional document references (e.g., customs forms, FTA info). */
   additionalDocumentReferences?: AdditionalDocRefParam[];
   /** Optional. Delivery information. Can be an array if multiple deliveries are involved, though typically one. */

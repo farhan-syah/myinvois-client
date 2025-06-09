@@ -15,11 +15,9 @@ import {
   UBLJsonTaxSubtotal,
   UBLJsonTaxTotal,
 } from "../../json/ubl_json";
+import { BillingReferenceParam } from "../params/common";
 
-import {
-  BillingReferenceParam,
-  CreateCreditNoteDocumentParams,
-} from "../params/creditNote"; // Import credit note specific parameters
+import { CreateCreditNoteDocumentParams } from "../params/creditNote"; // Import credit note specific parameters
 import {
   buildAllowanceCharges,
   buildCustomerParty,
@@ -45,10 +43,8 @@ const buildBillingReferences = (
   return params.map((br) => ({
     InvoiceDocumentReference: [
       {
-        ID: toUblIdentifier(br.invoiceId)!,
-        ...(br.invoiceIssueDate && {
-          IssueDate: toUblDate(br.invoiceIssueDate),
-        }),
+        UUID: toUblIdentifier(br.uuid)!,
+        ID: toUblIdentifier(br.internalId)!,
       },
     ],
   }));
@@ -209,7 +205,7 @@ export function createUblJsonCreditNoteDocument(
           {
             ID: [{ _: st.taxCategoryCode }],
             // Defaulting TaxScheme as it's usually standard
-            TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }], // TODO: Make TaxScheme configurable if needed
+            TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }],
           },
         ],
         Percent: toUblNumeric(st.percent),
@@ -326,7 +322,6 @@ export function createUblJsonCreditNoteDocument(
       PayeeFinancialAccount: pm.payeeFinancialAccountId
         ? [{ ID: [{ _: pm.payeeFinancialAccountId }] }]
         : undefined,
-      PaymentID: toUblIdentifier(pm.paymentId),
     })),
     PaymentTerms: params.paymentTerms?.map((pt) => ({
       // Using PaymentTermsParam

@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import {
+  CreateCreditNoteDocumentParams,
   CreateInvoiceDocumentParams,
   createUblJsonInvoiceDocument,
   DocumentSubmissionItem,
@@ -15,6 +16,24 @@ export function encodeBase64(text: string): string {
 
 export function createDocumentSubmissionItemFromInvoice(
   params: CreateInvoiceDocumentParams,
+  version: "1.1" | "1.0" = "1.1"
+): DocumentSubmissionItem {
+  const fullUblDocument = createUblJsonInvoiceDocument(params, version);
+  const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
+  const documentHash = calculateSHA256Hex(finalInvoiceJsonString);
+  const documentBase64 = encodeBase64(finalInvoiceJsonString);
+
+  const documentToSubmit = {
+    format: "JSON" as const,
+    document: documentBase64,
+    documentHash: documentHash,
+    codeNumber: params.id,
+  };
+  return documentToSubmit;
+}
+
+export function createDocumentSubmissionItemFromCreditNote(
+  params: CreateCreditNoteDocumentParams,
   version: "1.1" | "1.0" = "1.1"
 ): DocumentSubmissionItem {
   const fullUblDocument = createUblJsonInvoiceDocument(params, version);

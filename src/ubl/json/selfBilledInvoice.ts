@@ -12,7 +12,6 @@ import {
   UBLJsonInvoiceLine,
   UBLJsonInvoicePeriod,
   UBLJsonLegalMonetaryTotal,
-  UBLJsonParty,
   UBLJsonPaymentMeans,
   UBLJsonPaymentTerms,
   UBLJsonPrepaidPayment,
@@ -48,13 +47,13 @@ export interface UBLJsonSelfBilledInvoiceV1_1_Content {
     listVersionID: string;
   })[];
   /** Optional Note. Maps to UBL: /Invoice/cbc:Note */
-  Note?: UBLJsonText[];
+  Note?: UBLJsonText;
   /** Invoice Currency Code. Specific currency for monetary values in the e-Invoice. Maps to UBL: /Invoice/cbc:DocumentCurrencyCode. Cardinality [1-1]. */
-  DocumentCurrencyCode: UBLJsonValue<string>;
+  DocumentCurrencyCode: UBLJsonText;
   /** Optional Tax Currency Code. Maps to UBL: /Invoice/cbc:TaxCurrencyCode. Cardinality [0-1]. */
-  TaxCurrencyCode?: UBLJsonValue<string>;
+  TaxCurrencyCode?: UBLJsonText;
   /** Optional. Billing period information. Maps to UBL: /Invoice/cac:InvoicePeriod. Cardinality [0-1]. */
-  InvoicePeriod?: UBLJsonInvoicePeriod;
+  InvoicePeriod?: UBLJsonInvoicePeriod[];
   /** Optional. Order Reference. Maps to UBL: /Invoice/cac:OrderReference. */
   OrderReference?: { ID: UBLJsonIdentifier }[];
   /** Optional. Billing reference information, typically containing additional document references. Maps to UBL: /ubl:Invoice / cac:BillingReference. Cardinality [0-1] for the overall BillingReference element containing [1-*] AdditionalDocumentReference. */
@@ -73,32 +72,25 @@ export interface UBLJsonSelfBilledInvoiceV1_1_Content {
   AdditionalDocumentReference?: UBLJsonDocumentReference[];
 
   /** Supplier (Seller) information. Maps to UBL: /Invoice/cac:AccountingSupplierParty. Cardinality [1-1]. */
-  AccountingSupplierParty: UBLJsonAccountingSupplierParty;
+  AccountingSupplierParty: UBLJsonAccountingSupplierParty[];
   /** Buyer information. Maps to UBL: /Invoice/cac:AccountingCustomerParty. Cardinality [1-1]. */
-  AccountingCustomerParty: UBLJsonAccountingCustomerParty;
-  /** Optional Payee Party. Maps to UBL: /Invoice/cac:PayeeParty. Cardinality [0-1]. */
-  PayeeParty?: UBLJsonParty;
-  /** Optional Tax Representative Party. Maps to UBL: /Invoice/cac:TaxRepresentativeParty. Cardinality [0-1]. */
-  TaxRepresentativeParty?: UBLJsonParty;
-
+  AccountingCustomerParty: UBLJsonAccountingCustomerParty[];
   /** Optional. Delivery information. Maps to UBL: /Invoice/cac:Delivery. Cardinality [0-1]. */
-  Delivery?: UBLJsonDelivery;
+  Delivery?: UBLJsonDelivery[];
   /** Optional. Payment means information. Maps to UBL: /Invoice/cac:PaymentMeans. Cardinality [0-1]. */
-  PaymentMeans?: UBLJsonPaymentMeans;
+  PaymentMeans?: UBLJsonPaymentMeans[];
   /** Optional. Payment terms. Maps to UBL: /Invoice/cac:PaymentTerms. Cardinality [0-1]. */
-  PaymentTerms?: UBLJsonPaymentTerms;
+  PaymentTerms?: UBLJsonPaymentTerms[];
   /** Optional. Prepaid payment information. Maps to UBL: /Invoice/cac:PrepaidPayment. Cardinality [0-1]. */
-  PrepaidPayment?: UBLJsonPrepaidPayment;
+  PrepaidPayment?: UBLJsonPrepaidPayment[];
   /** Optional. Document level allowances or charges (excluding Shipment level). Maps to UBL: /Invoice/cac:AllowanceCharge. Cardinality [0-*]. */
   AllowanceCharge?: UBLJsonFreightAllowanceCharge[];
-  /** Optional. Details of other charges (mapped to Delivery/Shipment/FreightAllowanceCharge in UBL). Maps to UBL: /ubl:Invoice / cac:Delivery / cac:Shipment / cac:FreightAllowanceCharge. Cardinality [0-1]. */
-  FreightAllowanceCharge?: UBLJsonFreightAllowanceCharge[];
   /** Optional. Currency exchange rate information. Maps to UBL: /Invoice/cac:TaxExchangeRate. Mandatory where applicable [0-1]. */
-  TaxExchangeRate?: UBLJsonTaxExchangeRate;
+  TaxExchangeRate?: UBLJsonTaxExchangeRate[];
   /** Tax total information for the invoice. Maps to UBL: /Invoice/cac:TaxTotal. Cardinality [1-1]. */
-  TaxTotal: UBLJsonTaxTotal;
+  TaxTotal: UBLJsonTaxTotal[];
   /** Legal monetary total summary for the invoice. Maps to UBL: /Invoice/cac:LegalMonetaryTotal. Cardinality [1-1]. */
-  LegalMonetaryTotal: UBLJsonLegalMonetaryTotal;
+  LegalMonetaryTotal: UBLJsonLegalMonetaryTotal[];
   /** Invoice line items. Maps to UBL: /Invoice/cac:InvoiceLine. Cardinality [1-*]. */
   InvoiceLine: UBLJsonInvoiceLine[];
 
