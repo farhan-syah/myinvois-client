@@ -7,14 +7,14 @@ import {
   generateDigitalSignatureJSON,
   UBLDocumentSignatureExtension,
 } from "../../json/digitalSignature";
-import { SignatureExtensionParams } from "../params/signatureExtension";
+import { SignatureParams } from "../params/signature";
 import { toUblIdentifier, toUblText } from "./common";
 
 /**
  * Builds a single UBLJsonExtension object representing a digital signature extension.
  * This object can then be included in the UBLExtensions array of a UBL document.
  *
- * @param params The {@link SignatureExtensionParams} object containing all necessary data for signature generation.
+ * @param params The {@link SignatureParams} object containing all necessary data for signature generation.
  * @returns A Promise that resolves to a {@link UBLJsonExtension} object for the signature.
  * @example
  * ```typescript
@@ -36,7 +36,7 @@ import { toUblIdentifier, toUblText } from "./common";
  * ```
  */
 export async function buildSignatureExtension(
-  params: SignatureExtensionParams
+  params: SignatureParams
 ): Promise<UBLJsonExtension> {
   const {
     documentToSign,
@@ -47,7 +47,8 @@ export async function buildSignatureExtension(
     certificateSerialNumber,
     extensionUri = "urn:oasis:names:specification:ubl:dsig:enveloped:xades",
     signatureInformationId = "urn:oasis:names:specification:ubl:signature:1",
-    referencedSignatureId = "urn:oasis:names:specification:ubl:signature:Invoice", // Important: This should match the main document's Signature ID.
+    signatureId:
+      referencedSignatureId = "urn:oasis:names:specification:ubl:signature:Invoice", // Important: This should match the main document's Signature ID.
     documentTransformationKeys = ["UBLExtensions", "Signature"],
   } = params;
 

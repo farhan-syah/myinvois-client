@@ -1,6 +1,5 @@
 // --- User-Friendly Parameter Interfaces - Credit Note Specific ---
 
-import { UBLJsonExtensions } from "../../json/ubl_json"; // Reused for v1.1 extensions
 import {
   AdditionalDocRefParam,
   AllowanceChargeParam,
@@ -15,6 +14,7 @@ import {
   SupplierPartyParam,
   TaxSubtotalParam,
 } from "../params/common";
+import { SignatureParams } from "./signature";
 
 /**
  * User-friendly parameters for defining a credit note line item.
@@ -149,29 +149,11 @@ export interface CreateCreditNoteDocumentParams {
   prepaidPayments?: PrepaidPaymentParam[];
   /** Optional. Document-level allowances or charges applied to the credit note. */
   allowanceCharges?: AllowanceChargeParam[];
-
   /**
-   * UBL Extensions. Primarily used for digital signatures in v1.1 credit notes.
-   * Users needing complex extensions might need to construct `UBLJsonExtensions` objects directly.
-   * For v1.1, if a signature is applied by the builder, this will be populated.
-   * Optional.
+   * Optional. Parameters for creating a UBL digital signature extension.
+   * This is typically used for v1.1 invoices that require a digital signature.
+   * If provided, the builder will attempt to create and embed a signature extension
+   * into the `UBLExtensions` of the invoice.
    */
-  ublExtensions?: UBLJsonExtensions;
-
-  /**
-   * Signature ID for v1.1 credit notes. Optional.
-   * If not provided, a default is used by the builder (e.g., "urn:oasis:names:specification:ubl:signature:CreditNote").
-   * Relevant only when generating a v1.1 credit note that will be signed.
-   */
-  signatureId?: string;
-  /**
-   * Signature Method for v1.1 credit notes. Optional.
-   * If not provided, a default is used by the builder (e.g., "urn:oasis:names:specification:ubl:dsig:enveloped:xades").
-   * Relevant only when generating a v1.1 credit note that will be signed.
-   */
-  signatureMethod?: string;
-
-  // OrderReference, DespatchDocumentReference, ReceiptDocumentReference, OriginatorDocumentReference,
-  // ContractDocumentReference, PayeeParty, TaxRepresentativeParty, TaxExchangeRate
-  // are omitted for simplicity in this initial helper but can be added if needed.
+  signature?: SignatureParams;
 }

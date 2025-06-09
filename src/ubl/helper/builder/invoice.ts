@@ -333,7 +333,7 @@ export async function createUblJsonInvoiceDocument(
   if (version === "1.1") {
     let finalExtensionsArray: UBLJsonExtensions = [];
 
-    if (params.signatureExtension) {
+    if (params.signature) {
       // Create a temporary invoice content object specifically for the signing process.
       // This object should represent the state of the Invoice's content *before*
       // the new signature (being generated now) is embedded.
@@ -374,13 +374,29 @@ export async function createUblJsonInvoiceDocument(
       };
 
       const signatureExtensionInstance = await buildSignatureExtension({
-        ...params.signatureExtension,
+        ...params.signature,
         documentToSign: documentToSign,
       });
       // Add the newly created signature extension to the array for the final document.
       finalExtensionsArray.push({
         UBLExtension: [signatureExtensionInstance],
       });
+
+      // Add the main cac:Signature block to the `invoiceContent`.
+      (invoiceContent as UBLJsonInvoiceV1_1_Content).Signature = [
+        {
+          ID: [
+            {
+              _:
+                params.signature.signatureId ??
+                "urn:oasis:names:specification:ubl:signature:Invoice",
+            },
+          ],
+          SignatureMethod: params.signature.extensionUri
+            ? [{ _: params.signature.extensionUri }]
+            : [{ _: "urn:oasis:names:specification:ubl:dsig:enveloped:xades" }],
+        },
+      ];
     }
 
     // Set the UBLExtensions on the main invoiceContent, ensuring correct structure.
@@ -388,22 +404,6 @@ export async function createUblJsonInvoiceDocument(
     (invoiceContent as UBLJsonInvoiceV1_1_Content).UBLExtensions =
       finalExtensionsArray;
   }
-
-  // Add the main cac:Signature block to the `invoiceContent`.
-  (invoiceContent as UBLJsonInvoiceV1_1_Content).Signature = [
-    {
-      ID: [
-        {
-          _:
-            params.signatureId ??
-            "urn:oasis:names:specification:ubl:signature:Invoice",
-        },
-      ],
-      SignatureMethod: params.signatureMethod
-        ? [{ _: params.signatureMethod }]
-        : [{ _: "urn:oasis:names:specification:ubl:dsig:enveloped:xades" }],
-    },
-  ];
 
   return {
     _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",

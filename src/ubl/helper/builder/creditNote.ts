@@ -7,6 +7,7 @@ import {
 import {
   UBLJsonAccountingCustomerParty,
   UBLJsonAccountingSupplierParty,
+  UBLJsonExtensions, // Added
   UBLJsonInvoiceLine,
   UBLJsonItem,
   UBLJsonLegalMonetaryTotal,
@@ -29,9 +30,12 @@ import {
   toUblText,
   toUblTime,
 } from "./common"; // Import common builder helpers
+import { buildSignatureExtension } from "./signatureExtension"; // Added
 
 /**
- * Creates a UBL Credit Note JSON document (supports v1.0 and v1.1) from user-friendly parameters.
+ * Asynchronously creates a UBL Credit Note JSON document (supports v1.0 and v1.1) from user-friendly parameters.
+ * If `signature` parameters are provided for a v1.1 credit note, this function will internally call
+ * an asynchronous signature generation process.
  * This function simplifies the construction of complex UBL JSON structures by:
  * - Using clear, high-level parameter objects (`CreateCreditNoteDocumentParams`).
  * - Handling the repetitive array and object wrapping required by UBL JSON.
@@ -47,7 +51,7 @@ import {
  *
  * @param params The {@link CreateCreditNoteDocumentParams} object containing all necessary credit note data.
  * @param version Specifies the UBL e-Invoice version to generate ("1.0" or "1.1"). Defaults to "1.1".
- * @returns The constructed UBL Credit Note JSON document (`UBLJsonCreditNoteDocumentV1_0` or `UBLJsonCreditNoteDocumentV1_1`).
+ * @returns A Promise that resolves to the constructed UBL Credit Note JSON document (`UBLJsonCreditNoteDocumentV1_0` or `UBLJsonCreditNoteDocumentV1_1`).
  * @example
  * ```typescript
  * import { createUblJsonCreditNoteDocument } from "./ubl/helper/builder/creditNote";
@@ -58,25 +62,32 @@ import {
  *   issueDate: "2024-08-01",
  *   issueTime: "11:00:00Z",
  *   documentCurrencyCode: "MYR",
- *   supplier: { ... }, // Populate SupplierPartyParam
- *   customer: { ... }, // Populate CustomerPartyParam
- *   billingReferences: [{ invoiceId: "INV2024-001", invoiceIssueDate: "2024-07-30" }], // Link to original invoice
- *   creditNoteLines: [ ... ], // Populate CreditNoteLineParam array
- *   taxTotal: { ... }, // Populate CreditNoteTaxTotalParam
- *   legalMonetaryTotal: { ... }, // Populate LegalMonetaryTotalParam
+ *   supplier: { TIN: "S_TIN", identificationNumber: "S_ID", identificationScheme: "BRN", legalName: "Supplier", address: { addressLines: ["S Addr"], cityName: "KL", countryCode: "MYS", countrySubentityCode: "14" } },
+ *   customer: { TIN: "C_TIN", identificationNumber: "C_ID", identificationScheme: "NRIC", legalName: "Customer", address: { addressLines: ["C Addr"], cityName: "PJ", countryCode: "MYS", countrySubentityCode: "10" } },
+ *   billingReferences: [{ invoiceId: "INV2024-001", invoiceIssueDate: "2024-07-30" }],
+ *   creditNoteLines: [{ id: "1", quantity: 1, subtotal: 50, itemDescription: "Credit Item", itemCommodityClassification: { code: "001" }, unitPrice: 50 }],
+ *   taxTotal: { totalTaxAmount: 0, taxSubtotals: [] },
+ *   legalMonetaryTotal: { lineExtensionAmount: 50, taxExclusiveAmount: 50, taxInclusiveAmount: 50, payableAmount: 50 },
+ *   // Optionally, include signature parameters for v1.1
+ *   // signature: { ... }
  * };
  *
- * // Create a version 1.1 credit note
- * const ublCreditNoteV1_1 = createUblJsonCreditNoteDocument(creditNoteParams, "1.1");
+ * // Example of creating a credit note (assuming an async context to use await)
+ * async function generateCreditNotes() {
+ *   // Create a version 1.1 credit note
+ *   const ublCreditNoteV1_1 = await createUblJsonCreditNoteDocument(creditNoteParams, "1.1");
+ *   console.log("Generated UBL Credit Note v1.1:", ublCreditNoteV1_1);
  *
- * // Create a version 1.0 credit note
- * const ublCreditNoteV1_0 = createUblJsonCreditNoteDocument(creditNoteParams, "1.0");
+ *   // Create a version 1.0 credit note (signature is ignored)
+ *   const ublCreditNoteV1_0 = await createUblJsonCreditNoteDocument(creditNoteParams, "1.0");
+ *   console.log("Generated UBL Credit Note v1.0:", ublCreditNoteV1_0);
+ * }
  * ```
  */
-export function createUblJsonCreditNoteDocument(
+export async function createUblJsonCreditNoteDocument(
   params: CreateCreditNoteDocumentParams,
   version: "1.1" | "1.0" = "1.1"
-): UBLJsonCreditNoteDocumentV1_0 | UBLJsonCreditNoteDocumentV1_1 {
+): Promise<UBLJsonCreditNoteDocumentV1_0 | UBLJsonCreditNoteDocumentV1_1> {
   const docCurrency = params.documentCurrencyCode;
   const taxCurrency = params.taxCurrencyCode ?? docCurrency;
 
@@ -96,7 +107,6 @@ export function createUblJsonCreditNoteDocument(
     Party: [customerParty],
   };
 
-  // Billing References are mandatory for Credit Notes
   const billingReferences = buildBillingReferences(params.billingReferences);
 
   const creditNoteLines: UBLJsonInvoiceLine[] = params.creditNoteLines.map(
@@ -112,7 +122,7 @@ export function createUblJsonCreditNoteDocument(
                 ID: [{ _: st.taxCategoryCode }],
                 TaxScheme: [
                   { ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] },
-                ], // Defaulting TaxScheme
+                ],
               },
             ],
             Percent: toUblNumeric(st.percent),
@@ -163,7 +173,6 @@ export function createUblJsonCreditNoteDocument(
           docCurrency
         ),
         ItemPriceExtension: [
-          // Using ItemPriceExtension for line subtotal in Credit Notes as per MyInvois
           {
             Amount: toUblCurrencyAmount(lineParam.subtotal, docCurrency)!,
           },
@@ -184,7 +193,6 @@ export function createUblJsonCreditNoteDocument(
         TaxCategory: [
           {
             ID: [{ _: st.taxCategoryCode }],
-            // Defaulting TaxScheme as it's usually standard
             TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }],
           },
         ],
@@ -198,7 +206,6 @@ export function createUblJsonCreditNoteDocument(
   ];
 
   const legalMonetaryTotal: UBLJsonLegalMonetaryTotal[] = [
-    // Using LegalMonetaryTotalParam structure
     {
       LineExtensionAmount: toUblCurrencyAmount(
         params.legalMonetaryTotal.lineExtensionAmount,
@@ -241,8 +248,7 @@ export function createUblJsonCreditNoteDocument(
     ID: [{ _: params.id }],
     IssueDate: [{ _: params.issueDate }],
     IssueTime: [{ _: params.issueTime }],
-    // Credit Note Type Code is fixed to "02"
-    InvoiceTypeCode: [{ _: "02", listVersionID: version }],
+    InvoiceTypeCode: [{ _: "02", listVersionID: version }], // Credit Note type code
     DocumentCurrencyCode: [{ _: params.documentCurrencyCode }],
     TaxCurrencyCode: params.taxCurrencyCode
       ? [{ _: params.taxCurrencyCode }]
@@ -250,11 +256,10 @@ export function createUblJsonCreditNoteDocument(
     AccountingSupplierParty: [accountingSupplierParty],
     AccountingCustomerParty: [accountingCustomerParty],
     BillingReference: billingReferences,
-    InvoiceLine: creditNoteLines, // Renamed from InvoiceLine to clarify it's for Credit Note
+    InvoiceLine: creditNoteLines,
     TaxTotal: taxTotal,
     LegalMonetaryTotal: legalMonetaryTotal,
     InvoicePeriod: params.creditNotePeriod?.map((ip) => ({
-      // Using CreditNotePeriodParam
       StartDate: toUblDate(ip.startDate),
       EndDate: toUblDate(ip.endDate),
       Description: toUblText(ip.description),
@@ -296,18 +301,16 @@ export function createUblJsonCreditNoteDocument(
       };
     }),
     PaymentMeans: params.paymentMeans?.map((pm) => ({
-      // Using PaymentMeansParam
       PaymentMeansCode: [{ _: pm.paymentMeansCode }],
       PayeeFinancialAccount: pm.payeeFinancialAccountId
         ? [{ ID: [{ _: pm.payeeFinancialAccountId }] }]
         : undefined,
     })),
     PaymentTerms: params.paymentTerms?.map((pt) => ({
-      // Using PaymentTermsParam
       Note: [{ _: pt.note }],
     })),
     PrepaidPayment: params.prepaidPayments?.map((pp) => ({
-      ID: toUblIdentifier(pp.id), // Using PrepaidPaymentParam
+      ID: toUblIdentifier(pp.id),
       PaidAmount: toUblCurrencyAmount(pp.paidAmount, docCurrency)!,
       PaidDate: toUblDate(pp.paidDate),
       PaidTime: toUblTime(pp.paidTime),
@@ -315,34 +318,86 @@ export function createUblJsonCreditNoteDocument(
     AllowanceCharge: buildAllowanceCharges(
       params.allowanceCharges,
       docCurrency
-    ), // Using common buildAllowanceCharges
+    ),
   };
 
   if (version === "1.1") {
-    // These fields are only present in v1.1
-    (creditNoteContent as UBLJsonCreditNoteV1_1_Content).UBLExtensions =
-      params.ublExtensions ?? [];
-    (creditNoteContent as UBLJsonCreditNoteV1_1_Content).Signature = [
-      {
-        ID: [
-          {
-            _:
-              params.signatureId ??
-              "urn:oasis:names:specification:ubl:signature:Invoice",
-          },
+    let finalExtensionsArray: UBLJsonExtensions = [];
+
+    if (params.signature) {
+      const tempCreditNoteContentForSigning: Omit<
+        UBLJsonCreditNoteV1_1_Content,
+        "Signature"
+      > = {
+        ID: creditNoteContent.ID,
+        IssueDate: creditNoteContent.IssueDate,
+        IssueTime: creditNoteContent.IssueTime,
+        InvoiceTypeCode: creditNoteContent.InvoiceTypeCode,
+        DocumentCurrencyCode: creditNoteContent.DocumentCurrencyCode,
+        TaxCurrencyCode: creditNoteContent.TaxCurrencyCode,
+        AccountingSupplierParty: creditNoteContent.AccountingSupplierParty,
+        AccountingCustomerParty: creditNoteContent.AccountingCustomerParty,
+        BillingReference: (creditNoteContent as UBLJsonCreditNoteV1_1_Content)
+          .BillingReference,
+        InvoiceLine: creditNoteContent.InvoiceLine,
+        TaxTotal: creditNoteContent.TaxTotal,
+        LegalMonetaryTotal: creditNoteContent.LegalMonetaryTotal,
+        InvoicePeriod: creditNoteContent.InvoicePeriod,
+        AdditionalDocumentReference:
+          creditNoteContent.AdditionalDocumentReference,
+        Delivery: creditNoteContent.Delivery,
+        PaymentMeans: creditNoteContent.PaymentMeans,
+        PaymentTerms: creditNoteContent.PaymentTerms,
+        PrepaidPayment: creditNoteContent.PrepaidPayment,
+        AllowanceCharge: creditNoteContent.AllowanceCharge,
+        UBLExtensions: [], // For signing, UBLExtensions should be empty or contain only pre-existing ones.
+      };
+
+      // The documentToSign structure mimics the final output structure for Credit Notes,
+      // which uses an "Invoice" root element and schema as per MyInvois specifications.
+      const documentToSign: UBLJsonCreditNoteDocumentV1_1 = {
+        _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2", // MyInvois specific for CN
+        _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+        _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+        // UBLJsonCreditNoteDocumentV1_1 should have 'Invoice' as its main content key
+        // if it's to match this structure.
+        Invoice: [
+          tempCreditNoteContentForSigning as UBLJsonCreditNoteV1_1_Content,
         ],
-        SignatureMethod: params.signatureMethod
-          ? [{ _: params.signatureMethod }]
-          : [{ _: "urn:oasis:names:specification:ubl:dsig:enveloped:xades" }],
-      },
-    ];
+      };
+
+      const signatureExtensionInstance = await buildSignatureExtension({
+        ...params.signature,
+        documentToSign: documentToSign,
+      });
+      finalExtensionsArray.push({
+        UBLExtension: [signatureExtensionInstance],
+      });
+
+      (creditNoteContent as UBLJsonCreditNoteV1_1_Content).Signature = [
+        {
+          ID: [
+            {
+              _:
+                params.signature.signatureId ??
+                "urn:oasis:names:specification:ubl:signature:CreditNote", // Default for CreditNote
+            },
+          ],
+          SignatureMethod: params.signature.extensionUri
+            ? [{ _: params.signature.extensionUri }]
+            : [{ _: "urn:oasis:names:specification:ubl:dsig:enveloped:xades" }],
+        },
+      ];
+    }
+    (creditNoteContent as UBLJsonCreditNoteV1_1_Content).UBLExtensions =
+      finalExtensionsArray;
   }
 
-  // Root UBL JSON structure for Credit Note
+  // Root UBL JSON structure for Credit Note (using "Invoice" as root element based on observed MyInvois requirements)
   return {
-    _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+    _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2", // Per MyInvois, even for Credit Notes
     _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
     _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-    Invoice: [creditNoteContent], // Note: The root element is still 'Invoice' in the JSON schema
+    Invoice: [creditNoteContent], // Note: The root element is 'Invoice'
   };
 }

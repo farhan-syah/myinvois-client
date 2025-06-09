@@ -14,7 +14,7 @@ import {
   SupplierPartyParam,
   TaxSubtotalParam,
 } from "../params/common";
-import { SignatureExtensionParams } from "../params/signatureExtension";
+import { SignatureParams } from "./signature";
 
 /**
  * User-friendly parameters for defining an invoice line item.
@@ -134,21 +134,5 @@ export interface CreateInvoiceDocumentParams {
    * If provided, the builder will attempt to create and embed a signature extension
    * into the `UBLExtensions` of the invoice.
    */
-  signatureExtension?: SignatureExtensionParams;
-
-  // BillingReference is complex and less common for basic invoice creation via simple params, omitted for simplicity.
-  // TaxExchangeRate is also omitted for simplicity; the builder handles it if currencies differ and taxCurrencyCode is MYR.
-
-  /**
-   * Signature ID for v1.1 invoices. Optional.
-   * If not provided, a default is used by the builder (e.g., "urn:oasis:names:specification:ubl:signature:Invoice").
-   * Relevant only when generating a v1.1 invoice that will be signed.
-   */
-  signatureId?: string;
-  /**
-   * Signature Method for v1.1 invoices. Optional.
-   * If not provided, a default is used by the builder (e.g., "urn:oasis:names:specification:ubl:dsig:enveloped:xades").
-   * Relevant only when generating a v1.1 invoice that will be signed.
-   */
-  signatureMethod?: string;
+  signature?: SignatureParams;
 }

@@ -3,7 +3,7 @@
  * This interface collects the necessary data to generate the <UBLExtensions> block
  * containing the digital signature information as per MyInvois requirements.
  */
-export interface SignatureExtensionParams {
+export interface SignatureParams {
   /**
    * The main UBL document object (e.g., Invoice, CreditNote JSON object) that needs to be signed.
    * This document will be processed (minified, parts excluded) to generate the document digest.
@@ -56,7 +56,7 @@ export interface SignatureExtensionParams {
    * Example: "urn:oasis:names:specification:ubl:signature:Invoice" for an Invoice document.
    * @default "urn:oasis:names:specification:ubl:signature:Invoice"
    */
-  referencedSignatureId?: string;
+  signatureId?: string;
 
   /**
    * Optional. An array of top-level keys to exclude from the `documentToSign` object before generating its digest.

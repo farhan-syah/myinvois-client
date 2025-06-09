@@ -1,5 +1,4 @@
 export * from "./common";
 export * from "./creditNote";
 export * from "./invoice";
-export * from "./signatureExtension";
-export * from "./ublExtensions";
+export * from "./signature";
