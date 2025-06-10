@@ -1,31 +1,12 @@
 import {
+  createDocumentSubmissionItemFromInvoice,
+  CreateInvoiceDocumentParams,
+  IdentificationScheme,
   MyInvoisClient,
   MyInvoisEnvironment,
-  CreateInvoiceDocumentParams,
-  createUblJsonInvoiceDocument,
-  IdentificationScheme,
   SubmitDocumentsRequest,
   SubmitDocumentsResponse,
-  UBLJsonInvoiceDocumentV1_0,
 } from "myinvois-client"; // Adjust path
-
-// --- Environment-Specific Helper Implementations (YOU NEED TO PROVIDE THESE) ---
-
-// For Node.js environment
-async function calculateSHA256HexNode(text: string): Promise<string> {
-  const crypto = await import("crypto");
-  return crypto.createHash("sha256").update(text, "utf8").digest("hex");
-}
-
-function encodeBase64Node(text: string): string {
-  return Buffer.from(text, "utf8").toString("base64");
-}
-// Choose the correct helpers based on your test environment
-// For this example, let's assume a Node.js testing environment conceptually
-const calculateSHA256Hex = calculateSHA256HexNode; // Or calculateSHA256HexBrowser
-const encodeBase64 = encodeBase64Node; // Or encodeBase64Browser
-
-// --- Dummy Cryptographic Materials & Setup (REMOVED as Invoice 1.0 doesn't use UBLExtensions/Signature) ---
 
 // --- Main Test Function ---
 async function runFullIntegrationTest() {
@@ -167,32 +148,8 @@ async function runFullIntegrationTest() {
       // and will be omitted from the generated JSON.
     };
 
-    // Generate the full UBL Invoice Document for version 1.0
-    // The type assertion is safe because we are passing "1.0"
-    const fullUblDocument = createUblJsonInvoiceDocument(
-      invoiceParams,
-      "1.0"
-    ) as UBLJsonInvoiceDocumentV1_0;
-
-    console.log("UBL Invoice 1.0 Document generated.");
-    // console.log(JSON.stringify(fullUblDocument, null, 2)); // For debugging the generated structure
-
-    console.log("\nStep 3 : Preparing Document for API Submission..."); // Renumbering step
-    const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
-
-    const documentHash = await calculateSHA256Hex(finalInvoiceJsonString);
-    console.log("Document Hash (SHA256 Hex):", documentHash);
-
-    const documentBase64 = encodeBase64(finalInvoiceJsonString);
-
-    console.log(documentBase64);
-
-    const documentToSubmit = {
-      format: "JSON" as const,
-      document: documentBase64,
-      documentHash: documentHash,
-      codeNumber: invoiceId,
-    };
+    const documentToSubmit =
+      await createDocumentSubmissionItemFromInvoice(invoiceParams);
 
     const submissionRequest: SubmitDocumentsRequest = {
       documents: [documentToSubmit],

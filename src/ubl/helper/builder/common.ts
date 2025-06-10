@@ -1,4 +1,5 @@
 import {
+  UBLJsonBillingReference,
   UBLJsonCurrencyAmount,
   UBLJsonCustomerContact,
   UBLJsonCustomerParty,
@@ -16,6 +17,7 @@ import {
 import {
   AddressParam,
   AllowanceChargeParam,
+  BillingReferenceParam,
   CustomerPartyParam,
   SupplierPartyParam,
 } from "../params/common";
@@ -299,4 +301,23 @@ export const buildPostalAddressFromAddressParam = (
       },
     ],
   };
+};
+
+/**
+ * @internal
+ * Constructs an array of UBL `BillingReference` JSON structures from simplified `BillingReferenceParam` objects.
+ * @param params Array of billing reference parameters.
+ * @returns Array of UBLJsonBillingReference structures, or undefined if params is empty.
+ */
+export const buildBillingReferences = (
+  params: BillingReferenceParam[]
+): UBLJsonBillingReference[] => {
+  return params.map((br) => ({
+    InvoiceDocumentReference: [
+      {
+        UUID: toUblIdentifier(br.uuid)!,
+        ID: toUblIdentifier(br.internalId)!,
+      },
+    ],
+  }));
 };

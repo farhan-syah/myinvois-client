@@ -44,15 +44,15 @@ export interface SupplierPartyParam {
   industryClassificationCode: string;
   /** Description of the supplier's business activity, corresponding to the MSIC code. E.g., "Growing of maize". */
   industryClassificationName: string;
+  /** Supplier's Tourism Tax Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "123-4567-89012345". */
+  tourismTaxRegistrationNumber?: string;
+  /** Supplier's SST Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "A01-2345-67891012". */
+  sstRegistrationNumber?: string;
   /**
    * Supplier's additional account ID. Can be used for specific purposes like
    * Authorisation Number for Certified Exporter (e.g., ATIGA number).
    * E.g., "CPT-CCN-W-211111-KL-000002".
    */
-  /** Supplier's Tourism Tax Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "123-4567-89012345". */
-  tourismTaxRegistrationNumber?: string;
-  /** Supplier's SST Registration Number. Optional. Input "NA" if not applicable and required by schema. E.g., "A01-2345-67891012". */
-  sstRegistrationNumber?: string;
   additionalAccountId?: string;
   /** Supplier's e-mail address. Optional. E.g., "general.ams@supplier.com". */
   electronicMail?: string;
@@ -64,7 +64,7 @@ export interface SupplierPartyParam {
 export interface CustomerPartyParam {
   /** Customer's Tax Identification Number (TIN). E.g., "C2584563200". */
   TIN: string;
-  /** Customer's registration/identification number (e.g., MyKad, Business Registration Number). E.g., "BRN: 202001234567". */
+  /** Customer's registration/identification number (e.g., MyKad, Business Registration Number). E.g., "202001234567". */
   identificationNumber: string;
   /** Scheme for the `identificationNumber` (NRIC, BRN, PASSPORT, ARMY). */
   identificationScheme: IdentificationScheme;
@@ -125,8 +125,6 @@ export interface PaymentMeansParam {
   paymentMeansCode: PaymentMode;
   /** Supplier’s bank account number for payment. Optional. E.g., "1234567890123". */
   payeeFinancialAccountId?: string;
-  /** Payment reference number. Optional. E.g., "E12345678912". */
-  paymentId?: string;
 }
 
 /**
@@ -210,8 +208,8 @@ export interface LegalMonetaryTotalParam {
    */
   taxExclusiveAmount: number;
   /**
-   * Total Including Tax: Sum of amount inclusive of total taxes.
-   * E.g., 1524.13 (if taxInclusiveAmount is 1524.13 and totalTaxAmount is 87.63).
+   * Total Including Tax: Sum of amount inclusive of total taxes (i.e., taxExclusiveAmount + totalTaxAmount from TaxTotalParam).
+   * E.g., 1524.13 (where taxExclusiveAmount is 1436.50 and total tax is 87.63).
    */
   taxInclusiveAmount: number;
   /** Total document-level discount amount. Optional. E.g., 100.00. */
@@ -227,4 +225,77 @@ export interface LegalMonetaryTotalParam {
    * E.g., 1324.13 (if taxInclusiveAmount is 1524.13 and prepaidAmount is 200.00).
    */
   payableAmount: number;
+}
+
+/**
+ * User-friendly parameters for defining a billing reference, linking the document to the original document.
+ */
+export interface BillingReferenceParam {
+  /** The ID of the original document being referenced. */
+  uuid: string;
+  /** User's internal identifier for the original referenced document. */
+  internalId: string;
+}
+
+/**
+ * User-friendly parameters for defining a billing period.
+ */
+export interface PeriodParam {
+  /** Start date of the billing period (YYYY-MM-DD). Optional. E.g., "2017-11-26". */
+  startDate?: string;
+  /** End date of the billing period (YYYY-MM-DD). Optional. E.g., "2017-11-30". */
+  endDate?: string;
+  /** Description of the billing frequency (e.g., "Monthly"). Optional. */
+  description?: string;
+}
+
+/**
+ * User-friendly parameters for defining the overall tax total for the document.
+ */
+export interface TaxTotalParam {
+  /** Total tax amount for the entire invoice. E.g., 87.63. */
+  totalTaxAmount: number;
+  /** Breakdown of taxes by category/rate for the entire invoice. */
+  taxSubtotals: TaxSubtotalParam[];
+  /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
+  roundingAmount?: number;
+}
+
+/**
+ * User-friendly parameters for defining an invoice line item.
+ */
+export interface InvoiceLineItem {
+  /** Unique identifier for the invoice line (e.g., item number "1", "2", etc.). */
+  id: string;
+  /** Number of units of the product or service. E.g., 1.00. */
+  quantity: number;
+  /** Price assigned to a single unit of the product or service. E.g., 17.00. */
+  unitPrice: number;
+  /**
+   * Subtotal for the line item: Amount of each individual item/service, excluding taxes, charges, or discounts.
+   * This maps to `ItemPriceExtension/Amount` in UBL, which is used for line item subtotal in MyInvois.
+   * E.g., 100.00.
+   */
+  subtotal: number;
+
+  /** Description of the product or service. E.g., "Laptop Peripherals". Mandatory. */
+  itemDescription: string;
+  /** Commodity classification details for the item. */
+  itemCommodityClassification: ItemCommodityClassificationParam;
+  /**
+   * Tax details for this specific line item. .
+   */
+  lineTaxTotal: {
+    /** Breakdown of taxes for this line item by category/rate. At least one item is required*/
+    taxSubtotals: TaxSubtotalParam[];
+    /** Total tax amount for this line item. E.g., 8.76. */
+    taxAmount: number;
+  };
+  /**
+   * Standard unit or system used to measure the product or service (UN/ECE Recommendation 20).
+   * E.g., "KGM" for kilograms, "UNT" for unit. Optional.
+   */
+  unitCode?: string;
+  /** Optional list of allowances or charges specific to this line item. */
+  allowanceCharges?: AllowanceChargeParam[];
 }

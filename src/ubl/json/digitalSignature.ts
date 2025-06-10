@@ -1,5 +1,7 @@
 // einvoice/src/security/digitalSignature.ts
 
+import { UBLJsonIdentifier } from "./ubl_json";
+
 // This helper function provides simple JSON minification as described by MyInvois:
 // "minify the document by removing following elements from it: Whitespaces, Line breaks, Comments"
 // JSON.stringify achieves whitespace/line break removal. Standard JSON parsing handles comments.
@@ -176,8 +178,8 @@ export interface UBLDocumentSignatureExtension {
     {
       SignatureInformation: [
         {
-          ID?: [StringValueWrapper]; // Added for UBL alignment
-          ReferencedSignatureID?: [StringValueWrapper]; // Added for UBL alignment
+          ID?: UBLJsonIdentifier;
+          ReferencedSignatureID?: UBLJsonIdentifier;
           Signature: [DigitalSignature];
         },
       ];
@@ -264,9 +266,9 @@ export function createSignedProperties(
 /**
  * Generates the full DigitalSignature structure according to MyInvois specifications.
  *
- * @param documentToSign The JSON document (e.g., UBL Invoice) - output of Step 1.
+ * @param documentToSign The JSON document (e.g., UBL Invoice) - Input for Step 2 (document transformation and hashing).
  * @param privateKey The signer's private key as a CryptoKey object.
- * @param signingCertificateBase64 The signer\'s X.509 certificate, base64 encoded (for KeyInfo).
+ * @param signingCertificateBase64 The signer's X.509 certificate, base64 encoded (for KeyInfo).
  * @param certDigestBase64 Base64 SHA-256 digest of the signing certificate ("CertDigest" - Step 5 output).
  * @param certIssuerName Issuer name from the signing certificate.
  * @param certSerialNumber Serial number of the signing certificate.

@@ -748,11 +748,13 @@ export interface UBLJsonDocumentReference {
    * Maps to UBL: cbc:ID
    */
   ID: UBLJsonIdentifier;
+
   /**
-   * Universally Unique Identifier of the referenced document. Optional.
+   * LHDNM Unique Identifier Number. Required for credit note, debit note
    * Maps to UBL: cbc:UUID
    */
   UUID?: UBLJsonIdentifier;
+
   /**
    * Issue date of the referenced document. Optional.
    * Maps to UBL: cbc:IssueDate

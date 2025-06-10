@@ -31,7 +31,8 @@ import {
 import { buildSignatureExtension } from "./signatureExtension";
 
 /**
- * Asynchronously creates a UBL Invoice JSON document (supports v1.0 and v1.1) from user-friendly parameters.
+ * Asynchronously creates a UBL Self-Billed Invoice JSON document (supports v1.0 and v1.1) from user-friendly parameters.
+ * The InvoiceTypeCode will be set to "389" (Self-billed invoice).
  * If `signatureExtension` parameters are provided for a v1.1 invoice, this function will internally call
  * an asynchronous signature generation process.
  * This function simplifies the construction of complex UBL JSON structures by:
@@ -40,74 +41,81 @@ import { buildSignatureExtension } from "./signatureExtension";
  * - Setting default values for common UBL attributes (e.g., `listID`, `schemeAgencyID`).
  * - Differentiating between Invoice v1.0 and v1.1 structures (e.g., presence of `UBLExtensions` and `Signature`).
  *
- * Developers can use this builder to easily generate compliant UBL JSON invoices without needing to
+ * In a self-billed invoice context:
+ * - The `customer` parameter (AccountingCustomerParty) represents the party ISSUING the invoice (typically the buyer).
+ * - The `supplier` parameter (AccountingSupplierParty) represents the party RECEIVING the invoice (typically the seller whose goods/services are being billed by the customer).
+ *
+ * Developers can use this builder to easily generate compliant UBL JSON self-billed invoices without needing to
  * understand all the intricacies of the UBL JSON format directly. For more advanced scenarios or
  * customization beyond what the parameters offer, developers can still construct or modify the
  * `UBLJsonInvoiceDocumentV1_0` or `UBLJsonInvoiceDocumentV1_1` objects manually.
  *
  * @param params The {@link CreateInvoiceDocumentParams} object containing all necessary invoice data.
+ *               Note: `params.invoiceTypeCode` will be overridden to "389".
+ *               The `params` object is assumed to potentially have an `existingExtensions?: UBLJsonExtensions` field for advanced scenarios.
  * @param version Specifies the UBL e-Invoice version to generate ("1.0" or "1.1"). Defaults to "1.1".
- * @returns A Promise that resolves to the constructed UBL Invoice JSON document (`UBLJsonInvoiceDocumentV1_0` or `UBLJsonInvoiceDocumentV1_1`).
+ * @returns A Promise that resolves to the constructed UBL Self-Billed Invoice JSON document (`UBLJsonInvoiceDocumentV1_0` or `UBLJsonInvoiceDocumentV1_1`).
  * @example
  * ```typescript
- * import { createUblJsonInvoiceDocument } from "./ubl/helper/builder/invoice";
+ * import { createUblJsonSelfBilledInvoiceDocument } from "./ubl/helper/builder/selfBilledInvoice";
  * import { CreateInvoiceDocumentParams } from "./ubl/helper/params/invoice";
  *
- * const invoiceParams: CreateInvoiceDocumentParams = {
- *   id: "INV2024-001",
+ * const selfBilledParams: CreateInvoiceDocumentParams = {
+ *   id: "SBINV2024-001",
  *   issueDate: "2024-07-30",
  *   issueTime: "10:00:00Z",
- *   invoiceTypeCode: "01", // Standard Invoice
+ *   // invoiceTypeCode is set to "389" by this builder, any value in params.invoiceTypeCode is ignored for Self-Billed.
  *   documentCurrencyCode: "MYR",
- *   supplier: { // Populate SupplierPartyParam
- *      TIN: "TIN123", identificationNumber: "ID123", identificationScheme: "BRN",
- *      telephone: "+60123456789", legalName: "Supplier Sdn Bhd",
- *      address: { addressLines: ["Line 1"], cityName: "KL", countrySubentityCode: "14", countryCode: "MYS" },
- *      industryClassificationCode: "0111", industryClassificationName: "Test"
+ *   supplier: { // The party RECEIVING the self-billed invoice (Seller)
+ *      TIN: "TIN_SELLER_123", identificationNumber: "SELLER_REG_123", identificationScheme: "BRN",
+ *      legalName: "Actual Seller Goods Sdn Bhd",
+ *      address: { addressLines: ["Seller Street 1"], cityName: "Cyberjaya", countrySubentityCode: "10", countryCode: "MYS" },
  *   },
- *   customer: { // Populate CustomerPartyParam
- *      TIN: "TIN456", identificationNumber: "ID456", identificationScheme: "NRIC",
- *      telephone: "+60987654321", legalName: "Customer Berhad",
- *      address: { addressLines: ["Line A"], cityName: "PJ", countrySubentityCode: "10", countryCode: "MYS" },
+ *   customer: { // The party ISSUING the self-billed invoice (Buyer)
+ *      TIN: "TIN_BUYER_456", identificationNumber: "BUYER_REG_456", identificationScheme: "BRN",
+ *      legalName: "Self-Billing Buyer Berhad",
+ *      address: { addressLines: ["Buyer Avenue A"], cityName: "Putrajaya", countrySubentityCode: "16", countryCode: "MYS" },
  *   },
- *   invoiceLines: [ // Populate InvoiceLineParam array
+ *   invoiceLines: [
  *      {
- *          id: "1", quantity: 1, subtotal: 100.00, unitPrice: 100.00,
- *          itemCommodityClassification: { code: "001" },
+ *          id: "1", quantity: 5, subtotal: 500.00, unitPrice: 100.00,
+ *          itemDescription: "Services Rendered (Self-Billed)",
+ *          itemCommodityClassification: { code: "S001", listID: "SCLASS" },
  *          lineTaxTotal: {
- *              taxAmount: 6.00, taxSubtotals: [{ taxableAmount: 100.00, taxAmount: 6.00, taxCategoryCode: "S", percent: 6 }]
+ *              taxAmount: 30.00, taxSubtotals: [{ taxableAmount: 500.00, taxAmount: 30.00, taxCategoryCode: "S", percent: 6 }]
  *          }
  *      }
  *   ],
- *   taxTotal: { // Populate InvoiceTaxTotalParam
- *      totalTaxAmount: 6.00, taxSubtotals: [{ taxableAmount: 100.00, taxAmount: 6.00, taxCategoryCode: "S", percent: 6 }]
+ *   taxTotal: {
+ *      totalTaxAmount: 30.00, taxSubtotals: [{ taxableAmount: 500.00, taxAmount: 30.00, taxCategoryCode: "S", percent: 6 }]
  *   },
- *   legalMonetaryTotal: { // Populate LegalMonetaryTotalParam
- *      lineExtensionAmount: 100.00, taxExclusiveAmount: 100.00, taxInclusiveAmount: 106.00, payableAmount: 106.00
+ *   legalMonetaryTotal: {
+ *      lineExtensionAmount: 500.00, taxExclusiveAmount: 500.00, taxInclusiveAmount: 530.00, payableAmount: 530.00
  *   },
+ *   // signature: { ... if signing is needed for v1.1 ... }
  * };
  *
- * // Example of creating an invoice (assuming an async context to use await)
- * async function generateInvoices() {
- *   // Create a version 1.1 invoice
- *   const ublInvoiceV1_1 = await createUblJsonInvoiceDocument(invoiceParams, "1.1");
- *   console.log("Generated UBL Invoice v1.1:", ublInvoiceV1_1);
+ * async function generateSelfBilled() {
+ *   const ublDocV1_1 = await createUblJsonSelfBilledInvoiceDocument(selfBilledParams, "1.1");
+ *   console.log("Generated UBL Self-Billed Invoice v1.1:", ublDocV1_1);
  *
- *   // Create a version 1.0 invoice
- *   const ublInvoiceV1_0 = await createUblJsonInvoiceDocument(invoiceParams, "1.0");
- *   console.log("Generated UBL Invoice v1.0:", ublInvoiceV1_0);
+ *   const ublDocV1_0 = await createUblJsonSelfBilledInvoiceDocument(selfBilledParams, "1.0");
+ *   console.log("Generated UBL Self-Billed Invoice v1.0:", ublDocV1_0);
  * }
  * ```
  */
-export async function createUblJsonInvoiceDocument(
-  params: CreateInvoiceDocumentParams,
+export async function createUblJsonSelfBilledInvoiceDocument(
+  params: CreateInvoiceDocumentParams & {
+    existingExtensions?: UBLJsonExtensions;
+  }, // Allow pre-existing extensions
   version: "1.1" | "1.0" = "1.1"
 ): Promise<UBLJsonInvoiceDocumentV1_0 | UBLJsonInvoiceDocumentV1_1> {
   const docCurrency = params.documentCurrencyCode;
   const taxCurrency = params.taxCurrencyCode ?? docCurrency;
 
-  const supplierParty = buildSupplier(params.supplier);
-  const customerParty = buildCustomerParty(params.customer);
+  // In self-billing, AccountingSupplierParty is the seller, AccountingCustomerParty is the buyer (issuer of invoice)
+  const supplierParty = buildSupplier(params.supplier); // Seller
+  const customerParty = buildCustomerParty(params.customer); // Buyer
 
   const accountingSupplierParty: UBLJsonAccountingSupplierParty = {
     Party: [supplierParty],
@@ -132,7 +140,7 @@ export async function createUblJsonInvoiceDocument(
           TaxCategory: [
             {
               ID: [{ _: st.taxCategoryCode }],
-              TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }], // Defaulting TaxScheme
+              TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }],
             },
           ],
           Percent: toUblNumeric(st.percent),
@@ -203,7 +211,6 @@ export async function createUblJsonInvoiceDocument(
         TaxCategory: [
           {
             ID: [{ _: st.taxCategoryCode }],
-            // Defaulting TaxScheme as it's usually standard
             TaxScheme: [{ ID: [{ _: "UN/ECE 5153", schemeAgencyID: "6" }] }],
           },
         ],
@@ -253,117 +260,120 @@ export async function createUblJsonInvoiceDocument(
     },
   ];
 
-  let invoiceContent: UBLJsonInvoiceV1_0_Content | UBLJsonInvoiceV1_1_Content =
-    {
-      ID: [{ _: params.id }],
-      IssueDate: [{ _: params.issueDate }],
-      IssueTime: [{ _: params.issueTime }],
-      InvoiceTypeCode: [{ _: "01", listVersionID: version }],
-      DocumentCurrencyCode: [{ _: params.documentCurrencyCode }],
-      TaxCurrencyCode: params.taxCurrencyCode
-        ? [{ _: params.taxCurrencyCode }]
-        : undefined,
-      AccountingSupplierParty: [accountingSupplierParty],
-      AccountingCustomerParty: [accountingCustomerParty],
-      InvoiceLine: invoiceLines,
-      TaxTotal: taxTotal,
-      LegalMonetaryTotal: legalMonetaryTotal,
-      InvoicePeriod: params.invoicePeriod?.map((ip) => ({
-        StartDate: toUblDate(ip.startDate),
-        EndDate: toUblDate(ip.endDate),
-        Description: toUblText(ip.description),
-      })),
-      AdditionalDocumentReference: params.additionalDocumentReferences?.map(
-        (adr) => ({
-          ID: [{ _: adr.id }],
-          DocumentType: toUblText(adr.documentType),
-          DocumentDescription: toUblText(adr.documentDescription),
-        })
-      ),
-      Delivery: params.delivery?.map((d) => {
-        const deliveryParty = [];
-        if (d.partyName ?? d.address) {
-          const partyLegalEntities = [];
-          if (d.partyName) {
-            partyLegalEntities.push({
-              RegistrationName: toUblText(d.partyName),
-            });
-          }
-          const deliveryPostalAddressArray = d.address
-            ? [buildPostalAddressFromAddressParam(d.address)]
-            : undefined;
-
-          deliveryParty.push({
-            PartyLegalEntity:
-              partyLegalEntities.length > 0 ? partyLegalEntities : undefined,
-            PostalAddress: deliveryPostalAddressArray,
+  let selfBilledInvoiceContent:
+    | UBLJsonInvoiceV1_0_Content
+    | UBLJsonInvoiceV1_1_Content = {
+    ID: [{ _: params.id }],
+    IssueDate: [{ _: params.issueDate }],
+    IssueTime: [{ _: params.issueTime }],
+    InvoiceTypeCode: [{ _: "11", listVersionID: version }], // Self-Billed Invoice
+    DocumentCurrencyCode: [{ _: params.documentCurrencyCode }],
+    TaxCurrencyCode: params.taxCurrencyCode
+      ? [{ _: params.taxCurrencyCode }]
+      : undefined,
+    AccountingSupplierParty: [accountingSupplierParty], // Seller
+    AccountingCustomerParty: [accountingCustomerParty], // Buyer (Issuer)
+    InvoiceLine: invoiceLines,
+    TaxTotal: taxTotal,
+    LegalMonetaryTotal: legalMonetaryTotal,
+    InvoicePeriod: params.invoicePeriod?.map((ip) => ({
+      StartDate: toUblDate(ip.startDate),
+      EndDate: toUblDate(ip.endDate),
+      Description: toUblText(ip.description),
+    })),
+    AdditionalDocumentReference: params.additionalDocumentReferences?.map(
+      (adr) => ({
+        ID: [{ _: adr.id }],
+        DocumentType: toUblText(adr.documentType),
+        DocumentDescription: toUblText(adr.documentDescription),
+      })
+    ),
+    Delivery: params.delivery?.map((d) => {
+      const deliveryParty = [];
+      if (d.partyName ?? d.address) {
+        const partyLegalEntities = [];
+        if (d.partyName) {
+          partyLegalEntities.push({
+            RegistrationName: toUblText(d.partyName),
           });
         }
-        const shipment: UBLJsonShipment[] = [];
-        if (d.shipmentId) {
-          shipment.push({ ID: toUblIdentifier(d.shipmentId)! });
-        }
+        const deliveryPostalAddressArray = d.address
+          ? [buildPostalAddressFromAddressParam(d.address)]
+          : undefined;
 
-        return {
-          DeliveryParty: deliveryParty.length > 0 ? deliveryParty : undefined,
-          Shipment: shipment.length > 0 ? shipment : undefined,
-        };
-      }),
-      PaymentMeans: params.paymentMeans?.map((pm) => ({
-        PaymentMeansCode: [{ _: pm.paymentMeansCode }],
-        PayeeFinancialAccount: pm.payeeFinancialAccountId
-          ? [{ ID: [{ _: pm.payeeFinancialAccountId }] }]
-          : undefined,
-      })),
-      PaymentTerms: params.paymentTerms?.map((pt) => ({
-        Note: [{ _: pt.note }],
-      })),
-      PrepaidPayment: params.prepaidPayments?.map((pp) => ({
-        ID: toUblIdentifier(pp.id),
-        PaidAmount: toUblCurrencyAmount(pp.paidAmount, docCurrency)!,
-        PaidDate: toUblDate(pp.paidDate),
-        PaidTime: toUblTime(pp.paidTime),
-      })),
-      AllowanceCharge: buildAllowanceCharges(
-        params.allowanceCharges,
-        docCurrency
-      ),
-    };
+        deliveryParty.push({
+          PartyLegalEntity:
+            partyLegalEntities.length > 0 ? partyLegalEntities : undefined,
+          PostalAddress: deliveryPostalAddressArray,
+        });
+      }
+      const shipment: UBLJsonShipment[] = [];
+      if (d.shipmentId) {
+        shipment.push({ ID: toUblIdentifier(d.shipmentId)! });
+      }
+
+      return {
+        DeliveryParty: deliveryParty.length > 0 ? deliveryParty : undefined,
+        Shipment: shipment.length > 0 ? shipment : undefined,
+      };
+    }),
+    PaymentMeans: params.paymentMeans?.map((pm) => ({
+      PaymentMeansCode: [{ _: pm.paymentMeansCode }],
+      PayeeFinancialAccount: pm.payeeFinancialAccountId
+        ? [{ ID: [{ _: pm.payeeFinancialAccountId }] }]
+        : undefined,
+    })),
+    PaymentTerms: params.paymentTerms?.map((pt) => ({
+      Note: [{ _: pt.note }],
+    })),
+    PrepaidPayment: params.prepaidPayments?.map((pp) => ({
+      ID: toUblIdentifier(pp.id),
+      PaidAmount: toUblCurrencyAmount(pp.paidAmount, docCurrency)!,
+      PaidDate: toUblDate(pp.paidDate),
+      PaidTime: toUblTime(pp.paidTime),
+    })),
+    AllowanceCharge: buildAllowanceCharges(
+      params.allowanceCharges,
+      docCurrency
+    ),
+  };
 
   if (version === "1.1") {
+    const v1_1Content = selfBilledInvoiceContent as UBLJsonInvoiceV1_1_Content;
     let finalExtensionsArray: UBLJsonExtensions = [];
 
+    // If there are existing extensions, use them as a base
+    if (params.existingExtensions && params.existingExtensions.length > 0) {
+      finalExtensionsArray = [...params.existingExtensions];
+    }
+
     if (params.signature) {
-      // Create a temporary invoice content object specifically for the signing process.
-      // This object should represent the state of the Invoice's content *before*
-      // the new signature (being generated now) is embedded.
       const tempInvoiceContentForSigning: Omit<
         UBLJsonInvoiceV1_1_Content,
         "Signature"
       > = {
-        // Copy all common properties from the `invoiceContent` object built so far
-        ID: invoiceContent.ID,
-        IssueDate: invoiceContent.IssueDate,
-        IssueTime: invoiceContent.IssueTime,
-        InvoiceTypeCode: invoiceContent.InvoiceTypeCode,
-        DocumentCurrencyCode: invoiceContent.DocumentCurrencyCode,
-        TaxCurrencyCode: invoiceContent.TaxCurrencyCode,
-        AccountingSupplierParty: invoiceContent.AccountingSupplierParty,
-        AccountingCustomerParty: invoiceContent.AccountingCustomerParty,
-        InvoiceLine: invoiceContent.InvoiceLine,
-        TaxTotal: invoiceContent.TaxTotal,
-        LegalMonetaryTotal: invoiceContent.LegalMonetaryTotal,
-        InvoicePeriod: invoiceContent.InvoicePeriod,
-        AdditionalDocumentReference: invoiceContent.AdditionalDocumentReference,
-        Delivery: invoiceContent.Delivery,
-        PaymentMeans: invoiceContent.PaymentMeans,
-        PaymentTerms: invoiceContent.PaymentTerms,
-        PrepaidPayment: invoiceContent.PrepaidPayment,
-        AllowanceCharge: invoiceContent.AllowanceCharge,
-        // UBLExtensions for signing should ONLY contain pre-existing extensions,
-        // structured correctly.
+        ID: v1_1Content.ID,
+        IssueDate: v1_1Content.IssueDate,
+        IssueTime: v1_1Content.IssueTime,
+        InvoiceTypeCode: v1_1Content.InvoiceTypeCode,
+        DocumentCurrencyCode: v1_1Content.DocumentCurrencyCode,
+        TaxCurrencyCode: v1_1Content.TaxCurrencyCode,
+        AccountingSupplierParty: v1_1Content.AccountingSupplierParty,
+        AccountingCustomerParty: v1_1Content.AccountingCustomerParty,
+        InvoiceLine: v1_1Content.InvoiceLine,
+        TaxTotal: v1_1Content.TaxTotal,
+        LegalMonetaryTotal: v1_1Content.LegalMonetaryTotal,
+        InvoicePeriod: v1_1Content.InvoicePeriod,
+        AdditionalDocumentReference: v1_1Content.AdditionalDocumentReference,
+        Delivery: v1_1Content.Delivery,
+        PaymentMeans: v1_1Content.PaymentMeans,
+        PaymentTerms: v1_1Content.PaymentTerms,
+        PrepaidPayment: v1_1Content.PrepaidPayment,
+        AllowanceCharge: v1_1Content.AllowanceCharge,
+        // UBLExtensions for signing should contain only pre-existing non-signature extensions.
+        // If `finalExtensionsArray` currently holds these (from params.existingExtensions), use them.
+        // Otherwise, it's empty as per original invoice builder's signing logic.
         UBLExtensions: [],
-        // The cac:Signature block itself is NOT included in the data to be signed.
       };
 
       const documentToSign: UBLJsonInvoiceDocumentV1_1 = {
@@ -377,13 +387,12 @@ export async function createUblJsonInvoiceDocument(
         ...params.signature,
         documentToSign: documentToSign,
       });
-      // Add the newly created signature extension to the array for the final document.
+
       finalExtensionsArray.push({
         UBLExtension: [signatureExtensionInstance],
       });
 
-      // Add the main cac:Signature block to the `invoiceContent`.
-      (invoiceContent as UBLJsonInvoiceV1_1_Content).Signature = [
+      v1_1Content.Signature = [
         {
           ID: [
             {
@@ -399,16 +408,16 @@ export async function createUblJsonInvoiceDocument(
       ];
     }
 
-    // Set the UBLExtensions on the main invoiceContent, ensuring correct structure.
-    // If finalExtensionsArray is empty, UBLExtensions will be { UBLExtension: [] }.
-    (invoiceContent as UBLJsonInvoiceV1_1_Content).UBLExtensions =
-      finalExtensionsArray;
+    if (finalExtensionsArray.length > 0) {
+      v1_1Content.UBLExtensions = finalExtensionsArray;
+    }
+    selfBilledInvoiceContent = v1_1Content;
   }
 
   return {
     _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
     _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
     _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-    Invoice: [invoiceContent],
+    Invoice: [selfBilledInvoiceContent],
   };
 }

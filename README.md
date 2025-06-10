@@ -51,8 +51,11 @@ This `myinvois-client` library is specifically for businesses and developers cho
 
 For complete, working examples of using this library, check out:
 
-- [Integration Test Example](examples/tests/integrationTest.ts) - A full end-to-end example showing authentication, document creation, and submission
-- [Other examples](examples) - Other examples
+- [Integration Test Example](examples/tests/integrationTest.ts) - A full end-to-end example showing authentication, document creation, and submission.
+- [Manual UBL Construction Guide](examples/manualUblConstruction.md) - For advanced users needing to build UBL JSON manually from scratch.
+- [Detailed Digital Signature Guide](examples/detailedDigitalSignatureGuide.md) - Explains the underlying mechanics and manual steps for creating digital signatures for UBL Invoice v1.1.
+- [Invoice Submission Flow Example](examples/invoiceSubmission.md) - A step-by-step guide on the invoice submission process, including using helper functions.
+- [Other examples](examples) - Additional miscellaneous examples.
 
 ## Usage
 
@@ -324,164 +327,42 @@ const invoiceParams: CreateInvoiceDocumentParams = {
   },
 };
 
-// Create a version 1.0 invoice
-const ublInvoiceV10 = createUblJsonInvoiceDocument(invoiceParams, "1.0");
+// Create a version 1.0 invoice (does not use signature)
+// Note: createUblJsonInvoiceDocument is an async function
+async function generateInvoices() {
+  const ublInvoiceV10 = await createUblJsonInvoiceDocument(
+    invoiceParams,
+    "1.0"
+  );
+  console.log("Generated UBL Invoice v1.0:", ublInvoiceV10);
 
-// Create a version 1.1 invoice
-const ublInvoiceV11 = createUblJsonInvoiceDocument(invoiceParams, "1.1");
-```
-
-### 2. Manual Construction (Advanced)
-
-For more complex scenarios or when you need full control over the UBL structure:
-
-```typescript
-import { UBLJsonInvoiceDocumentV1_1 } from "myinvois-client/ubl/json/invoice";
-
-// Create the UBL document structure manually
-const manualUblInvoice: UBLJsonInvoiceDocumentV1_1 = {
-  _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
-  _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
-  _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-  Invoice: [
-    {
-      ID: [{ _: "INV-2023-001" }],
-      IssueDate: [{ _: "2023-10-15" }],
-      IssueTime: [{ _: "14:30:00Z" }],
-      InvoiceTypeCode: [{ _: "01", listVersionID: "1.1" }],
-      DocumentCurrencyCode: [{ _: "MYR" }],
-
-      // You'll need to define all the nested structures manually
-      AccountingSupplierParty: [
-        {
-          Party: [
-            {
-              IndustryClassificationCode: [
-                { _: "46510", name: "Wholesale of computers and software" },
-              ],
-              PartyLegalEntity: [
-                {
-                  RegistrationName: [{ _: "ABC Trading Sdn. Bhd." }],
-                },
-              ],
-              // ... more supplier details
-            },
-          ],
-        },
-      ],
-
-      // ... remaining invoice structure
-
-      // For v1.1, you need to include UBLExtensions and Signature
-      UBLExtensions: [],
-      Signature: [
-        {
-          ID: [{ _: "urn:oasis:names:specification:ubl:signature:Invoice" }],
-          SignatureMethod: [
-            { _: "urn:oasis:names:specification:ubl:dsig:enveloped:xades" },
-          ],
-        },
-      ],
+  // For UBL v1.1, a digital signature is mandatory. Provide the 'signature' parameter.
+  // Ensure you have the necessary cryptographic materials (e.g., privateKey, certificate).
+  const invoiceParamsWithSignature: CreateInvoiceDocumentParams = {
+    ...invoiceParams, // Spread the common parameters
+    // --- Signature Parameters (for UBL v1.1 only) ---
+    // The 'documentToSign' property is handled internally by the builder.
+    signature: {
+      privateKey: {} as CryptoKey, // Replace with your actual CryptoKey object for signing
+      signingCertificateBase64: "YOUR_BASE64_ENCODED_SIGNING_CERTIFICATE",
+      certificateDigestBase64: "YOUR_BASE64_ENCODED_CERTIFICATE_DIGEST",
+      certificateIssuerName: "CN=YourIssuer,O=YourOrg,C=MY", // Example Issuer Name
+      certificateSerialNumber: "1234567890ABCDEF", // Example Serial Number
     },
-  ],
-};
+  };
+
+  // Create a version 1.1 invoice. This requires signature parameters for the embedded digital signature.
+  const ublSignedInvoiceV11 = await createUblJsonInvoiceDocument(
+    invoiceParamsWithSignature,
+    "1.1"
+  );
+  console.log("Generated Signed UBL Invoice v1.1:", ublSignedInvoiceV11);
+}
+
+// Call the async function to see the output (in a real scenario)
+// generateInvoices().catch(console.error);
 ```
 
 The manual approach requires deep understanding of the UBL structure but offers complete flexibility for advanced scenarios.
-
-## Digital Signatures (for UBL Invoice v1.1)
-
-For UBL Invoice v1.1, digital signatures are required. This library provides helpers to create the necessary signature structures. You will need to provide your own cryptographic functions for hashing and signing, as well as your X.509 certificate details.
-
-### 1. Prepare Document for Hashing
-
-Before generating the main signature, the document needs to be prepared by removing specific fields (like `UBLExtensions` and `Signature` itself) and then minified.
-
-```typescript
-import { prepareDocumentForHashing } from 'myinvois-client/ubl/json/digitalSignature';
-import { UBLJsonInvoiceDocumentV1_1 } from 'myinvois-client/ubl/json/invoice'; // Your full invoice object
-
-async function getDocumentBytesToHash(invoiceDocument: UBLJsonInvoiceDocumentV1_1): Promise<Uint8Array> {
-  // Keys to exclude as per MyInvois specification for document hashing
-  const keysToExclude = ["UBLExtensions", "Signature"];
-  const documentBytes = await prepareDocumentForHashing(invoiceDocument, keysToExclude);
-  return documentBytes;
-}
-
-// Usage:
-const documentToSign: UBLJsonInvoiceDocumentV1_1 = ...; // Your fully constructed V1.1 invoice
-const documentBytes = await getDocumentBytesToHash(documentToSign);
-const documentDigestBase64 = yourHashingFunction(documentBytes); // e.g., SHA-256 then Base64
-```
-
-### 2. Create SignedProperties
-
-The `SignedProperties` object contains metadata about the signature, such as signing time and a digest of the signing certificate.
-
-```typescript
-import {
-  createSignedProperties,
-  XadesSignedProperties,
-} from "myinvois-client/ubl/json/digitalSignature";
-
-// Assume you have these values:
-const certificateDigestBase64 = "your_certificate_digest_base64"; // SHA-256 digest of your X.509 cert, then Base64
-const issuerName = "CN=Your CA, O=Your Org, C=MY"; // From your certificate
-const serialNumber = "1234567890ABCDEF"; // From your certificate
-const signedPropsId = "xades-signed-props-123"; // A unique ID for this element
-
-const signedProperties: XadesSignedProperties = createSignedProperties(
-  certificateDigestBase64,
-  issuerName,
-  serialNumber,
-  signedPropsId,
-  new Date() // Signing time, defaults to now if omitted
-);
-
-// const signedPropertiesBytes = new TextEncoder().encode(JSON.stringify(signedProperties));
-// const signedPropertiesDigestBase64 = yourHashingFunction(signedPropertiesBytes); // e.g., SHA-256 then Base64
-```
-
-### 3. Generate the Full DigitalSignature Structure
-
-This involves creating the complete `DigitalSignature` JSON object which includes the document digest, signed properties digest, the signature value, and key information.
-
-```typescript
-import {
-  generateDigitalSignatureJSON,
-  DigitalSignature,
-} from "myinvois-client/ubl/json/digitalSignature";
-import { UBLJsonInvoiceDocumentV1_1 } from "myinvois-client/ubl/json/invoice";
-
-// Assume you have these values from previous steps and your environment:
-const documentToSign: UBLJsonInvoiceDocumentV1_1 = ...; // Your V1.1 UBL Invoice object
-const privateKey: CryptoKey = ...; // Your private signing key (e.g., from Web Crypto API)
-const signingCertificateBase64: string = ...; // Your X.509 certificate, Base64 encoded
-const certDigestBase64: string = ...; // Output from hashing your certificate (Step 5 in MyInvois docs)
-const certIssuerName: string = ...; // Issuer name from your certificate
-const certSerialNumber: string = ...; // Serial number from your certificate
-
-async function getFullDigitalSignature(
-  documentToSign: UBLJsonInvoiceDocumentV1_1,
-  privateKey: CryptoKey,
-  signingCertificateBase64: string,
-  certDigestBase64: string,
-  certIssuerName: string,
-  certSerialNumber: string,
-): Promise<DigitalSignature> {
-  const digitalSignature = await generateDigitalSignatureJSON(
-    documentToSign,
-    privateKey,
-    signingCertificateBase64,
-    certDigestBase64,
-    certIssuerName,
-    certSerialNumber,
-  );
-  return digitalSignature;
-}
-
-// Once you have the digitalSignature object, you would typically embed it into the
-// UBLExtensions section of your UBLJsonInvoiceDocumentV1_1 object.
-```
 
 For a complete example of how to use this client, refer to the [Examples](examples)

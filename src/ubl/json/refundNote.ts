@@ -1,5 +1,7 @@
 import { InvoiceTypeCode } from "../../codes";
 import {
+  UBLJsonAccountingCustomerParty,
+  UBLJsonAccountingSupplierParty,
   UBLJsonBillingReference,
   UBLJsonDate,
   UBLJsonDelivery,
@@ -10,7 +12,6 @@ import {
   UBLJsonInvoiceLine,
   UBLJsonInvoicePeriod,
   UBLJsonLegalMonetaryTotal,
-  UBLJsonParty,
   UBLJsonPaymentMeans,
   UBLJsonPaymentTerms,
   UBLJsonPrepaidPayment,
@@ -94,12 +95,12 @@ export interface UBLJsonRefundNoteV1_1_Content {
    * Contains Authorisation Number for Certified Exporter (mapping to /ubl:Invoice/cac:AccountingSupplierParty/cbc:AdditionalAccountID [@schemeAgencyName=’CertEx’]).
    * Maps to UBL: /ubl:Invoice/cac:AccountingSupplierParty
    */
-  AccountingSupplierParty: UBLJsonParty[];
+  AccountingSupplierParty: UBLJsonAccountingSupplierParty[];
   /**
    * Buyer information.
    * Maps to UBL: /ubl:Invoice/cac:AccountingCustomerParty
    */
-  AccountingCustomerParty: UBLJsonParty[];
+  AccountingCustomerParty: UBLJsonAccountingCustomerParty[];
   /**
    * Optional. Delivery information.
    * Contains Shipping Recipient’s Name, Shipping Recipient’s Address, Shipping Recipient’s TIN, Shipping Recipient’s Registration Number.\n   * Also contains Details of other charges (mapping to /ubl:Invoice/cac:Delivery/cac:Shipment/...).\n
