@@ -1,9 +1,5 @@
 import { MyInvoisRedisClient, RedisTokenData } from "../types";
-import {
-  MyInvoisLoginRequest,
-  MyInvoisLoginResponse,
-  MyInvoisErrorResponse,
-} from "./types";
+import { MyInvoisLoginRequest, MyInvoisLoginResponse } from "./types";
 
 export class AuthService {
   private baseUrl: string;
@@ -131,44 +127,30 @@ export class AuthService {
       scope: scope ?? "InvoicingAPI",
     };
 
-    try {
-      // console.debug(`AuthService: loginAsTaxpayer - Performing API call for clientId: ${clientId}`);
-      const response = await fetch(`${this.baseUrl}/connect/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(
-          Object.fromEntries(
-            Object.entries(requestBody).filter(([_, v]) => v !== undefined)
-          ) as Record<string, string>
-        ).toString(),
-      });
+    const response = await fetch(`${this.baseUrl}/connect/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(requestBody).filter(([_, v]) => v !== undefined)
+        ) as Record<string, string>
+      ).toString(),
+    });
 
-      if (!response.ok) {
-        // Existing error handling logic...
-        let errorData: MyInvoisErrorResponse;
-        try {
-          errorData = await response.json();
-        } catch (e) {
-          console.error(e);
-          throw new Error(
-            `API Error: HTTP ${response.status} ${response.statusText}`
-          );
-        }
-        throw new Error(
-          `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`
-        );
-      }
+    if (response.status === 200) {
       const responseData: MyInvoisLoginResponse = await response.json();
-      // console.debug(`AuthService: loginAsTaxpayer - API call successful for clientId: ${clientId}`);
-
       if (this.redisClient) {
         // Store in cache if redisClient is configured
         await this.storeTokenInCache(redisKey, responseData);
       }
       return responseData;
-    } catch (error) {
-      // console.error(`AuthService: loginAsTaxpayer error for clientId ${clientId}: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
+    } else {
+      try {
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
+      }
     }
   }
 
@@ -195,47 +177,33 @@ export class AuthService {
       grant_type: "client_credentials", // As per your original code
       scope: scope ?? "InvoicingAPI",
     };
+    const response = await fetch(`${this.baseUrl}/connect/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        onbehalfof: onBehalfOfTIN, // Header for intermediary
+      },
+      body: new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(requestBody).filter(([_, v]) => v !== undefined)
+        ) as Record<string, string>
+      ).toString(),
+    });
 
-    try {
-      // console.debug(`AuthService: loginAsIntermediary - Performing API call for clientId: ${clientId}, TIN: ${onBehalfOfTIN}`);
-      const response = await fetch(`${this.baseUrl}/connect/token`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          onbehalfof: onBehalfOfTIN, // Header for intermediary
-        },
-        body: new URLSearchParams(
-          Object.fromEntries(
-            Object.entries(requestBody).filter(([_, v]) => v !== undefined)
-          ) as Record<string, string>
-        ).toString(),
-      });
-
-      if (!response.ok) {
-        // Existing error handling logic...
-        let errorData: MyInvoisErrorResponse;
-        try {
-          errorData = await response.json();
-        } catch (e) {
-          throw new Error(
-            `API Error: HTTP ${response.status} ${response.statusText}`
-          );
-        }
-        throw new Error(
-          `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`
-        );
-      }
+    if (response.status === 200) {
       const responseData: MyInvoisLoginResponse = await response.json();
-      // console.debug(`AuthService: loginAsIntermediary - API call successful for clientId: ${clientId}, TIN: ${onBehalfOfTIN}`);
-
       if (this.redisClient) {
         // Store in cache if redisClient is configured
         await this.storeTokenInCache(redisKey, responseData);
       }
       return responseData;
-    } catch (error) {
-      // console.error(`AuthService: loginAsIntermediary error for clientId ${clientId}, TIN ${onBehalfOfTIN}: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
+    } else {
+      try {
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
+      }
     }
   }
 }

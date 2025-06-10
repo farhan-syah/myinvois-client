@@ -1,23 +1,21 @@
 import { MyInvoisClient } from "../client";
-import { MyInvoisGenericApiResponseError } from "../types";
 import {
-  GetAllDocumentTypesResponse,
-  DocumentType,
-  DocumentTypeVersion,
-  SubmitDocumentsRequest,
-  SubmitDocumentsResponse,
   CancelDocumentRequest,
   CancelDocumentResponse,
-  RejectDocumentRequest,
-  RejectDocumentResponse,
+  DocumentDetailsResponse,
+  DocumentType,
+  DocumentTypeVersion,
+  GetDocumentResponse,
   GetRecentDocumentsRequestParams,
   GetRecentDocumentsResponse,
   GetSubmissionDetailsRequestParams,
   GetSubmissionDetailsResponse,
-  GetDocumentResponse,
-  DocumentDetailsResponse,
+  RejectDocumentRequest,
+  RejectDocumentResponse,
   SearchDocumentsRequestParams, // Added for new API
-  SearchDocumentsResponse, // Added for new API
+  SearchDocumentsResponse,
+  SubmitDocumentsRequest,
+  SubmitDocumentsResponse,
 } from "./types";
 
 export class DocumentsService {
@@ -34,40 +32,27 @@ export class DocumentsService {
    * @returns A promise that resolves with the list of document types.
    */
   async getAllDocumentTypes(): Promise<DocumentType[]> {
-    try {
-      const accessToken =
-        await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken =
+      await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const response = await fetch(`${this.baseUrl}/api/v1.0/documenttypes`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+    const response = await fetch(`${this.baseUrl}/api/v1.0/documenttypes`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        let errorData: MyInvoisGenericApiResponseError | string;
-        try {
-          errorData = await response.json();
-        } catch (e) {
-          errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
-        }
-
-        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-        if (typeof errorData === "object" && errorData.error) {
-          errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode})`;
-          if (errorData.error.errorMS) {
-            errorMessage += ` - ${errorData.error.errorMS}`;
-          }
-        }
-        throw new Error(errorMessage);
+    if (response.status === 200) {
+      const responseData: DocumentType[] = await response.json();
+      return responseData;
+    } else {
+      try {
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      const responseData: GetAllDocumentTypesResponse = await response.json();
-      return responseData.result;
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -77,43 +62,29 @@ export class DocumentsService {
    * @returns A promise that resolves with the document type details.
    */
   async getDocumentTypeById(id: number): Promise<DocumentType> {
-    try {
-      const accessToken =
-        await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken =
+      await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const response = await fetch(
-        `${this.baseUrl}/api/v1.0/documenttypes/${id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        let errorData: MyInvoisGenericApiResponseError | string;
-        try {
-          errorData = await response.json();
-        } catch (e) {
-          errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
-        }
-
-        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-        if (typeof errorData === "object" && errorData.error) {
-          errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode})`;
-          if (errorData.error.errorMS) {
-            errorMessage += ` - ${errorData.error.errorMS}`;
-          }
-        }
-        throw new Error(errorMessage);
+    const response = await fetch(
+      `${this.baseUrl}/api/v1.0/documenttypes/${id}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
       }
-
+    );
+    if (response.status === 200) {
       const responseData: DocumentType = await response.json();
       return responseData;
-    } catch (error) {
-      throw error;
+    } else {
+      try {
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
+      }
     }
   }
 
@@ -127,43 +98,29 @@ export class DocumentsService {
     documentTypeId: number,
     versionId: number
   ): Promise<DocumentTypeVersion> {
-    try {
-      const accessToken =
-        await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken =
+      await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const response = await fetch(
-        `${this.baseUrl}/api/v1.0/documenttypes/${documentTypeId}/versions/${versionId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        let errorData: MyInvoisGenericApiResponseError | string;
-        try {
-          errorData = await response.json();
-        } catch (e) {
-          errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
-        }
-
-        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-        if (typeof errorData === "object" && errorData.error) {
-          errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode})`;
-          if (errorData.error.errorMS) {
-            errorMessage += ` - ${errorData.error.errorMS}`;
-          }
-        }
-        throw new Error(errorMessage);
+    const response = await fetch(
+      `${this.baseUrl}/api/v1.0/documenttypes/${documentTypeId}/versions/${versionId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
       }
-
+    );
+    if (response.status === 200) {
       const responseData: DocumentTypeVersion = await response.json();
       return responseData;
-    } catch (error) {
-      throw error;
+    } else {
+      try {
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
+      }
     }
   }
 
@@ -176,52 +133,33 @@ export class DocumentsService {
   async submitDocuments(
     submissionRequest: SubmitDocumentsRequest,
     onBehalfOfTIN?: string
-  ): Promise<SubmitDocumentsResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
-        : await this.apiClient.getTaxpayerAccessToken();
+  ): Promise<any> {
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
+      : await this.apiClient.getTaxpayerAccessToken();
 
-      const response = await fetch(
-        `${this.baseUrl}/api/v1.0/documentsubmissions/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(submissionRequest),
-        }
-      );
-
-      if (response.status === 202) {
-        const responseData: SubmitDocumentsResponse = await response.json();
-        return responseData;
+    const response = await fetch(
+      `${this.baseUrl}/api/v1.0/documentsubmissions/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submissionRequest),
       }
+    );
 
-      let errorData: MyInvoisGenericApiResponseError | string;
+    if (response.status === 202) {
+      const responseData: SubmitDocumentsResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        let detailsMessage = "";
-        if (errorData.error.details && Array.isArray(errorData.error.details)) {
-          detailsMessage = errorData.error.details
-            .map((detail) => detail.message)
-            .join(", ");
-        }
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, Details: ${detailsMessage}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -237,53 +175,40 @@ export class DocumentsService {
     reason: string,
     onBehalfOfTIN?: string
   ): Promise<CancelDocumentResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(
+          onBehalfOfTIN,
+          "InvoicingAPI"
+        )
+      : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const requestBody: CancelDocumentRequest = {
-        status: "cancelled",
-        reason: reason,
-      };
+    const requestBody: CancelDocumentRequest = {
+      status: "cancelled",
+      reason: reason,
+    };
 
-      const response = await fetch(
-        `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-
-      if (response.status === 200) {
-        const responseData: CancelDocumentResponse = await response.json();
-        return responseData;
+    const response = await fetch(
+      `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       }
+    );
 
-      let errorData: MyInvoisGenericApiResponseError | string;
+    if (response.status === 200) {
+      const responseData: CancelDocumentResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -299,53 +224,40 @@ export class DocumentsService {
     reason: string,
     onBehalfOfTIN?: string
   ): Promise<RejectDocumentResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(
+          onBehalfOfTIN,
+          "InvoicingAPI"
+        )
+      : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const requestBody: RejectDocumentRequest = {
-        status: "rejected",
-        reason: reason,
-      };
+    const requestBody: RejectDocumentRequest = {
+      status: "rejected",
+      reason: reason,
+    };
 
-      const response = await fetch(
-        `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-
-      if (response.status === 200) {
-        const responseData: RejectDocumentResponse = await response.json();
-        return responseData;
+    const response = await fetch(
+      `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       }
+    );
 
-      let errorData: MyInvoisGenericApiResponseError | string;
+    if (response.status === 200) {
+      const responseData: RejectDocumentResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -359,53 +271,40 @@ export class DocumentsService {
     params: GetRecentDocumentsRequestParams = {},
     onBehalfOfTIN?: string
   ): Promise<GetRecentDocumentsResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(
+          onBehalfOfTIN,
+          "InvoicingAPI"
+        )
+      : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const queryParameters = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParameters.append(key, String(value));
-        }
-      });
-
-      const url = `${this.baseUrl}/api/v1.0/documents/recent?${queryParameters.toString()}`;
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status === 200) {
-        const responseData: GetRecentDocumentsResponse = await response.json();
-        return responseData;
+    const queryParameters = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        queryParameters.append(key, String(value));
       }
+    });
 
-      let errorData: MyInvoisGenericApiResponseError | string;
+    const url = `${this.baseUrl}/api/v1.0/documents/recent?${queryParameters.toString()}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.status === 200) {
+      const responseData: GetRecentDocumentsResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -421,54 +320,40 @@ export class DocumentsService {
     params: GetSubmissionDetailsRequestParams = {},
     onBehalfOfTIN?: string
   ): Promise<GetSubmissionDetailsResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(
+          onBehalfOfTIN,
+          "InvoicingAPI"
+        )
+      : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const queryParameters = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParameters.append(key, String(value));
-        }
-      });
-
-      const url = `${this.baseUrl}/api/v1.0/documentsubmissions/${submissionUid}?${queryParameters.toString()}`;
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status === 200) {
-        const responseData: GetSubmissionDetailsResponse =
-          await response.json();
-        return responseData;
+    const queryParameters = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        queryParameters.append(key, String(value));
       }
+    });
 
-      let errorData: MyInvoisGenericApiResponseError | string;
+    const url = `${this.baseUrl}/api/v1.0/documentsubmissions/${submissionUid}?${queryParameters.toString()}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.status === 200) {
+      const responseData: GetSubmissionDetailsResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -484,54 +369,41 @@ export class DocumentsService {
     preferredFormat?: "JSON" | "XML",
     onBehalfOfTIN?: string
   ): Promise<GetDocumentResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(
+          onBehalfOfTIN,
+          "InvoicingAPI"
+        )
+      : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const headers: HeadersInit = {
-        Authorization: `Bearer ${accessToken}`,
-      };
-      if (preferredFormat === "JSON") {
-        headers.Accept = "application/json";
-      } else if (preferredFormat === "XML") {
-        headers.Accept = "application/xml";
-      } else {
-        headers.Accept = "application/json";
-      }
+    const headers: HeadersInit = {
+      Authorization: `Bearer ${accessToken}`,
+    };
+    if (preferredFormat === "JSON") {
+      headers.Accept = "application/json";
+    } else if (preferredFormat === "XML") {
+      headers.Accept = "application/xml";
+    } else {
+      headers.Accept = "application/json";
+    }
 
-      const url = `${this.baseUrl}/api/v1.0/documents/${uuid}/raw`;
+    const url = `${this.baseUrl}/api/v1.0/documents/${uuid}/raw`;
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: headers,
-      });
+    const response = await fetch(url, {
+      method: "GET",
+      headers: headers,
+    });
 
-      if (response.status === 200) {
-        const responseData: GetDocumentResponse = await response.json();
-        return responseData;
-      }
-
-      let errorData: MyInvoisGenericApiResponseError | string;
+    if (response.status === 200) {
+      const responseData: GetDocumentResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -545,46 +417,33 @@ export class DocumentsService {
     uuid: string,
     onBehalfOfTIN?: string
   ): Promise<DocumentDetailsResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(
+          onBehalfOfTIN,
+          "InvoicingAPI"
+        )
+      : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const url = `${this.baseUrl}/api/v1.0/documents/${uuid}/details`;
+    const url = `${this.baseUrl}/api/v1.0/documents/${uuid}/details`;
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (response.status === 200) {
-        const responseData: DocumentDetailsResponse = await response.json();
-        return responseData;
-      }
-
-      let errorData: MyInvoisGenericApiResponseError | string;
+    if (response.status === 200) {
+      const responseData: DocumentDetailsResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -608,53 +467,40 @@ export class DocumentsService {
       );
     }
 
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(
-            onBehalfOfTIN,
-            "InvoicingAPI"
-          )
-        : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(
+          onBehalfOfTIN,
+          "InvoicingAPI"
+        )
+      : await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-      const queryParameters = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParameters.append(key, String(value));
-        }
-      });
-
-      const url = `${this.baseUrl}/api/v1.0/documents/search?${queryParameters.toString()}`;
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status === 200) {
-        const responseData: SearchDocumentsResponse = await response.json();
-        return responseData;
+    const queryParameters = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        queryParameters.append(key, String(value));
       }
+    });
 
-      let errorData: MyInvoisGenericApiResponseError | string;
+    const url = `${this.baseUrl}/api/v1.0/documents/search?${queryParameters.toString()}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.status === 200) {
+      const responseData: SearchDocumentsResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        throw errorBody;
+      } catch (parsingError) {
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 }

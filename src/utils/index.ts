@@ -27,11 +27,11 @@ export function encodeBase64(text: string): string {
   return Buffer.from(text, "utf8").toString("base64");
 }
 
-export function createDocumentSubmissionItemFromInvoice(
+export async function createDocumentSubmissionItemFromInvoice(
   params: CreateInvoiceDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonInvoiceDocument(params, version);
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonInvoiceDocument(params, version);
   const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
   const documentHash = calculateSHA256Hex(finalInvoiceJsonString);
   const documentBase64 = encodeBase64(finalInvoiceJsonString);
@@ -45,11 +45,14 @@ export function createDocumentSubmissionItemFromInvoice(
   return documentToSubmit;
 }
 
-export function createDocumentSubmissionItemFromCreditNote(
+export async function createDocumentSubmissionItemFromCreditNote(
   params: CreateCreditNoteDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonCreditNoteDocument(params, version);
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonCreditNoteDocument(
+    params,
+    version
+  );
   const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
   const documentHash = calculateSHA256Hex(finalInvoiceJsonString);
   const documentBase64 = encodeBase64(finalInvoiceJsonString);
@@ -63,11 +66,11 @@ export function createDocumentSubmissionItemFromCreditNote(
   return documentToSubmit;
 }
 
-export function createDocumentSubmissionItemFromDebitNote(
+export async function createDocumentSubmissionItemFromDebitNote(
   params: CreateDebitNoteDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonDebitNoteDocument(params, version);
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonDebitNoteDocument(params, version);
   const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
   const documentHash = calculateSHA256Hex(finalInvoiceJsonString);
   const documentBase64 = encodeBase64(finalInvoiceJsonString);
@@ -81,11 +84,14 @@ export function createDocumentSubmissionItemFromDebitNote(
   return documentToSubmit;
 }
 
-export function createDocumentSubmissionItemFromRefundNote(
+export async function createDocumentSubmissionItemFromRefundNote(
   params: CreateRefundNoteDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonRefundNoteDocument(params, version);
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonRefundNoteDocument(
+    params,
+    version
+  );
   const finalInvoiceJsonString = JSON.stringify(fullUblDocument);
   const documentHash = calculateSHA256Hex(finalInvoiceJsonString);
   const documentBase64 = encodeBase64(finalInvoiceJsonString);
@@ -99,11 +105,11 @@ export function createDocumentSubmissionItemFromRefundNote(
   return documentToSubmit;
 }
 
-export function createDocumentSubmissionItemFromSelfBilledInvoice(
+export async function createDocumentSubmissionItemFromSelfBilledInvoice(
   params: CreateSelfBilledInvoiceDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonSelfBilledInvoiceDocument(
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonSelfBilledInvoiceDocument(
     params,
     version
   );
@@ -120,11 +126,11 @@ export function createDocumentSubmissionItemFromSelfBilledInvoice(
   return documentToSubmit;
 }
 
-export function createDocumentSubmissionItemFromSelfBilledCreditNote(
+export async function createDocumentSubmissionItemFromSelfBilledCreditNote(
   params: CreateSelfBilledCreditNoteDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonSelfBilledCreditNoteDocument(
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonSelfBilledCreditNoteDocument(
     params,
     version
   );
@@ -141,11 +147,11 @@ export function createDocumentSubmissionItemFromSelfBilledCreditNote(
   return documentToSubmit;
 }
 
-export function createDocumentSubmissionItemFromSelfBilledDebitNote(
+export async function createDocumentSubmissionItemFromSelfBilledDebitNote(
   params: CreateSelfBilledDebitNoteDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonSelfBilledDebitNoteDocument(
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonSelfBilledDebitNoteDocument(
     params,
     version
   );
@@ -162,11 +168,11 @@ export function createDocumentSubmissionItemFromSelfBilledDebitNote(
   return documentToSubmit;
 }
 
-export function createDocumentSubmissionItemFromSelfBilledRefundNote(
+export async function createDocumentSubmissionItemFromSelfBilledRefundNote(
   params: CreateSelfBilledRefundNoteDocumentParams,
   version: "1.1" | "1.0" = "1.0"
-): DocumentSubmissionItem {
-  const fullUblDocument = createUblJsonSelfBilledRefundNoteDocument(
+): Promise<DocumentSubmissionItem> {
+  const fullUblDocument = await createUblJsonSelfBilledRefundNoteDocument(
     params,
     version
   );
