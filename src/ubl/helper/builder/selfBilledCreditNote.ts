@@ -69,7 +69,7 @@ import { buildSignatureExtension } from "./signatureExtension";
  *   supplier: { TIN: "BUYER_TIN", identificationNumber: "BUYER_ID", identificationScheme: "BRN", legalName: "Buyer Company (Self-Billing)", address: { addressLines: ["Buyer Addr"], cityName: "KL", countryCode: "MYS", countrySubentityCode: "14" } },
  *   customer: { TIN: "SELLER_TIN", identificationNumber: "SELLER_ID", identificationScheme: "NRIC", legalName: "Seller Company (Receiving Self-Bill)", address: { addressLines: ["Seller Addr"], cityName: "PJ", countryCode: "MYS", countrySubentityCode: "10" } },
  *   billingReferences: [{ invoiceId: "INV2024-005", invoiceIssueDate: "2024-08-01" }],
- *   creditNoteLines: [{ id: "1", quantity: 1, subtotal: 75, itemDescription: "Self-Billed Credit Item", itemCommodityClassification: { code: "002" }, unitPrice: 75 }],
+ *   invoiceLines: [{ id: "1", quantity: 1, subtotal: 75, itemDescription: "Self-Billed Credit Item", itemCommodityClassification: { code: "002" }, unitPrice: 75 }],
  *   taxTotal: { totalTaxAmount: 0, taxSubtotals: [] },
  *   legalMonetaryTotal: { lineExtensionAmount: 75, taxExclusiveAmount: 75, taxInclusiveAmount: 75, payableAmount: 75 },
  *   // Optionally, include signature parameters for v1.1
@@ -116,12 +116,12 @@ export async function createUblJsonSelfBilledCreditNoteDocument(
 
   const billingReferences = buildBillingReferences(params.billingReferences);
 
-  const creditNoteLines: UBLJsonInvoiceLine[] = params.creditNoteLines.map(
-    (lineParam) => {
+  const creditNoteLines: UBLJsonInvoiceLine[] = params.invoiceLines.map(
+    (lineItem) => {
       let lineTaxTotals: UBLJsonTaxTotal[] | undefined;
-      if (lineParam.lineTaxTotal) {
+      if (lineItem.lineTaxTotal) {
         const subTotals: UBLJsonTaxSubtotal[] =
-          lineParam.lineTaxTotal.taxSubtotals.map((st) => ({
+          lineItem.lineTaxTotal.taxSubtotals.map((st) => ({
             TaxableAmount: toUblCurrencyAmount(st.taxableAmount, taxCurrency)!,
             TaxAmount: toUblCurrencyAmount(st.taxAmount, taxCurrency)!,
             TaxCategory: [
@@ -137,7 +137,7 @@ export async function createUblJsonSelfBilledCreditNoteDocument(
         lineTaxTotals = [
           {
             TaxAmount: toUblCurrencyAmount(
-              lineParam.lineTaxTotal.taxAmount,
+              lineItem.lineTaxTotal.taxAmount,
               taxCurrency
             )!,
             TaxSubtotal: subTotals,
@@ -150,38 +150,38 @@ export async function createUblJsonSelfBilledCreditNoteDocument(
           {
             ItemClassificationCode: [
               {
-                _: lineParam.itemCommodityClassification.code,
-                listID: lineParam.itemCommodityClassification.listID ?? "CLASS",
+                _: lineItem.itemCommodityClassification.code,
+                listID: lineItem.itemCommodityClassification.listID ?? "CLASS",
               },
             ],
           },
         ],
-        Description: toUblText(lineParam.itemDescription),
+        Description: toUblText(lineItem.itemDescription),
       };
 
       return {
-        ID: [{ _: lineParam.id }],
+        ID: [{ _: lineItem.id }],
         InvoicedQuantity: [
-          { _: lineParam.quantity, unitCode: lineParam.unitCode },
+          { _: lineItem.quantity, unitCode: lineItem.unitCode },
         ],
         LineExtensionAmount: toUblCurrencyAmount(
-          lineParam.subtotal,
+          lineItem.subtotal,
           docCurrency
         )!,
         TaxTotal: lineTaxTotals,
         Item: [item],
         Price: [
           {
-            PriceAmount: toUblCurrencyAmount(lineParam.unitPrice, docCurrency)!,
+            PriceAmount: toUblCurrencyAmount(lineItem.unitPrice, docCurrency)!,
           },
         ],
         AllowanceCharge: buildAllowanceCharges(
-          lineParam.allowanceCharges,
+          lineItem.allowanceCharges,
           docCurrency
         ),
         ItemPriceExtension: [
           {
-            Amount: toUblCurrencyAmount(lineParam.subtotal, docCurrency)!,
+            Amount: toUblCurrencyAmount(lineItem.subtotal, docCurrency)!,
           },
         ],
       };

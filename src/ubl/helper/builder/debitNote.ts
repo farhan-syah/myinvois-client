@@ -65,7 +65,7 @@ import { buildSignatureExtension } from "./signatureExtension"; // Added
  *   supplier: { TIN: "S_TIN", identificationNumber: "S_ID", identificationScheme: "BRN", legalName: "Supplier", address: { addressLines: ["S Addr"], cityName: "KL", countryCode: "MYS", countrySubentityCode: "14" } },
  *   customer: { TIN: "C_TIN", identificationNumber: "C_ID", identificationScheme: "NRIC", legalName: "Customer", address: { addressLines: ["C Addr"], cityName: "PJ", countryCode: "MYS", countrySubentityCode: "10" } },
  *   billingReferences: [{ invoiceId: "INV2024-001", invoiceIssueDate: "2024-07-30" }],
- *   debitNoteLines: [{ id: "1", quantity: 1, subtotal: 50, itemDescription: "Debit Item", itemCommodityClassification: { code: "001" }, unitPrice: 50 }],
+ *   invoiceLines: [{ id: "1", quantity: 1, subtotal: 50, itemDescription: "Debit Item", itemCommodityClassification: { code: "001" }, unitPrice: 50 }],
  *   taxTotal: { totalTaxAmount: 0, taxSubtotals: [] },
  *   legalMonetaryTotal: { lineExtensionAmount: 50, taxExclusiveAmount: 50, taxInclusiveAmount: 50, payableAmount: 50 },
  *   // Optionally, include signature parameters for v1.1
@@ -109,12 +109,12 @@ export async function createUblJsonDebitNoteDocument(
 
   const billingReferences = buildBillingReferences(params.billingReferences);
 
-  const debitNoteLines: UBLJsonInvoiceLine[] = params.debitNoteLines.map(
-    (lineParam) => {
+  const debitNoteLines: UBLJsonInvoiceLine[] = params.invoiceLines.map(
+    (lineItem) => {
       let lineTaxTotals: UBLJsonTaxTotal[] | undefined;
-      if (lineParam.lineTaxTotal) {
+      if (lineItem.lineTaxTotal) {
         const subTotals: UBLJsonTaxSubtotal[] =
-          lineParam.lineTaxTotal.taxSubtotals.map((st) => ({
+          lineItem.lineTaxTotal.taxSubtotals.map((st) => ({
             TaxableAmount: toUblCurrencyAmount(st.taxableAmount, taxCurrency)!,
             TaxAmount: toUblCurrencyAmount(st.taxAmount, taxCurrency)!,
             TaxCategory: [
@@ -130,7 +130,7 @@ export async function createUblJsonDebitNoteDocument(
         lineTaxTotals = [
           {
             TaxAmount: toUblCurrencyAmount(
-              lineParam.lineTaxTotal.taxAmount,
+              lineItem.lineTaxTotal.taxAmount,
               taxCurrency
             )!,
             TaxSubtotal: subTotals,
@@ -143,38 +143,38 @@ export async function createUblJsonDebitNoteDocument(
           {
             ItemClassificationCode: [
               {
-                _: lineParam.itemCommodityClassification.code,
-                listID: lineParam.itemCommodityClassification.listID ?? "CLASS",
+                _: lineItem.itemCommodityClassification.code,
+                listID: lineItem.itemCommodityClassification.listID ?? "CLASS",
               },
             ],
           },
         ],
-        Description: toUblText(lineParam.itemDescription),
+        Description: toUblText(lineItem.itemDescription),
       };
 
       return {
-        ID: [{ _: lineParam.id }],
+        ID: [{ _: lineItem.id }],
         InvoicedQuantity: [
-          { _: lineParam.quantity, unitCode: lineParam.unitCode },
+          { _: lineItem.quantity, unitCode: lineItem.unitCode },
         ],
         LineExtensionAmount: toUblCurrencyAmount(
-          lineParam.subtotal,
+          lineItem.subtotal,
           docCurrency
         )!,
         TaxTotal: lineTaxTotals,
         Item: [item],
         Price: [
           {
-            PriceAmount: toUblCurrencyAmount(lineParam.unitPrice, docCurrency)!,
+            PriceAmount: toUblCurrencyAmount(lineItem.unitPrice, docCurrency)!,
           },
         ],
         AllowanceCharge: buildAllowanceCharges(
-          lineParam.allowanceCharges,
+          lineItem.allowanceCharges,
           docCurrency
         ),
         ItemPriceExtension: [
           {
-            Amount: toUblCurrencyAmount(lineParam.subtotal, docCurrency)!,
+            Amount: toUblCurrencyAmount(lineItem.subtotal, docCurrency)!,
           },
         ],
       };

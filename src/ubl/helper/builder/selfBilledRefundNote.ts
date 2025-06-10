@@ -116,12 +116,12 @@ export async function createUblJsonSelfBilledRefundNoteDocument(
 
   const billingReferences = buildBillingReferences(params.billingReferences);
 
-  const refundNoteLines: UBLJsonInvoiceLine[] = params.refundNoteLines.map(
-    (lineParam) => {
+  const refundNoteLines: UBLJsonInvoiceLine[] = params.invoiceLines.map(
+    (lineItem) => {
       let lineTaxTotals: UBLJsonTaxTotal[] | undefined;
-      if (lineParam.lineTaxTotal) {
+      if (lineItem.lineTaxTotal) {
         const subTotals: UBLJsonTaxSubtotal[] =
-          lineParam.lineTaxTotal.taxSubtotals.map((st) => ({
+          lineItem.lineTaxTotal.taxSubtotals.map((st) => ({
             TaxableAmount: toUblCurrencyAmount(st.taxableAmount, taxCurrency)!,
             TaxAmount: toUblCurrencyAmount(st.taxAmount, taxCurrency)!,
             TaxCategory: [
@@ -137,7 +137,7 @@ export async function createUblJsonSelfBilledRefundNoteDocument(
         lineTaxTotals = [
           {
             TaxAmount: toUblCurrencyAmount(
-              lineParam.lineTaxTotal.taxAmount,
+              lineItem.lineTaxTotal.taxAmount,
               taxCurrency
             )!,
             TaxSubtotal: subTotals,
@@ -150,38 +150,38 @@ export async function createUblJsonSelfBilledRefundNoteDocument(
           {
             ItemClassificationCode: [
               {
-                _: lineParam.itemCommodityClassification.code,
-                listID: lineParam.itemCommodityClassification.listID ?? "CLASS",
+                _: lineItem.itemCommodityClassification.code,
+                listID: lineItem.itemCommodityClassification.listID ?? "CLASS",
               },
             ],
           },
         ],
-        Description: toUblText(lineParam.itemDescription),
+        Description: toUblText(lineItem.itemDescription),
       };
 
       return {
-        ID: [{ _: lineParam.id }],
+        ID: [{ _: lineItem.id }],
         InvoicedQuantity: [
-          { _: lineParam.quantity, unitCode: lineParam.unitCode },
+          { _: lineItem.quantity, unitCode: lineItem.unitCode },
         ],
         LineExtensionAmount: toUblCurrencyAmount(
-          lineParam.subtotal,
+          lineItem.subtotal,
           docCurrency
         )!,
         TaxTotal: lineTaxTotals,
         Item: [item],
         Price: [
           {
-            PriceAmount: toUblCurrencyAmount(lineParam.unitPrice, docCurrency)!,
+            PriceAmount: toUblCurrencyAmount(lineItem.unitPrice, docCurrency)!,
           },
         ],
         AllowanceCharge: buildAllowanceCharges(
-          lineParam.allowanceCharges,
+          lineItem.allowanceCharges,
           docCurrency
         ),
         ItemPriceExtension: [
           {
-            Amount: toUblCurrencyAmount(lineParam.subtotal, docCurrency)!,
+            Amount: toUblCurrencyAmount(lineItem.subtotal, docCurrency)!,
           },
         ],
       };

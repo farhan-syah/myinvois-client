@@ -6,57 +6,16 @@ import {
   BillingReferenceParam,
   CustomerPartyParam,
   DeliveryParam,
-  ItemCommodityClassificationParam,
+  InvoiceLineItem,
   LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
   PeriodParam,
   PrepaidPaymentParam,
   SupplierPartyParam,
-  TaxSubtotalParam,
   TaxTotalParam,
 } from "./common";
 import { SignatureParams } from "./signature";
-
-/**
- * User-friendly parameters for defining a credit note line item.
- * Adapted from InvoiceLineParam.
- */
-export interface CreditNoteLineParam {
-  /** Unique identifier for the credit note line (e.g., item number "1", "2", etc.). */
-  id: string;
-  /** Number of units of the product or service being credited. E.g., 1.00. */
-  quantity: number;
-  /**
-   * Standard unit or system used to measure the product or service (UN/ECE Recommendation 20).
-   * E.g., "KGM" for kilograms, "UNT" for unit. Optional.
-   */
-  unitCode?: string;
-  /**
-   * Subtotal for the line item being credited: Amount of each individual item/service, excluding taxes, charges, or discounts.
-   * This maps to `ItemPriceExtension/Amount` in UBL, which is used for line item subtotal in MyInvois.
-   * E.g., 100.00.
-   */
-  subtotal: number;
-  /** Description of the product or service being credited. E.g., "Laptop Peripherals". Mandatory. */
-  itemDescription: string;
-  /** Commodity classification details for the item being credited. */
-  itemCommodityClassification: ItemCommodityClassificationParam;
-  /** Price assigned to a single unit of the product or service being credited. E.g., 17.00. */
-  unitPrice: number;
-  /**
-   * Tax details for this specific line item. Optional.
-   * If provided, `taxAmount` and at least one `taxSubtotal` are expected.
-   */
-  lineTaxTotal?: {
-    /** Total tax amount for this line item. E.g., 8.76. */
-    taxAmount: number;
-    /** Breakdown of taxes for this line item by category/rate. */
-    taxSubtotals: TaxSubtotalParam[];
-  };
-  /** Optional list of allowances or charges specific to this line item. */
-  allowanceCharges?: AllowanceChargeParam[];
-}
 
 /**
  * Comprehensive user-friendly parameters for creating a full UBL Credit Note document (supports v1.0 and v1.1).
@@ -100,7 +59,7 @@ export interface CreateCreditNoteDocumentParams {
    * Array of credit note line items. At least one line item is typically mandatory
    * unless it's a document-level credit/charge.
    */
-  creditNoteLines: CreditNoteLineParam[];
+  invoiceLines: InvoiceLineItem[];
   /** Overall tax total for the credit note. Mandatory. */
   taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the credit note. Mandatory. */

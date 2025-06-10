@@ -6,6 +6,7 @@ import {
   BillingReferenceParam,
   CustomerPartyParam,
   DeliveryParam,
+  InvoiceLineItem,
   ItemCommodityClassificationParam,
   LegalMonetaryTotalParam,
   PaymentMeansParam,
@@ -123,7 +124,7 @@ export interface CreateSelfBilledDebitNoteDocumentParams {
    * Array of debit note line items. At least one line item is typically mandatory
    * unless it's a document-level debit/charge.
    */
-  debitNoteLines: SelfBilledDebitNoteLineParam[];
+  invoiceLines: InvoiceLineItem[];
   /** Overall tax total for the debit note. Mandatory. */
   taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the debit note. Mandatory. */

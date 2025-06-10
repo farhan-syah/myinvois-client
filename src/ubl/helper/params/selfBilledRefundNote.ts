@@ -6,6 +6,7 @@ import {
   BillingReferenceParam,
   CustomerPartyParam,
   DeliveryParam,
+  InvoiceLineItem,
   ItemCommodityClassificationParam,
   LegalMonetaryTotalParam,
   PaymentMeansParam,
@@ -125,7 +126,7 @@ export interface CreateSelfBilledRefundNoteDocumentParams {
    * Array of refund note line items. At least one line item is typically mandatory
    * unless it's a document-level refund/credit.
    */
-  refundNoteLines: SelfBilledRefundNoteLineParam[];
+  invoiceLines: InvoiceLineItem[];
   /** Overall tax total for the refund note. Mandatory. */
   taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the refund note. Mandatory. */

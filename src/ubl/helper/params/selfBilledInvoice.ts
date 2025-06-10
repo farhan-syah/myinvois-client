@@ -5,6 +5,7 @@ import {
   AllowanceChargeParam,
   CustomerPartyParam,
   DeliveryParam,
+  InvoiceLineItem,
   ItemCommodityClassificationParam,
   LegalMonetaryTotalParam,
   PaymentMeansParam,
@@ -117,7 +118,7 @@ export interface CreateSelfBilledInvoiceDocumentParams {
   customer: CustomerPartyParam;
 
   /** Array of invoice line items. At least one line item is typically mandatory. */
-  invoiceLines: SelfBilledInvoiceLineParam[];
+  invoiceLines: InvoiceLineItem[];
   /** Overall tax total for the invoice. Mandatory. */
   taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the invoice. Mandatory. */
