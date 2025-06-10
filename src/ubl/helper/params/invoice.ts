@@ -13,7 +13,8 @@ import {
   PrepaidPaymentParam,
   SupplierPartyParam,
   TaxSubtotalParam,
-} from "../params/common";
+  TaxTotalParam,
+} from "./common";
 import { SignatureParams } from "./signature";
 
 /**
@@ -53,18 +54,6 @@ export interface InvoiceLineParam {
   unitCode?: string;
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
-}
-
-/**
- * User-friendly parameters for defining the overall tax total for the invoice.
- */
-export interface InvoiceTaxTotalParam {
-  /** Total tax amount for the entire invoice. E.g., 87.63. */
-  totalTaxAmount: number;
-  /** Breakdown of taxes by category/rate for the entire invoice. */
-  taxSubtotals: TaxSubtotalParam[];
-  /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
-  roundingAmount?: number;
 }
 
 /**
@@ -109,7 +98,7 @@ export interface CreateInvoiceDocumentParams {
   /** Array of invoice line items. At least one line item is typically mandatory. */
   invoiceLines: InvoiceLineParam[];
   /** Overall tax total for the invoice. Mandatory. */
-  taxTotal: InvoiceTaxTotalParam;
+  taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the invoice. Mandatory. */
   legalMonetaryTotal: LegalMonetaryTotalParam;
 

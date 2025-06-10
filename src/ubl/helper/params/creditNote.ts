@@ -10,10 +10,12 @@ import {
   LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
+  PeriodParam,
   PrepaidPaymentParam,
   SupplierPartyParam,
   TaxSubtotalParam,
-} from "../params/common";
+  TaxTotalParam,
+} from "./common";
 import { SignatureParams } from "./signature";
 
 /**
@@ -37,7 +39,7 @@ export interface CreditNoteLineParam {
    */
   subtotal: number;
   /** Description of the product or service being credited. E.g., "Laptop Peripherals". Mandatory. */
-  itemDescription?: string;
+  itemDescription: string;
   /** Commodity classification details for the item being credited. */
   itemCommodityClassification: ItemCommodityClassificationParam;
   /** Price assigned to a single unit of the product or service being credited. E.g., 17.00. */
@@ -54,31 +56,6 @@ export interface CreditNoteLineParam {
   };
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
-}
-
-/**
- * User-friendly parameters for defining the overall tax total for the credit note.
- * Adapted from InvoiceTaxTotalParam.
- */
-export interface CreditNoteTaxTotalParam {
-  /** Total tax amount for the entire credit note. E.g., 87.63. */
-  totalTaxAmount: number;
-  /** Breakdown of taxes by category/rate for the entire credit note. */
-  taxSubtotals: TaxSubtotalParam[];
-  /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
-  roundingAmount?: number;
-}
-
-/**
- * User-friendly parameters for defining a billing period associated with the credit note (e.g., for a recurring service credit).
- */
-export interface CreditNotePeriodParam {
-  /** Start date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-26". */
-  startDate?: string;
-  /** End date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-30". */
-  endDate?: string;
-  /** Description of the frequency (e.g., "Monthly"). Optional. */
-  description?: string;
 }
 
 /**
@@ -125,7 +102,7 @@ export interface CreateCreditNoteDocumentParams {
    */
   creditNoteLines: CreditNoteLineParam[];
   /** Overall tax total for the credit note. Mandatory. */
-  taxTotal: CreditNoteTaxTotalParam;
+  taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the credit note. Mandatory. */
   legalMonetaryTotal: LegalMonetaryTotalParam;
 
@@ -136,12 +113,12 @@ export interface CreateCreditNoteDocumentParams {
   billingReferences: BillingReferenceParam[];
 
   /** Optional. Billing period information. */
-  creditNotePeriod?: CreditNotePeriodParam[];
+  creditNotePeriod?: PeriodParam[];
   /** Optional. List of additional document references. */
   additionalDocumentReferences?: AdditionalDocRefParam[];
   /** Optional. Delivery information. Can be an array if multiple deliveries are involved, though typically one. */
   delivery?: DeliveryParam[];
-  /** Optional. Delivery information. */
+  /** Optional. Payment means information. */
   paymentMeans?: PaymentMeansParam[];
   /** Optional. Payment terms description for the credit. */
   paymentTerms?: PaymentTermsParam[];

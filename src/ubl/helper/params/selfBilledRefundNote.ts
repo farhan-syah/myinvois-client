@@ -10,9 +10,11 @@ import {
   LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
+  PeriodParam,
   PrepaidPaymentParam,
   SupplierPartyParam,
   TaxSubtotalParam,
+  TaxTotalParam,
 } from "../params/common";
 import { SignatureParams } from "./signature";
 
@@ -37,7 +39,7 @@ export interface SelfBilledRefundNoteLineParam {
    */
   subtotal: number;
   /** Description of the product or service being refunded. E.g., "Returned Goods". Mandatory. */
-  itemDescription?: string;
+  itemDescription: string;
   /** Commodity classification details for the item being refunded. */
   itemCommodityClassification: ItemCommodityClassificationParam;
   /** Price assigned to a single unit of the product or service being refunded. E.g., 17.00. */
@@ -54,33 +56,6 @@ export interface SelfBilledRefundNoteLineParam {
   };
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
-}
-
-/**
- * User-friendly parameters for defining the overall tax total for the self-billed refund note.
- * Adapted from CreditNoteTaxTotalParam.
- */
-export interface SelfBilledRefundNoteTaxTotalParam {
-  /** Total tax amount for the entire refund note. E.g., 87.63. */
-  totalTaxAmount: number;
-  /** Breakdown of taxes by category/rate for the entire refund note. */
-  taxSubtotals: TaxSubtotalParam[];
-  /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
-  roundingAmount?: number;
-}
-
-/**
- * User-friendly parameters for defining a billing period associated with the self-billed refund note
- * (e.g., for a service period for which a refund is being issued).
- * Adapted from CreditNotePeriodParam.
- */
-export interface SelfBilledRefundNotePeriodParam {
-  /** Start date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-26". */
-  startDate?: string;
-  /** End date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-30". */
-  endDate?: string;
-  /** Description of the frequency (e.g., "Monthly service refund"). Optional. */
-  description?: string;
 }
 
 /**
@@ -152,7 +127,7 @@ export interface CreateSelfBilledRefundNoteDocumentParams {
    */
   refundNoteLines: SelfBilledRefundNoteLineParam[];
   /** Overall tax total for the refund note. Mandatory. */
-  taxTotal: SelfBilledRefundNoteTaxTotalParam;
+  taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the refund note. Mandatory. */
   legalMonetaryTotal: LegalMonetaryTotalParam;
 
@@ -164,7 +139,7 @@ export interface CreateSelfBilledRefundNoteDocumentParams {
   billingReferences: BillingReferenceParam[];
 
   /** Optional. Billing period information for the refund. */
-  refundNotePeriod?: SelfBilledRefundNotePeriodParam[];
+  refundNotePeriod?: PeriodParam[];
   /**
    * Optional. List of additional document references.
    * Could be used to reference a self-billing agreement or the original transaction leading to the refund.

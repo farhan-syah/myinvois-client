@@ -10,9 +10,11 @@ import {
   LegalMonetaryTotalParam,
   PaymentMeansParam, // Important for specifying refund method
   PaymentTermsParam,
+  PeriodParam,
   PrepaidPaymentParam, // Could represent the original payment being refunded
   SupplierPartyParam,
   TaxSubtotalParam,
+  TaxTotalParam,
 } from "../params/common";
 import { SignatureParams } from "./signature";
 
@@ -37,7 +39,7 @@ export interface RefundNoteLineParam {
    */
   subtotal: number;
   /** Description of the product or service being refunded. E.g., "Returned goods". Mandatory. */
-  itemDescription?: string;
+  itemDescription: string;
   /** Commodity classification details for the item being refunded. */
   itemCommodityClassification: ItemCommodityClassificationParam;
   /** Price assigned to a single unit of the product or service being refunded. E.g., 17.00. */
@@ -54,31 +56,6 @@ export interface RefundNoteLineParam {
   };
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
-}
-
-/**
- * User-friendly parameters for defining the overall tax total for the refund note.
- * Adapted from InvoiceTaxTotalParam.
- */
-export interface RefundNoteTaxTotalParam {
-  /** Total tax amount for the entire refund note. E.g., 87.63. */
-  totalTaxAmount: number;
-  /** Breakdown of taxes by category/rate for the entire refund note. */
-  taxSubtotals: TaxSubtotalParam[];
-  /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
-  roundingAmount?: number;
-}
-
-/**
- * User-friendly parameters for defining a billing period associated with the refund note (e.g., for a refunded service period).
- */
-export interface RefundNotePeriodParam {
-  /** Start date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-26". */
-  startDate?: string;
-  /** End date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-30". */
-  endDate?: string;
-  /** Description of the frequency (e.g., "Full refund for March subscription"). Optional. */
-  description?: string;
 }
 
 /**
@@ -125,7 +102,7 @@ export interface CreateRefundNoteDocumentParams {
    */
   refundNoteLines: RefundNoteLineParam[];
   /** Overall tax total for the refund note. Mandatory. */
-  taxTotal: RefundNoteTaxTotalParam;
+  taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the refund note. Mandatory. */
   legalMonetaryTotal: LegalMonetaryTotalParam;
 
@@ -137,7 +114,7 @@ export interface CreateRefundNoteDocumentParams {
   billingReferences: BillingReferenceParam[];
 
   /** Optional. Billing period information related to the refund. */
-  refundNotePeriod?: RefundNotePeriodParam[];
+  refundNotePeriod?: PeriodParam[];
   /** Optional. List of additional document references. */
   additionalDocumentReferences?: AdditionalDocRefParam[];
   /** Optional. Delivery information, e.g., for returned goods. Can be an array if multiple deliveries are involved. */

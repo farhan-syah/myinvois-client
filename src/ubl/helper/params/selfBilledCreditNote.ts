@@ -10,9 +10,11 @@ import {
   LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
+  PeriodParam,
   PrepaidPaymentParam,
   SupplierPartyParam,
   TaxSubtotalParam,
+  TaxTotalParam,
 } from "../params/common";
 import { SignatureParams } from "./signature";
 
@@ -21,7 +23,7 @@ import { SignatureParams } from "./signature";
  * This structure is consistent for standard and self-billed credit notes.
  * Adapted from InvoiceLineParam.
  */
-export interface CreditNoteLineParam {
+export interface SelfBilledCreditNoteLineParam {
   /** Unique identifier for the credit note line (e.g., item number "1", "2", etc.). */
   id: string;
   /** Number of units of the product or service being credited. E.g., 1.00. */
@@ -38,7 +40,7 @@ export interface CreditNoteLineParam {
    */
   subtotal: number;
   /** Description of the product or service being credited. E.g., "Laptop Peripherals". Mandatory. */
-  itemDescription?: string;
+  itemDescription: string;
   /** Commodity classification details for the item being credited. */
   itemCommodityClassification: ItemCommodityClassificationParam;
   /** Price assigned to a single unit of the product or service being credited. E.g., 17.00. */
@@ -55,33 +57,6 @@ export interface CreditNoteLineParam {
   };
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
-}
-
-/**
- * User-friendly parameters for defining the overall tax total for the credit note.
- * This structure is consistent for standard and self-billed credit notes.
- * Adapted from InvoiceTaxTotalParam.
- */
-export interface CreditNoteTaxTotalParam {
-  /** Total tax amount for the entire credit note. E.g., 87.63. */
-  totalTaxAmount: number;
-  /** Breakdown of taxes by category/rate for the entire credit note. */
-  taxSubtotals: TaxSubtotalParam[];
-  /** Optional. Rounding amount applied to the total tax. E.g., 0.03 (for positive rounding). */
-  roundingAmount?: number;
-}
-
-/**
- * User-friendly parameters for defining a billing period associated with the credit note (e.g., for a recurring service credit).
- * This structure is consistent for standard and self-billed credit notes.
- */
-export interface CreditNotePeriodParam {
-  /** Start date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-26". */
-  startDate?: string;
-  /** End date of the period (YYYY-MM-DD). Optional. E.g., "2017-11-30". */
-  endDate?: string;
-  /** Description of the frequency (e.g., "Monthly"). Optional. */
-  description?: string;
 }
 
 /**
@@ -148,9 +123,9 @@ export interface CreateSelfBilledCreditNoteDocumentParams {
    * Array of credit note line items. At least one line item is typically mandatory
    * unless it's a document-level credit/charge.
    */
-  creditNoteLines: CreditNoteLineParam[];
+  creditNoteLines: SelfBilledCreditNoteLineParam[];
   /** Overall tax total for the credit note. Mandatory. */
-  taxTotal: CreditNoteTaxTotalParam;
+  taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the credit note. Mandatory. */
   legalMonetaryTotal: LegalMonetaryTotalParam;
 
@@ -162,7 +137,7 @@ export interface CreateSelfBilledCreditNoteDocumentParams {
   billingReferences: BillingReferenceParam[];
 
   /** Optional. Billing period information for the credit. */
-  creditNotePeriod?: CreditNotePeriodParam[];
+  creditNotePeriod?: PeriodParam[];
   /**
    * Optional. List of additional document references.
    * Could be used to reference a self-billing agreement.

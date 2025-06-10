@@ -10,9 +10,11 @@ import {
   LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
+  PeriodParam,
   PrepaidPaymentParam,
   SupplierPartyParam,
   TaxSubtotalParam,
+  TaxTotalParam,
 } from "../params/common";
 import { SignatureParams } from "./signature";
 
@@ -21,7 +23,7 @@ import { SignatureParams } from "./signature";
  * This structure is consistent for standard and self-billed debit notes.
  * Adapted from CreditNoteLineParam.
  */
-export interface DebitNoteLineParam {
+export interface SelfBilledDebitNoteLineParam {
   /** Unique identifier for the debit note line (e.g., item number "1", "2", etc.). */
   id: string;
   /** Number of units of the product or service being debited. E.g., 1.00. */
@@ -38,7 +40,7 @@ export interface DebitNoteLineParam {
    */
   subtotal: number;
   /** Description of the product or service being debited. E.g., "Late Payment Fee". Mandatory. */
-  itemDescription?: string;
+  itemDescription: string;
   /** Commodity classification details for the item being debited. */
   itemCommodityClassification: ItemCommodityClassificationParam;
   /** Price assigned to a single unit of the product or service being debited. E.g., 50.00. */
@@ -55,33 +57,6 @@ export interface DebitNoteLineParam {
   };
   /** Optional list of allowances or charges specific to this line item. */
   allowanceCharges?: AllowanceChargeParam[];
-}
-
-/**
- * User-friendly parameters for defining the overall tax total for the debit note.
- * This structure is consistent for standard and self-billed debit notes.
- * Adapted from CreditNoteTaxTotalParam.
- */
-export interface DebitNoteTaxTotalParam {
-  /** Total tax amount for the entire debit note. E.g., 30.00. */
-  totalTaxAmount: number;
-  /** Breakdown of taxes by category/rate for the entire debit note. */
-  taxSubtotals: TaxSubtotalParam[];
-  /** Optional. Rounding amount applied to the total tax. E.g., 0.01 (for positive rounding). */
-  roundingAmount?: number;
-}
-
-/**
- * User-friendly parameters for defining a billing period associated with the debit note (e.g., for a service period being adjusted).
- * This structure is consistent for standard and self-billed debit notes.
- */
-export interface DebitNotePeriodParam {
-  /** Start date of the period (YYYY-MM-DD). Optional. E.g., "2024-08-01". */
-  startDate?: string;
-  /** End date of the period (YYYY-MM-DD). Optional. E.g., "2024-08-31". */
-  endDate?: string;
-  /** Description of the frequency (e.g., "Monthly adjustment"). Optional. */
-  description?: string;
 }
 
 /**
@@ -148,9 +123,9 @@ export interface CreateSelfBilledDebitNoteDocumentParams {
    * Array of debit note line items. At least one line item is typically mandatory
    * unless it's a document-level debit/charge.
    */
-  debitNoteLines: DebitNoteLineParam[];
+  debitNoteLines: SelfBilledDebitNoteLineParam[];
   /** Overall tax total for the debit note. Mandatory. */
-  taxTotal: DebitNoteTaxTotalParam;
+  taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the debit note. Mandatory. */
   legalMonetaryTotal: LegalMonetaryTotalParam;
 
@@ -162,7 +137,7 @@ export interface CreateSelfBilledDebitNoteDocumentParams {
   billingReferences: BillingReferenceParam[];
 
   /** Optional. Billing period information for the debit. */
-  debitNotePeriod?: DebitNotePeriodParam[];
+  debitNotePeriod?: PeriodParam[];
   /**
    * Optional. List of additional document references.
    * Could be used to reference a self-billing agreement or the original transaction leading to the debit.
