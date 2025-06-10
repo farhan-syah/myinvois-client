@@ -149,10 +149,8 @@ export class AuthService {
         try {
           errorData = await response.json();
         } catch (e) {
-          console.error(e);
-          throw new Error(
-            `API Error: HTTP ${response.status} ${response.statusText}`
-          );
+          // console.error(e);
+          throw e;
         }
         throw new Error(
           `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`
@@ -217,9 +215,7 @@ export class AuthService {
         try {
           errorData = await response.json();
         } catch (e) {
-          throw new Error(
-            `API Error: HTTP ${response.status} ${response.statusText}`
-          );
+          throw e;
         }
         throw new Error(
           `API Error: ${errorData.error ?? errorData.statusCode ?? ""} - ${errorData.error_description ?? errorData.message ?? response.statusText ?? "Unknown error"}`

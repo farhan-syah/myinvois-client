@@ -176,52 +176,39 @@ export class DocumentsService {
   async submitDocuments(
     submissionRequest: SubmitDocumentsRequest,
     onBehalfOfTIN?: string
-  ): Promise<SubmitDocumentsResponse> {
-    try {
-      const accessToken = onBehalfOfTIN
-        ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
-        : await this.apiClient.getTaxpayerAccessToken();
+  ): Promise<any> {
+    const accessToken = onBehalfOfTIN
+      ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
+      : await this.apiClient.getTaxpayerAccessToken();
 
-      const response = await fetch(
-        `${this.baseUrl}/api/v1.0/documentsubmissions/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(submissionRequest),
-        }
-      );
-
-      if (response.status === 202) {
-        const responseData: SubmitDocumentsResponse = await response.json();
-        return responseData;
+    const response = await fetch(
+      `${this.baseUrl}/api/v1.0/documentsubmissions/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submissionRequest),
       }
+    );
 
-      let errorData: MyInvoisGenericApiResponseError | string;
+    if (response.status === 202) {
+      const responseData: SubmitDocumentsResponse = await response.json();
+      return responseData;
+    } else {
       try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = `API Error: HTTP ${response.status} ${response.statusText}`;
+        const errorBody = await response.json();
+        // Throw the parsed error body from the server directly.
+        // This could be MyInvoisGenericApiResponseError or another structure
+        // representing the error details as provided by the API.
+        throw errorBody;
+      } catch (parsingError) {
+        // If parsing the error response body as JSON fails (e.g., if the server
+        // returned HTML or plain text instead of JSON),
+        // throw the parsing error itself (e.g., a SyntaxError).
+        throw parsingError;
       }
-
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      if (typeof errorData === "object" && errorData.error) {
-        let detailsMessage = "";
-        if (errorData.error.details && Array.isArray(errorData.error.details)) {
-          detailsMessage = errorData.error.details
-            .map((detail) => detail.message)
-            .join(", ");
-        }
-        errorMessage = `API Error: ${errorData.error.error} (Code: ${errorData.error.errorCode}, Details: ${detailsMessage}, HTTP Status: ${response.status})`;
-        if (errorData.error.errorMS) {
-          errorMessage += ` - ${errorData.error.errorMS}`;
-        }
-      }
-      throw new Error(errorMessage);
-    } catch (error) {
-      throw error;
     }
   }
 
