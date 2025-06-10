@@ -1,23 +1,23 @@
 import crypto from "crypto";
 import {
   CreateCreditNoteDocumentParams,
+  CreateDebitNoteDocumentParams,
   CreateInvoiceDocumentParams,
+  CreateRefundNoteDocumentParams,
+  CreateSelfBilledCreditNoteDocumentParams,
+  CreateSelfBilledDebitNoteDocumentParams,
+  CreateSelfBilledInvoiceDocumentParams,
+  CreateSelfBilledRefundNoteDocumentParams,
   createUblJsonCreditNoteDocument,
+  createUblJsonDebitNoteDocument,
   createUblJsonInvoiceDocument,
+  createUblJsonRefundNoteDocument,
+  createUblJsonSelfBilledCreditNoteDocument,
+  createUblJsonSelfBilledDebitNoteDocument,
+  createUblJsonSelfBilledInvoiceDocument,
+  createUblJsonSelfBilledRefundNoteDocument,
   DocumentSubmissionItem,
 } from "..";
-import { CreateDebitNoteDocumentParams } from "myinvois-client/ubl/helper/params/debitNote";
-import { createUblJsonDebitNoteDocument } from "myinvois-client/ubl/helper/builder/debitNote";
-import { createUblJsonRefundNoteDocument } from "myinvois-client/ubl/helper/builder/refundNote";
-import { CreateRefundNoteDocumentParams } from "myinvois-client/ubl/helper/params/refundNote";
-import { CreateSelfBilledInvoiceDocumentParams } from "myinvois-client/ubl/helper/params/selfBilledInvoice";
-import { createUblJsonSelfBilledInvoiceDocument } from "myinvois-client/ubl/helper/builder/selfBilledInvoice";
-import { CreateSelfBilledCreditNoteDocumentParams } from "myinvois-client/ubl/helper/params/selfBilledCreditNote";
-import { createUblJsonSelfBilledCreditNoteDocument } from "myinvois-client/ubl/helper/builder/selfBilledCreditNote";
-import { CreateSelfBilledDebitNoteDocumentParams } from "myinvois-client/ubl/helper/params/selfBilledDebitNote";
-import { createUblJsonSelfBilledDebitNoteDocument } from "myinvois-client/ubl/helper/builder/selfBilledDebitNote";
-import { CreateSelfBilledRefundNoteDocumentParams } from "myinvois-client/ubl/helper/params/selfBilledRefundNote";
-import { createUblJsonSelfBilledRefundNoteDocument } from "myinvois-client/ubl/helper/builder/selfBilledRefundNote";
 
 export function calculateSHA256Hex(text: string): string {
   return crypto.createHash("sha256").update(text, "utf8").digest("hex");

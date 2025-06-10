@@ -5,56 +5,16 @@ import {
   AllowanceChargeParam,
   CustomerPartyParam,
   DeliveryParam,
-  ItemCommodityClassificationParam,
+  InvoiceLineItem,
   LegalMonetaryTotalParam,
   PaymentMeansParam,
   PaymentTermsParam,
   PeriodParam,
   PrepaidPaymentParam,
   SupplierPartyParam,
-  TaxSubtotalParam,
   TaxTotalParam,
 } from "./common";
 import { SignatureParams } from "./signature";
-
-/**
- * User-friendly parameters for defining an invoice line item.
- */
-export interface InvoiceLineParam {
-  /** Unique identifier for the invoice line (e.g., item number "1", "2", etc.). */
-  id: string;
-  /** Number of units of the product or service. E.g., 1.00. */
-  quantity: number;
-  /** Price assigned to a single unit of the product or service. E.g., 17.00. */
-  unitPrice: number;
-  /**
-   * Subtotal for the line item: Amount of each individual item/service, excluding taxes, charges, or discounts.
-   * This maps to `ItemPriceExtension/Amount` in UBL, which is used for line item subtotal in MyInvois.
-   * E.g., 100.00.
-   */
-  subtotal: number;
-
-  /** Description of the product or service. E.g., "Laptop Peripherals". Mandatory. */
-  itemDescription: string;
-  /** Commodity classification details for the item. */
-  itemCommodityClassification: ItemCommodityClassificationParam;
-  /**
-   * Tax details for this specific line item. .
-   */
-  lineTaxTotal: {
-    /** Breakdown of taxes for this line item by category/rate. At least one item is required*/
-    taxSubtotals: TaxSubtotalParam[];
-    /** Total tax amount for this line item. E.g., 8.76. */
-    taxAmount: number;
-  };
-  /**
-   * Standard unit or system used to measure the product or service (UN/ECE Recommendation 20).
-   * E.g., "KGM" for kilograms, "UNT" for unit. Optional.
-   */
-  unitCode?: string;
-  /** Optional list of allowances or charges specific to this line item. */
-  allowanceCharges?: AllowanceChargeParam[];
-}
 
 /**
  * Comprehensive user-friendly parameters for creating a full UBL Invoice document (supports v1.0 and v1.1).
@@ -96,7 +56,7 @@ export interface CreateInvoiceDocumentParams {
   customer: CustomerPartyParam;
 
   /** Array of invoice line items. At least one line item is typically mandatory. */
-  invoiceLines: InvoiceLineParam[];
+  invoiceLines: InvoiceLineItem[];
   /** Overall tax total for the invoice. Mandatory. */
   taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the invoice. Mandatory. */

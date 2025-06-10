@@ -6,6 +6,7 @@ import {
   BillingReferenceParam,
   CustomerPartyParam,
   DeliveryParam,
+  InvoiceLineItem,
   ItemCommodityClassificationParam,
   LegalMonetaryTotalParam,
   PaymentMeansParam,
@@ -21,7 +22,6 @@ import { SignatureParams } from "./signature";
 /**
  * User-friendly parameters for defining a debit note line item.
  * This structure is consistent for standard and self-billed debit notes.
- * Adapted from CreditNoteLineParam.
  */
 export interface SelfBilledDebitNoteLineParam {
   /** Unique identifier for the debit note line (e.g., item number "1", "2", etc.). */
@@ -123,7 +123,7 @@ export interface CreateSelfBilledDebitNoteDocumentParams {
    * Array of debit note line items. At least one line item is typically mandatory
    * unless it's a document-level debit/charge.
    */
-  debitNoteLines: SelfBilledDebitNoteLineParam[];
+  invoiceLines: InvoiceLineItem[];
   /** Overall tax total for the debit note. Mandatory. */
   taxTotal: TaxTotalParam;
   /** Legal monetary total summary for the debit note. Mandatory. */
