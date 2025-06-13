@@ -2,6 +2,7 @@ import { AuthService } from "./auth";
 import { DocumentsService } from "./documents";
 import { TaxpayerService } from "./taxpayer"; // Added import
 import { LoginResponse, MyInvoisRedisClient } from "./types";
+import { MyInvoisAuthenticationError, MyInvoisError } from "./errors"; // Import custom errors
 
 export type MyInvoisEnvironment = "PROD" | "SANDBOX";
 
@@ -121,8 +122,10 @@ export class MyInvoisClient {
       await this._loginAsTaxpayerAndStoreToken(scope);
     }
     if (!this.accessToken) {
-      throw new Error(
-        "MyInvoisClient: Unable to retrieve taxpayer access token."
+      // This path should ideally not be reached if _loginAsTaxpayerAndStoreToken throws on failure.
+      // However, as a safeguard:
+      throw new MyInvoisAuthenticationError(
+        "MyInvoisClient: Unable to retrieve taxpayer access token after login attempt."
       );
     }
     return this.accessToken;
@@ -137,8 +140,10 @@ export class MyInvoisClient {
       await this._performIntermediaryLoginAndStoreToken(onBehalfOfTIN, scope);
     }
     if (!this.accessToken) {
-      throw new Error(
-        "MyInvoisClient: Unable to retrieve intermediary access token."
+      // This path should ideally not be reached if _performIntermediaryLoginAndStoreToken throws on failure.
+      // However, as a safeguard:
+      throw new MyInvoisAuthenticationError(
+        "MyInvoisClient: Unable to retrieve intermediary access token after login attempt."
       );
     }
     return this.accessToken;

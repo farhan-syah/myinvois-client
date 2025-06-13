@@ -1,5 +1,6 @@
 import { MyInvoisRedisClient, RedisTokenData } from "../types";
 import { MyInvoisLoginRequest, MyInvoisLoginResponse } from "./types";
+import { MyInvoisAPIError, MyInvoisNetworkError } from "../errors";
 
 export class AuthService {
   private baseUrl: string;
@@ -137,20 +138,61 @@ export class AuthService {
       ).toString(),
     });
 
-    if (response.status === 200) {
+    // If not in cache or Redis not used, proceed with API call
+    const requestBody: MyInvoisLoginRequest = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "client_credentials", // Correct grant_type for taxpayer
+      scope: scope ?? "InvoicingAPI",
+    };
+
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/connect/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(
+          Object.fromEntries(
+            Object.entries(requestBody).filter(([_, v]) => v !== undefined)
+          ) as Record<string, string>
+        ).toString(),
+      });
+    } catch (fetchError) {
+      // Network error or other issue with fetch itself
+      throw new MyInvoisNetworkError(
+        `Failed to connect to MyInvois API: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
+
+    if (response.ok) { // response.status >= 200 && response.status < 300
       const responseData: MyInvoisLoginResponse = await response.json();
       if (this.redisClient) {
-        // Store in cache if redisClient is configured
         await this.storeTokenInCache(redisKey, responseData);
       }
       return responseData;
     } else {
+      // Handle API errors (status code not in 200-299 range)
+      let errorBody: any;
+      let errorMessage = `MyInvois API Error: ${response.status} ${response.statusText}`;
+      let apiErrorCode: string | undefined;
+
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
+        // Attempt to extract a more specific message or code from the API's error response
+        errorMessage = errorBody?.error_description || errorBody?.error || errorBody?.message || errorMessage;
+        apiErrorCode = errorBody?.error || errorBody?.code;
       } catch (parsingError) {
-        throw parsingError;
+        // Error body was not JSON or other parsing issue
+        // errorMessage remains as defined above
+        errorBody = await response.text().catch(() => "Could not read error response body.");
       }
+      throw new MyInvoisAPIError(
+        errorMessage,
+        response.status,
+        apiErrorCode,
+        errorBody
+      );
     }
   }
 
@@ -190,20 +232,65 @@ export class AuthService {
       ).toString(),
     });
 
-    if (response.status === 200) {
+    // If not in cache or Redis not used, proceed with API call
+    // Your existing logic uses grant_type: "client_credentials" and an "onbehalfof" header.
+    const requestBody: MyInvoisLoginRequest = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "client_credentials", // As per your original code
+      scope: scope ?? "InvoicingAPI",
+    };
+
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/connect/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          onbehalfof: onBehalfOfTIN, // Header for intermediary
+        },
+        body: new URLSearchParams(
+          Object.fromEntries(
+            Object.entries(requestBody).filter(([_, v]) => v !== undefined)
+          ) as Record<string, string>
+        ).toString(),
+      });
+    } catch (fetchError) {
+      // Network error or other issue with fetch itself
+      throw new MyInvoisNetworkError(
+        `Failed to connect to MyInvois API (intermediary login): ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
+
+    if (response.ok) { // response.status >= 200 && response.status < 300
       const responseData: MyInvoisLoginResponse = await response.json();
       if (this.redisClient) {
-        // Store in cache if redisClient is configured
         await this.storeTokenInCache(redisKey, responseData);
       }
       return responseData;
     } else {
+      // Handle API errors (status code not in 200-299 range)
+      let errorBody: any;
+      let errorMessage = `MyInvois API Error (intermediary login): ${response.status} ${response.statusText}`;
+      let apiErrorCode: string | undefined;
+
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
+        // Attempt to extract a more specific message or code from the API's error response
+        errorMessage = errorBody?.error_description || errorBody?.error || errorBody?.message || errorMessage;
+        apiErrorCode = errorBody?.error || errorBody?.code;
       } catch (parsingError) {
-        throw parsingError;
+        // Error body was not JSON or other parsing issue
+        // errorMessage remains as defined above
+        errorBody = await response.text().catch(() => "Could not read error response body for intermediary login.");
       }
+      throw new MyInvoisAPIError(
+        errorMessage,
+        response.status,
+        apiErrorCode,
+        errorBody
+      );
     }
   }
 }
