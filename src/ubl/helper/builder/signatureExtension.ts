@@ -11,11 +11,32 @@ import { SignatureParams } from "../params/signature";
 import { toUblIdentifier, toUblText } from "./common";
 
 /**
- * Builds a single UBLJsonExtension object representing a digital signature extension.
- * This object can then be included in the UBLExtensions array of a UBL document.
+ * Builds a single UBLJsonExtension object representing a digital signature extension for UBL documents,
+ * typically used for XAdES enveloped signatures. This extension is then embedded within the
+ * `UBLExtensions` section of the UBL document.
  *
- * @param params The {@link SignatureParams} object containing all necessary data for signature generation.
- * @returns A Promise that resolves to a {@link UBLJsonExtension} object for the signature.
+ * The process involves:
+ * 1. Generating a `DigitalSignature` JSON object (which includes XMLDSig elements) based on the document to be signed
+ *    and cryptographic materials. This uses the `generateDigitalSignatureJSON` helper.
+ * 2. Wrapping this `DigitalSignature` within a `UBLDocumentSignatures` structure as defined by UBL.
+ * 3. Encapsulating this structure within a `UBLExtension` object.
+ *
+ * @param params The {@link SignatureParams} object containing all necessary data for signature generation:
+ *   - `documentToSign`: The UBL document (as a JSON object) that needs to be signed.
+ *   - `privateKey`: The private CryptoKey for generating the XML signature.
+ *   - `signingCertificateBase64`: Base64 encoded string of the signing certificate.
+ *   - `certificateDigestBase64`: Base64 encoded digest of the signing certificate.
+ *   - `certificateIssuerName`: Issuer name of the signing certificate.
+ *   - `certificateSerialNumber`: Serial number of the signing certificate.
+ *   - `extensionUri` (optional): URI for the extension. Defaults to "urn:oasis:names:specification:ubl:dsig:enveloped:xades".
+ *   - `signatureInformationId` (optional): ID for the `SignatureInformation` block. Defaults to "urn:oasis:names:specification:ubl:signature:1".
+ *   - `referencedSignatureId` (optional): This ID **must** match the `ID` of the corresponding `cac:Signature` block in the main UBL document.
+ *     It links this extension to that signature block. Defaults to "urn:oasis:names:specification:ubl:signature:Invoice".
+ *   - `documentTransformationKeys` (optional): An array of keys (strings) representing UBL elements (like "UBLExtensions", "Signature")
+ *     that should be excluded from the XML canonicalization process when generating the signature digest.
+ *     This is crucial for enveloped signatures to prevent the signature from signing itself.
+ *     Defaults to `["UBLExtensions", "Signature"]`.
+ * @returns A Promise that resolves to a {@link UBLJsonExtension} object representing the digital signature.
  * @example
  * ```typescript
  * // Assuming 'invoiceDocument' is the UBL JSON Invoice object (prior to adding UBLExtensions)

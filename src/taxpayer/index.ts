@@ -1,5 +1,6 @@
 import { MyInvoisClient } from "../client";
 import { TaxpayerIdType } from "../codes";
+import { MyInvoisNetworkError, MyInvoisStandardAPIError, MyInvoisError } from "../errors";
 import {
   GetTaxpayerInfoByQRCodeResponse,
   SearchTaxpayerTINRequestParams,
@@ -21,7 +22,10 @@ export class TaxpayerService {
    * @param idType The type of ID being provided (NRIC, PASSPORT, BRN, ARMY).
    * @param idValue The actual value of the ID.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
-   * @returns A promise that resolves if the TIN is valid (HTTP 200) or rejects with an error.
+   * @returns A promise that resolves to true if the TIN is valid.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response (e.g., TIN not found or invalid).
    */
   async validateTaxpayerTIN(
     tin: string,
@@ -33,26 +37,42 @@ export class TaxpayerService {
       ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
       : await this.apiClient.getTaxpayerAccessToken();
 
-    const response = await fetch(
-      `${this.baseUrl}/api/v1.0/taxpayer/validate/${tin}?idType=${idType}&idValue=${idValue}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    let response: Response;
+    try {
+      response = await fetch(
+        `${this.baseUrl}/api/v1.0/taxpayer/validate/${tin}?idType=${idType}&idValue=${idValue}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in validateTaxpayerTIN: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       return true;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -61,22 +81,26 @@ export class TaxpayerService {
    * Either taxpayerName OR (idType AND idValue) must be provided.
    * @param params The search parameters: idType, idValue, taxpayerName.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
-   * @returns A promise that resolves with the matching TIN or rejects with an error.
+   * @returns A promise that resolves with the matching TIN.
+   * @throws {MyInvoisError} If search criteria are incomplete.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async searchTaxpayerTIN(
     params: SearchTaxpayerTINRequestParams,
     onBehalfOfTIN?: string
   ): Promise<SearchTaxpayerTINResponse> {
     if (!params.taxpayerName && !(params.idType && params.idValue)) {
-      throw new Error(
+      throw new MyInvoisError( // Using MyInvoisError for client-side validation
         "Search criteria incomplete: Provide either taxpayerName OR (idType AND idValue)."
       );
     }
     if (params.idType && !params.idValue) {
-      throw new Error("idValue is mandatory when idType is provided.");
+      throw new MyInvoisError("idValue is mandatory when idType is provided.");
     }
     if (params.idValue && !params.idType) {
-      throw new Error("idType is mandatory when idValue is provided.");
+      throw new MyInvoisError("idType is mandatory when idValue is provided.");
     }
 
     const accessToken = onBehalfOfTIN
@@ -94,24 +118,40 @@ export class TaxpayerService {
 
     const url = `${this.baseUrl}/api/v1.0/taxpayer/search/tin?${queryParameters.toString()}`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in searchTaxpayerTIN: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: SearchTaxpayerTINResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+         error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -120,40 +160,59 @@ export class TaxpayerService {
    * @param qrCodeText The Base64 decoded string obtained from scanning a taxpayer's QR code.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the taxpayer's information.
+   * @throws {MyInvoisError} If qrCodeText is not provided.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getTaxpayerInfoByQRCode(
     qrCodeText: string,
     onBehalfOfTIN?: string
   ): Promise<GetTaxpayerInfoByQRCodeResponse> {
     if (!qrCodeText) {
-      throw new Error("qrCodeText (decoded QR code string) is mandatory.");
+      throw new MyInvoisError("qrCodeText (decoded QR code string) is mandatory.");
     }
     const accessToken = onBehalfOfTIN
       ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
       : await this.apiClient.getTaxpayerAccessToken();
 
-    // The qrCodeText is part of the path, ensure it's properly encoded for a URL path segment if necessary (though typically UUIDs are URL-safe)
     const url = `${this.baseUrl}/api/v1.0/taxpayer/qrcodeinfo/${encodeURIComponent(qrCodeText)}`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json", // API expects JSON response
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getTaxpayerInfoByQRCode: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: GetTaxpayerInfoByQRCodeResponse =
         await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 }

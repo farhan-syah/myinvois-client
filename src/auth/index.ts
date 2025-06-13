@@ -1,6 +1,8 @@
 import { MyInvoisRedisClient, RedisTokenData } from "../types";
 import { MyInvoisLoginRequest, MyInvoisLoginResponse } from "./types";
-import { MyInvoisAPIError, MyInvoisNetworkError } from "../errors";
+import { MyInvoisOAuthError, MyInvoisNetworkError } from "../errors";
+
+import { MyInvoisOAuthError, MyInvoisNetworkError, MyInvoisAuthenticationError } from "../errors"; // MyInvoisAuthenticationError might not be thrown directly by AuthService but good for consistency if other auth related errors were to emerge
 
 export class AuthService {
   private baseUrl: string;
@@ -106,6 +108,16 @@ export class AuthService {
     }
   }
 
+  /**
+   * Logs in as a taxpayer to obtain an access token.
+   * Uses Redis for caching if a Redis client is provided.
+   * @param clientId The client ID obtained from MyInvois.
+   * @param clientSecret The client secret obtained from MyInvois.
+   * @param scope Optional scope for the access token. Defaults to "InvoicingAPI".
+   * @returns A promise that resolves with the login response containing the access token.
+   * @throws {MyInvoisOAuthError} If the MyInvois API returns an OAuth error (e.g., 400, 401).
+   * @throws {MyInvoisNetworkError} If a network error occurs while communicating with the API.
+   */
   async loginAsTaxpayer(
     clientId: string,
     clientSecret: string,
@@ -172,30 +184,47 @@ export class AuthService {
       }
       return responseData;
     } else {
-      // Handle API errors (status code not in 200-299 range)
+      // Handle API errors (status code not in 200-299 range) which, for /connect/token, are OAuth errors.
       let errorBody: any;
-      let errorMessage = `MyInvois API Error: ${response.status} ${response.statusText}`;
-      let apiErrorCode: string | undefined;
+      let oauthErrorCode: string | undefined;
+      let errorDescription: string | undefined;
+      let errorUri: string | undefined;
+      let message: string;
 
       try {
         errorBody = await response.json();
-        // Attempt to extract a more specific message or code from the API's error response
-        errorMessage = errorBody?.error_description || errorBody?.error || errorBody?.message || errorMessage;
-        apiErrorCode = errorBody?.error || errorBody?.code;
+        oauthErrorCode = errorBody?.error;
+        errorDescription = errorBody?.error_description;
+        errorUri = errorBody?.error_uri;
+        message = errorDescription || oauthErrorCode || `OAuth API Error: ${response.status} ${response.statusText}`;
       } catch (parsingError) {
         // Error body was not JSON or other parsing issue
-        // errorMessage remains as defined above
-        errorBody = await response.text().catch(() => "Could not read error response body.");
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        message = `OAuth API Error: ${response.status} ${response.statusText}. Response body was not valid JSON.`;
+        errorBody = rawText; // Store raw text as the body if JSON parsing failed
       }
-      throw new MyInvoisAPIError(
-        errorMessage,
+      throw new MyInvoisOAuthError(
+        message,
         response.status,
-        apiErrorCode,
+        oauthErrorCode,
+        errorDescription,
+        errorUri,
         errorBody
       );
     }
   }
 
+  /**
+   * Logs in as an intermediary on behalf of a taxpayer to obtain an access token.
+   * Uses Redis for caching if a Redis client is provided.
+   * @param clientId The client ID obtained from MyInvois.
+   * @param clientSecret The client secret obtained from MyInvois.
+   * @param onBehalfOfTIN The Tax Identification Number of the taxpayer on whose behalf the intermediary is acting.
+   * @param scope Optional scope for the access token. Defaults to "InvoicingAPI".
+   * @returns A promise that resolves with the login response containing the access token.
+   * @throws {MyInvoisOAuthError} If the MyInvois API returns an OAuth error (e.g., 400, 401).
+   * @throws {MyInvoisNetworkError} If a network error occurs while communicating with the API.
+   */
   async loginAsIntermediary(
     clientId: string,
     clientSecret: string,
@@ -270,25 +299,31 @@ export class AuthService {
       }
       return responseData;
     } else {
-      // Handle API errors (status code not in 200-299 range)
+      // Handle API errors (status code not in 200-299 range) which, for /connect/token, are OAuth errors.
       let errorBody: any;
-      let errorMessage = `MyInvois API Error (intermediary login): ${response.status} ${response.statusText}`;
-      let apiErrorCode: string | undefined;
+      let oauthErrorCode: string | undefined;
+      let errorDescription: string | undefined;
+      let errorUri: string | undefined;
+      let message: string;
 
       try {
         errorBody = await response.json();
-        // Attempt to extract a more specific message or code from the API's error response
-        errorMessage = errorBody?.error_description || errorBody?.error || errorBody?.message || errorMessage;
-        apiErrorCode = errorBody?.error || errorBody?.code;
+        oauthErrorCode = errorBody?.error;
+        errorDescription = errorBody?.error_description;
+        errorUri = errorBody?.error_uri;
+        message = errorDescription || oauthErrorCode || `OAuth API Error (intermediary login): ${response.status} ${response.statusText}`;
       } catch (parsingError) {
         // Error body was not JSON or other parsing issue
-        // errorMessage remains as defined above
-        errorBody = await response.text().catch(() => "Could not read error response body for intermediary login.");
+        const rawText = await response.text().catch(() => "Could not read error response body for intermediary login.");
+        message = `OAuth API Error (intermediary login): ${response.status} ${response.statusText}. Response body was not valid JSON.`;
+        errorBody = rawText; // Store raw text as the body if JSON parsing failed
       }
-      throw new MyInvoisAPIError(
-        errorMessage,
+      throw new MyInvoisOAuthError(
+        message,
         response.status,
-        apiErrorCode,
+        oauthErrorCode,
+        errorDescription,
+        errorUri,
         errorBody
       );
     }

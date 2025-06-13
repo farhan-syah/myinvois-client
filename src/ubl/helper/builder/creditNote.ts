@@ -7,7 +7,7 @@ import {
 import {
   UBLJsonAccountingCustomerParty,
   UBLJsonAccountingSupplierParty,
-  UBLJsonExtensions, // Added
+  UBLJsonExtensions,
   UBLJsonInvoiceLine,
   UBLJsonItem,
   UBLJsonLegalMonetaryTotal,
@@ -30,7 +30,7 @@ import {
   toUblText,
   toUblTime,
 } from "./common"; // Import common builder helpers
-import { buildSignatureExtension } from "./signatureExtension"; // Added
+import { buildSignatureExtension } from "./signatureExtension";
 
 /**
  * Asynchronously creates a UBL Credit Note JSON document (supports v1.0 and v1.1) from user-friendly parameters.

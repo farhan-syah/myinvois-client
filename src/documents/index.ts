@@ -1,4 +1,5 @@
 import { MyInvoisClient } from "../client";
+import { MyInvoisNetworkError, MyInvoisStandardAPIError, MyInvoisError } from "../errors";
 import {
   CancelDocumentRequest,
   CancelDocumentResponse,
@@ -30,29 +31,49 @@ export class DocumentsService {
   /**
    * Retrieves a list of all document types from the MyInvois System.
    * @returns A promise that resolves with the list of document types.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getAllDocumentTypes(): Promise<DocumentType[]> {
     const accessToken =
       await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-    const response = await fetch(`${this.baseUrl}/api/v1.0/documenttypes`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/api/v1.0/documenttypes`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getAllDocumentTypes: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: DocumentType[] = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}` // 'error' property often holds the main message
+          }
+        });
       }
+      // Ensure errorBody is wrapped in { error: ... } if it's not already
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -60,31 +81,51 @@ export class DocumentsService {
    * Retrieves the details of a single document type by its unique ID.
    * @param id The unique ID of the document type.
    * @returns A promise that resolves with the document type details.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getDocumentTypeById(id: number): Promise<DocumentType> {
     const accessToken =
       await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-    const response = await fetch(
-      `${this.baseUrl}/api/v1.0/documenttypes/${id}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (response.status === 200) {
+    let response: Response;
+    try {
+      response = await fetch(
+        `${this.baseUrl}/api/v1.0/documenttypes/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getDocumentTypeById: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
+
+    if (response.ok) { // HTTP 200
       const responseData: DocumentType = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -93,6 +134,9 @@ export class DocumentsService {
    * @param documentTypeId The unique ID of the document type.
    * @param versionId The unique ID of the document type version.
    * @returns A promise that resolves with the document type version details.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getDocumentTypeVersionById(
     documentTypeId: number,
@@ -101,26 +145,43 @@ export class DocumentsService {
     const accessToken =
       await this.apiClient.getTaxpayerAccessToken("InvoicingAPI");
 
-    const response = await fetch(
-      `${this.baseUrl}/api/v1.0/documenttypes/${documentTypeId}/versions/${versionId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (response.status === 200) {
+    let response: Response;
+    try {
+      response = await fetch(
+        `${this.baseUrl}/api/v1.0/documenttypes/${documentTypeId}/versions/${versionId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getDocumentTypeVersionById: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
+
+    if (response.ok) { // HTTP 200
       const responseData: DocumentTypeVersion = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -129,37 +190,56 @@ export class DocumentsService {
    * @param submissionRequest The request payload containing the documents to submit.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the submission response (HTTP 202 Accepted).
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async submitDocuments(
     submissionRequest: SubmitDocumentsRequest,
     onBehalfOfTIN?: string
-  ): Promise<any> {
+  ): Promise<SubmitDocumentsResponse> {
     const accessToken = onBehalfOfTIN
       ? await this.apiClient.getIntermediaryAccessToken(onBehalfOfTIN)
       : await this.apiClient.getTaxpayerAccessToken();
 
-    const response = await fetch(
-      `${this.baseUrl}/api/v1.0/documentsubmissions/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submissionRequest),
-      }
-    );
+    let response: Response;
+    try {
+      response = await fetch(
+        `${this.baseUrl}/api/v1.0/documentsubmissions/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(submissionRequest),
+        }
+      );
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in submitDocuments: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 202) {
+    if (response.status === 202) { // HTTP 202 Accepted
       const responseData: SubmitDocumentsResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+         error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -169,6 +249,9 @@ export class DocumentsService {
    * @param reason The reason for cancelling the document (max 300 characters).
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the cancellation confirmation.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async cancelDocument(
     uuid: string,
@@ -187,28 +270,44 @@ export class DocumentsService {
       reason: reason,
     };
 
-    const response = await fetch(
-      `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
+    let response: Response;
+    try {
+      response = await fetch(
+        `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in cancelDocument: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: CancelDocumentResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -218,6 +317,9 @@ export class DocumentsService {
    * @param reason The reason for rejecting the document.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer (Buyer) if an intermediary is acting on their behalf.
    * @returns A promise that resolves with the rejection request confirmation.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async rejectDocument(
     uuid: string,
@@ -236,28 +338,44 @@ export class DocumentsService {
       reason: reason,
     };
 
-    const response = await fetch(
-      `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
+    let response: Response;
+    try {
+      response = await fetch(
+        `${this.baseUrl}/api/v1.0/documents/state/${uuid}/state`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in rejectDocument: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: RejectDocumentResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -266,6 +384,9 @@ export class DocumentsService {
    * @param params The filter parameters for the document search.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the list of recent documents and pagination metadata.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getRecentDocuments(
     params: GetRecentDocumentsRequestParams = {},
@@ -287,24 +408,40 @@ export class DocumentsService {
 
     const url = `${this.baseUrl}/api/v1.0/documents/recent?${queryParameters.toString()}`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getRecentDocuments: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: GetRecentDocumentsResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -314,6 +451,9 @@ export class DocumentsService {
    * @param params Optional pagination parameters (pageNo, pageSize).
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the submission details.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getSubmissionDetails(
     submissionUid: string,
@@ -336,24 +476,40 @@ export class DocumentsService {
 
     const url = `${this.baseUrl}/api/v1.0/documentsubmissions/${submissionUid}?${queryParameters.toString()}`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getSubmissionDetails: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: GetSubmissionDetailsResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -363,6 +519,9 @@ export class DocumentsService {
    * @param preferredFormat Optional. Specify 'JSON' or 'XML' for the desired response format.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the document details including the raw document string.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getDocumentByUuid(
     uuid: string,
@@ -384,26 +543,45 @@ export class DocumentsService {
     } else if (preferredFormat === "XML") {
       headers.Accept = "application/xml";
     } else {
-      headers.Accept = "application/json";
+      headers.Accept = "application/json"; // Default to JSON if not specified or invalid
     }
 
     const url = `${this.baseUrl}/api/v1.0/documents/${uuid}/raw`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headers,
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers: headers,
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getDocumentByUuid: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
+      // Assuming the response will be JSON even if XML was requested,
+      // as the type GetDocumentResponse suggests a JSON structure.
+      // If XML can actually be returned as raw text, this part needs adjustment.
       const responseData: GetDocumentResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json(); // Try to parse error as JSON first
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+         error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -412,6 +590,9 @@ export class DocumentsService {
    * @param uuid The unique ID of the document to retrieve details for.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the document details including validation results.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async getDocumentDetailsByUuid(
     uuid: string,
@@ -426,24 +607,40 @@ export class DocumentsService {
 
     const url = `${this.baseUrl}/api/v1.0/documents/${uuid}/details`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in getDocumentDetailsByUuid: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: DocumentDetailsResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 
@@ -453,6 +650,10 @@ export class DocumentsService {
    * @param params The search filter parameters.
    * @param onBehalfOfTIN Optional. The TIN of the taxpayer if the client is acting as an intermediary.
    * @returns A promise that resolves with the search results, including documents and pagination metadata.
+   * @throws {MyInvoisError} If required date parameters are missing.
+   * @throws {MyInvoisAuthenticationError} If token acquisition fails.
+   * @throws {MyInvoisNetworkError} If a network error occurs during the API call.
+   * @throws {MyInvoisStandardAPIError} If the API returns an error response.
    */
   async searchDocuments(
     params: SearchDocumentsRequestParams,
@@ -462,8 +663,9 @@ export class DocumentsService {
       !(params.submissionDateFrom && params.submissionDateTo) &&
       !(params.issueDateFrom && params.issueDateTo)
     ) {
-      throw new Error(
-        "Either submissionDateFrom/submissionDateTo or issueDateFrom/issueDateTo must be provided for searching documents."
+      // Use MyInvoisError for client-side validation issues
+      throw new MyInvoisError(
+        "Search criteria incomplete: Either submissionDateFrom/To or issueDateFrom/To must be provided."
       );
     }
 
@@ -483,24 +685,40 @@ export class DocumentsService {
 
     const url = `${this.baseUrl}/api/v1.0/documents/search?${queryParameters.toString()}`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (fetchError) {
+      throw new MyInvoisNetworkError(
+        `Network error in searchDocuments: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+        fetchError instanceof Error ? fetchError : undefined
+      );
+    }
 
-    if (response.status === 200) {
+    if (response.ok) { // HTTP 200
       const responseData: SearchDocumentsResponse = await response.json();
       return responseData;
     } else {
+      let errorBody: any;
       try {
-        const errorBody = await response.json();
-        throw errorBody;
+        errorBody = await response.json();
       } catch (parsingError) {
-        throw parsingError;
+        const rawText = await response.text().catch(() => "Could not read error response body.");
+        throw new MyInvoisStandardAPIError(response.status, {
+          error: {
+            message: `API Error: ${response.status} ${response.statusText}. Failed to parse error response as JSON.`,
+            error: `Failed to parse error response as JSON. Raw body: ${rawText}`
+          }
+        });
       }
+      const apiResponse = errorBody.error ? errorBody : { error: errorBody };
+      throw new MyInvoisStandardAPIError(response.status, apiResponse);
     }
   }
 }
