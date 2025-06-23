@@ -14,6 +14,9 @@ async function runFullIntegrationTest() {
     "Starting Full Integration Test for MyInvoisClient (Invoice 1.0)..."
   );
 
+  const ONBEHALF_TIN =
+    process.env.SANDBOX_SUPPLIER_TIN ?? "should_be_the_same_as_supplier_tin";
+
   const CLIENT_ID = process.env.SANDBOX_CLIENT_ID ?? "your_sandbox_client_id";
   const CLIENT_SECRET =
     process.env.SANDBOX_CLIENT_SECRET ?? "your_sandbox_client_secret";
@@ -45,9 +48,9 @@ async function runFullIntegrationTest() {
   );
 
   try {
-    console.log("\nStep 1: Authenticating as taxpayer...");
+    console.log("\nStep 1: Authenticating as intermediary...");
     const accessToken =
-      await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI");
+      await myInvoiceClient.auth.loginAsIntermediary(ONBEHALF_TIN);
     console.log(
       "Authentication successful. Token (first 20 chars):",
       accessToken.substring(0, 20) + "..."
@@ -157,7 +160,10 @@ async function runFullIntegrationTest() {
 
     console.log("\nStep 4 : Submitting Document to MyInvois API..."); // Renumbering step
     const submissionResponse: SubmitDocumentsResponse =
-      await myInvoiceClient.documents.submitDocuments(submissionRequest);
+      await myInvoiceClient.documents.submitDocuments(
+        submissionRequest,
+        ONBEHALF_TIN
+      );
     console.log(
       "Submission Response:",
       JSON.stringify(submissionResponse, null, 2)

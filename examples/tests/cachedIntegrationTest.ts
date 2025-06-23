@@ -235,7 +235,7 @@ async function runFullIntegrationTest() {
           id: "1",
           quantity: 1,
           unitPrice: 10.0,
-          unitCode: "UNT",
+          unitCode: "XUN",
           subtotal: 10.0,
           itemDescription: "Test Item",
           itemCommodityClassification: {
