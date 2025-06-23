@@ -294,7 +294,7 @@ const invoiceParams: CreateInvoiceDocumentParams = {
     {
       id: "1",
       quantity: 5,
-      unitCode: "UNT",
+      unitCode: "XUN",
       unitPrice: 100.0,
       subtotal: 500.0,
       itemDescription: "Laptop Model X1",
