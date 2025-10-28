@@ -71,6 +71,16 @@ jobs:
 
           echo "✓ Tag base version matches package.json"
 
+      - name: Update package.json version to match tag
+        run: |
+          TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
+          echo "Updating package.json version to $TAG_VERSION"
+
+          # Use node to update package.json version
+          node -e "const fs=require('fs'); const pkg=require('./package.json'); pkg.version='$TAG_VERSION'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
+
+          echo "✓ Updated package.json version to $TAG_VERSION"
+
       - name: Publish to npm with Bun
         # 'bun publish' will use the version from your package.json.
         # The --tag flag here sets the npm distribution tag.
