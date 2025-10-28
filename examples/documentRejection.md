@@ -49,7 +49,7 @@ async function rejectDocumentExample() {
   const myInvoiceClient = new MyInvoisClient(
     BUYER_CLIENT_ID,
     BUYER_CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -63,18 +63,18 @@ async function rejectDocumentExample() {
 
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     await performRejection(
       myInvoiceClient,
       DOCUMENT_UUID_TO_REJECT,
-      REJECTION_REASON,
+      REJECTION_REASON
     );
   } catch (error) {
     console.error(
       "Error during client setup, authentication, or rejection:",
-      error,
+      error
     );
   }
 }
@@ -93,7 +93,7 @@ import { RejectDocumentResponse } from "myinvois-client/documents/types"; // Adj
 async function performRejection(
   client: MyInvoisClient,
   documentUuid: string,
-  reason: string,
+  reason: string
 ) {
   console.log(`Attempting to reject document with UUID: ${documentUuid}`);
   console.log(`Reason for rejection: ${reason}`);
@@ -129,11 +129,11 @@ function handleRejectionApiResponse(response: RejectDocumentResponse) {
 
   if (response.status === "Requested for Rejection") {
     console.log(
-      `Document ${response.uuid} has been successfully marked for rejection. The issuer (Supplier) needs to cancel it.`,
+      `Document ${response.uuid} has been successfully marked for rejection. The issuer (Supplier) needs to cancel it.`
     );
   } else {
     console.warn(
-      `Document ${response.uuid} rejection status: ${response.status}. Review API logs if unexpected.`,
+      `Document ${response.uuid} rejection status: ${response.status}. Review API logs if unexpected.`
     );
   }
   console.log("--- End of Rejection Response ---");

@@ -1,8 +1,8 @@
-import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
-import prettierPlugin from "eslint-plugin-prettier";
+import tsParser from "@typescript-eslint/parser";
 import prettierConfig from "eslint-config-prettier";
+import prettierPlugin from "eslint-plugin-prettier";
+import globals from "globals";
 import { ConfigArray } from "typescript-eslint";
 
 const config: ConfigArray = [
@@ -16,6 +16,7 @@ const config: ConfigArray = [
       "**/*.js",
       "**/*.d.ts",
       "**/.temp/**",
+      "**/scripts/**",
     ],
   },
   // TypeScript configuration

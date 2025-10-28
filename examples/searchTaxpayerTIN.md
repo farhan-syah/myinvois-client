@@ -47,7 +47,7 @@ async function searchTaxpayerTinExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -56,7 +56,7 @@ async function searchTaxpayerTinExample() {
       await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI"); // Or loginAsIntermediary
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     // --- Example 1: Search by Taxpayer Name ---
@@ -98,7 +98,7 @@ async function performTinSearch(
   client: MyInvoisClient,
   params: SearchTaxpayerTINRequestParams,
   searchDescription: string,
-  onBehalfOfTIN?: string, // Optional: if an intermediary is performing the search
+  onBehalfOfTIN?: string // Optional: if an intermediary is performing the search
 ) {
   console.log(`\n--- ${searchDescription} ---`);
   console.log(`Searching TIN with params:`, params);
@@ -113,7 +113,7 @@ async function performTinSearch(
   } catch (error: any) {
     console.error(
       `Error during "${searchDescription}":`,
-      error.message || error,
+      error.message || error
     );
     // The error message should provide details if it's a 400 (BadArgument or MultipleTINsFound) or 404 (NotFound)
   }

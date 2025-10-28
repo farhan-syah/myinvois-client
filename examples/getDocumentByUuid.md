@@ -50,7 +50,7 @@ async function getDocumentByUuidExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -63,14 +63,14 @@ async function getDocumentByUuidExample() {
 
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     // Fetch as JSON (default if preferredFormat is omitted by client method, or explicitly JSON)
     await fetchAndDisplayDocument(
       myInvoiceClient,
       DOCUMENT_UUID_TO_QUERY,
-      "JSON" /*, ON_BEHALF_OF_TIN */,
+      "JSON" /*, ON_BEHALF_OF_TIN */
     );
 
     // Example: Fetch as XML
@@ -94,10 +94,10 @@ async function fetchAndDisplayDocument(
   client: MyInvoisClient,
   documentUuid: string,
   preferredFormat: "JSON" | "XML" = "JSON", // Default to JSON
-  onBehalfOfTIN?: string,
+  onBehalfOfTIN?: string
 ) {
   console.log(
-    `\nFetching document UUID: ${documentUuid} (Preferred Format: ${preferredFormat})`,
+    `\nFetching document UUID: ${documentUuid} (Preferred Format: ${preferredFormat})`
   );
   if (onBehalfOfTIN) {
     console.log(`As intermediary for TIN: ${onBehalfOfTIN}`);
@@ -109,7 +109,7 @@ async function fetchAndDisplayDocument(
       await client.documents.getDocumentByUuid(
         documentUuid,
         preferredFormat,
-        onBehalfOfTIN,
+        onBehalfOfTIN
       );
 
     console.log("--- Document Details Response ---");
@@ -117,11 +117,11 @@ async function fetchAndDisplayDocument(
     console.log(`Submission UID: ${response.submissionUid}`);
     console.log(`Internal ID: ${response.internalId}`);
     console.log(
-      `Type: ${response.typeName} (Version: ${response.typeVersionName})`,
+      `Type: ${response.typeName} (Version: ${response.typeVersionName})`
     );
     console.log(`Status: ${response.status}`);
     console.log(
-      `Issued: ${response.dateTimeIssued}, Received by API: ${response.dateTimeReceived}`,
+      `Issued: ${response.dateTimeIssued}, Received by API: ${response.dateTimeReceived}`
     );
     if (response.dateTimeValidated) {
       console.log(`Validated: ${response.dateTimeValidated}`);
@@ -129,7 +129,7 @@ async function fetchAndDisplayDocument(
     console.log(`Issuer: ${response.issuerName} (TIN: ${response.issuerTin})`);
     if (response.receiverName) {
       console.log(
-        `Receiver: ${response.receiverName} (ID: ${response.receiverId || "N/A"}, TIN: ${response.receiverTin || "N/A"})`,
+        `Receiver: ${response.receiverName} (ID: ${response.receiverId || "N/A"}, TIN: ${response.receiverTin || "N/A"})`
       );
     }
     console.log(`Total Payable: ${response.totalPayableAmount}`);
@@ -144,10 +144,10 @@ async function fetchAndDisplayDocument(
     // Displaying a snippet of the raw document for brevity
     const rawDocumentSnippet = response.document.substring(
       0,
-      Math.min(response.document.length, 500),
+      Math.min(response.document.length, 500)
     );
     console.log(
-      rawDocumentSnippet + (response.document.length > 500 ? "..." : ""),
+      rawDocumentSnippet + (response.document.length > 500 ? "..." : "")
     );
     console.log("--- End of Document Details Response ---");
   } catch (error) {

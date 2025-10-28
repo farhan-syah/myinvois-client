@@ -52,7 +52,7 @@ async function getDocumentDetailsExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -65,12 +65,12 @@ async function getDocumentDetailsExample() {
 
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     await fetchAndDisplayDocumentDetails(
       myInvoiceClient,
-      DOCUMENT_UUID_TO_QUERY /*, ON_BEHALF_OF_TIN */,
+      DOCUMENT_UUID_TO_QUERY /*, ON_BEHALF_OF_TIN */
     );
   } catch (error) {
     console.error("Error during Get Document Details by UUID flow:", error);
@@ -90,7 +90,7 @@ Use the `client.documents.getDocumentDetailsByUuid()` method.
 async function fetchAndDisplayDocumentDetails(
   client: MyInvoisClient,
   documentUuid: string,
-  onBehalfOfTIN?: string,
+  onBehalfOfTIN?: string
 ) {
   console.log(`\nFetching details for document UUID: ${documentUuid}`);
   if (onBehalfOfTIN) {
@@ -101,7 +101,7 @@ async function fetchAndDisplayDocumentDetails(
     const response: DocumentDetailsResponse =
       await client.documents.getDocumentDetailsByUuid(
         documentUuid,
-        onBehalfOfTIN,
+        onBehalfOfTIN
       );
 
     console.log("--- Document Full Details Response ---");
@@ -109,11 +109,11 @@ async function fetchAndDisplayDocumentDetails(
     console.log(`Submission UID: ${response.submissionUid}`);
     console.log(`Internal ID: ${response.internalId}`);
     console.log(
-      `Type: ${response.typeName} (Version: ${response.typeVersionName})`,
+      `Type: ${response.typeName} (Version: ${response.typeVersionName})`
     );
     console.log(`Status: ${response.status}`);
     console.log(
-      `Issued: ${response.dateTimeIssued}, Received by API: ${response.dateTimeReceived}`,
+      `Issued: ${response.dateTimeIssued}, Received by API: ${response.dateTimeReceived}`
     );
     if (response.dateTimeValidated) {
       console.log(`Validated: ${response.dateTimeValidated}`);
@@ -121,7 +121,7 @@ async function fetchAndDisplayDocumentDetails(
     console.log(`Issuer: ${response.issuerName} (TIN: ${response.issuerTin})`);
     if (response.receiverName) {
       console.log(
-        `Receiver: ${response.receiverName} (ID: ${response.receiverId || "N/A"}, TIN: ${response.receiverTin || "N/A"})`,
+        `Receiver: ${response.receiverName} (ID: ${response.receiverId || "N/A"}, TIN: ${response.receiverTin || "N/A"})`
       );
     }
     console.log(`Total Payable: ${response.totalPayableAmount}`);
@@ -135,7 +135,7 @@ async function fetchAndDisplayDocumentDetails(
     if (response.validationResults) {
       console.log("\nValidation Results:");
       console.log(
-        `  Overall Validation Status: ${response.validationResults.status}`,
+        `  Overall Validation Status: ${response.validationResults.status}`
       );
       if (
         response.validationResults.validationSteps &&
@@ -145,7 +145,7 @@ async function fetchAndDisplayDocumentDetails(
         response.validationResults.validationSteps.forEach(
           (step: ValidationStepResult) => {
             console.log(
-              `    - Step Name: ${step.name}, Status: ${step.status}`,
+              `    - Step Name: ${step.name}, Status: ${step.status}`
             );
             if (step.error && step.status === "Invalid") {
               console.log(`      Error Code: ${step.error.errorCode}`);
@@ -157,21 +157,21 @@ async function fetchAndDisplayDocumentDetails(
                 console.log(`      Property Path: ${step.error.propertyPath}`);
               }
             }
-          },
+          }
         );
       } else {
         console.log("  No individual validation steps reported.");
       }
     } else {
       console.log(
-        "\nNo validation results reported for this document (it might be pre-validation or details not applicable).",
+        "\nNo validation results reported for this document (it might be pre-validation or details not applicable)."
       );
     }
     console.log("--- End of Document Full Details Response ---");
   } catch (error) {
     console.error(
       `Error fetching details for document ${documentUuid}:`,
-      error,
+      error
     );
     // Handle specific errors, e.g., document not found (404)
   }

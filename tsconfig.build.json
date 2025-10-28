@@ -11,5 +11,5 @@
     "emitDeclarationOnly": true
   },
   "include": ["src/**/*"],
-  "exclude": ["examples", "tests", "dist", "node_modules"]
+  "exclude": ["examples", "tests", "dist", "node_modules", "scripts"]
 }

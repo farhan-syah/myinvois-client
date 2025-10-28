@@ -68,7 +68,7 @@ async function getTaxpayerInfoByQrExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -77,7 +77,7 @@ async function getTaxpayerInfoByQrExample() {
       await myInvoiceClient.auth.loginAsTaxpayer("InvoicingAPI"); // Or loginAsIntermediary
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     await fetchAndDisplayTaxpayerInfo(myInvoiceClient, decodedQrCodeText);
@@ -99,7 +99,7 @@ Use the `client.taxpayer.getTaxpayerInfoByQRCode()` method with the **decoded** 
 async function fetchAndDisplayTaxpayerInfo(
   client: MyInvoisClient,
   qrCodeText: string,
-  onBehalfOfTIN?: string, // Optional: if an intermediary is performing the action
+  onBehalfOfTIN?: string // Optional: if an intermediary is performing the action
 ) {
   console.log(`\nFetching taxpayer info for QR Code Text: ${qrCodeText}`);
   if (onBehalfOfTIN) {
@@ -121,10 +121,10 @@ async function fetchAndDisplayTaxpayerInfo(
     if (response.ttx) console.log(`TTX Number: ${response.ttx}`);
     console.log(`MSIC: ${response.msic || "N/A"}`);
     console.log(
-      `Business Activity (EN): ${response.businessActivityDescriptionEN || "N/A"}`,
+      `Business Activity (EN): ${response.businessActivityDescriptionEN || "N/A"}`
     );
     console.log(
-      `Business Activity (BM): ${response.businessActivityDescriptionBM || "N/A"}`,
+      `Business Activity (BM): ${response.businessActivityDescriptionBM || "N/A"}`
     );
     console.log("Address:");
     console.log(`  ${response.addressLine0 || ""}`);
@@ -137,7 +137,7 @@ async function fetchAndDisplayTaxpayerInfo(
   } catch (error: any) {
     console.error(
       `Error fetching taxpayer info by QR code:`,
-      error.message || error,
+      error.message || error
     );
     // Handle specific errors, e.g., 404 Not Found if QR code text is invalid or not found.
   }
