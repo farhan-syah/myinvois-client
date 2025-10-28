@@ -1,12 +1,25 @@
 {
   "name": "myinvois-client",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A TypeScript client library (SDK) for seamless integration with the Malaysian MyInvois REST API, enabling developers to build custom e-invoicing solutions.",
-  "main": "dist/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm --sourcemap && bun build ./src/index.ts --outdir ./dist/cjs --target node --format cjs --sourcemap && tsc --emitDeclarationOnly --outDir ./dist",
     "prepare": "bunx husky && bun run build",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
@@ -46,6 +59,7 @@
   },
   "files": [
     "dist",
+    "dist/cjs/package.json",
     "LICENSE",
     "README.md",
     "INTENT.md"

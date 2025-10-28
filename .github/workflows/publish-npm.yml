@@ -46,21 +46,30 @@ jobs:
             echo "DIST_TAG=latest" >> $GITHUB_OUTPUT
           fi
 
-      - name: Verify package.json version (optional but recommended)
+      - name: Verify tag matches package.json base version
         run: |
-          EXPECTED_VERSION="${{ steps.get_version.outputs.VERSION }}"
-          # Use Bun to execute a simple JavaScript file that prints the version
+          TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
+
+          # Get package.json version
           echo "console.log(require('./package.json').version);" > get_pkg_version.js
           PACKAGE_JSON_VERSION=$(bun run get_pkg_version.js)
-          rm get_pkg_version.js # Clean up the temporary file
+          rm get_pkg_version.js
 
-          echo "Git Tag Version: $EXPECTED_VERSION"
+          # Extract base version from tag (everything before first '-')
+          TAG_BASE_VERSION=$(echo "$TAG_VERSION" | awk -F'-' '{print $1}')
+
+          echo "Git Tag: $TAG_VERSION"
+          echo "Tag Base Version: $TAG_BASE_VERSION"
           echo "package.json Version: $PACKAGE_JSON_VERSION"
-          if [ "$EXPECTED_VERSION" != "$PACKAGE_JSON_VERSION" ]; then
-            echo "Error: package.json version ($PACKAGE_JSON_VERSION) does not match Git tag version ($EXPECTED_VERSION)."
-            echo "Please ensure package.json is updated and committed before tagging."
+
+          # Validate that tag base version matches package.json
+          if [ "$TAG_BASE_VERSION" != "$PACKAGE_JSON_VERSION" ]; then
+            echo "Error: Tag base version ($TAG_BASE_VERSION) does not match package.json version ($PACKAGE_JSON_VERSION)."
+            echo "Valid tags for v$PACKAGE_JSON_VERSION: v$PACKAGE_JSON_VERSION, v$PACKAGE_JSON_VERSION-beta.1, v$PACKAGE_JSON_VERSION-dev, etc."
             exit 1
           fi
+
+          echo "✓ Tag base version matches package.json"
 
       - name: Publish to npm with Bun
         # 'bun publish' will use the version from your package.json.
