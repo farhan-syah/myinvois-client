@@ -54,7 +54,7 @@ async function getSubmissionDetailsExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -68,7 +68,7 @@ async function getSubmissionDetailsExample() {
 
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     // Optional: Define pagination parameters for the document summaries
@@ -80,7 +80,7 @@ async function getSubmissionDetailsExample() {
     await fetchAndDisplaySubmissionDetails(
       myInvoiceClient,
       SUBMISSION_UID_TO_QUERY,
-      paginationParams /*, ON_BEHALF_OF_TIN */,
+      paginationParams /*, ON_BEHALF_OF_TIN */
     );
   } catch (error) {
     console.error("Error during Get Submission Details flow:", error);
@@ -101,12 +101,12 @@ async function fetchAndDisplaySubmissionDetails(
   client: MyInvoisClient,
   submissionUid: string,
   params?: GetSubmissionDetailsRequestParams,
-  onBehalfOfTIN?: string,
+  onBehalfOfTIN?: string
 ) {
   console.log(`\nFetching details for submission UID: ${submissionUid}`);
   if (params) {
     console.log(
-      `With pagination: Page ${params.pageNo}, Size ${params.pageSize}`,
+      `With pagination: Page ${params.pageNo}, Size ${params.pageSize}`
     );
   }
   if (onBehalfOfTIN) {
@@ -118,7 +118,7 @@ async function fetchAndDisplaySubmissionDetails(
       await client.documents.getSubmissionDetails(
         submissionUid,
         params,
-        onBehalfOfTIN,
+        onBehalfOfTIN
       );
 
     console.log("--- Submission Details Response ---");
@@ -134,22 +134,22 @@ async function fetchAndDisplaySubmissionDetails(
         console.log(`  Document UUID: ${doc.uuid}`);
         console.log(`  Internal ID: ${doc.internalId}`);
         console.log(
-          `  Type: ${doc.typeName} (Version: ${doc.typeVersionName})`,
+          `  Type: ${doc.typeName} (Version: ${doc.typeVersionName})`
         );
         console.log(`  Status: ${doc.status}`);
         console.log(
-          `  Issued: ${doc.dateTimeIssued}, Received by API: ${doc.dateTimeReceived}`,
+          `  Issued: ${doc.dateTimeIssued}, Received by API: ${doc.dateTimeReceived}`
         );
         console.log(`  Issuer: ${doc.issuerName} (TIN: ${doc.issuerTin})`);
         if (doc.receiverName && doc.receiverId) {
           console.log(
-            `  Receiver: ${doc.receiverName} (ID: ${doc.receiverId})`,
+            `  Receiver: ${doc.receiverName} (ID: ${doc.receiverId})`
           );
         }
         console.log(`  Total Payable: ${doc.totalPayableAmount}`);
         if (doc.longId) {
           console.log(
-            `  Long ID (for valid docs): ${doc.longId.substring(0, 20)}...`,
+            `  Long ID (for valid docs): ${doc.longId.substring(0, 20)}...`
           );
         }
         if (doc.documentStatusReason) {
@@ -158,14 +158,14 @@ async function fetchAndDisplaySubmissionDetails(
       });
     } else {
       console.log(
-        "\nNo document summaries found in this page of the submission.",
+        "\nNo document summaries found in this page of the submission."
       );
     }
     console.log("--- End of Submission Details Response ---");
   } catch (error) {
     console.error(
       `Error fetching details for submission ${submissionUid}:`,
-      error,
+      error
     );
     // Handle specific errors, e.g., submission not found (404)
   }

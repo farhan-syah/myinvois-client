@@ -53,7 +53,7 @@ async function cancelDocumentExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -69,18 +69,18 @@ async function cancelDocumentExample() {
 
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     await performCancellation(
       myInvoiceClient,
       DOCUMENT_UUID_TO_CANCEL,
-      CANCELLATION_REASON,
+      CANCELLATION_REASON
     );
   } catch (error) {
     console.error(
       "Error during client setup, authentication, or cancellation:",
-      error,
+      error
     );
   }
 }
@@ -99,7 +99,7 @@ import { CancelDocumentResponse } from "myinvois-client/documents/types"; // Adj
 async function performCancellation(
   client: MyInvoisClient,
   documentUuid: string,
-  reason: string,
+  reason: string
 ) {
   console.log(`Attempting to cancel document with UUID: ${documentUuid}`);
   console.log(`Reason: ${reason}`);
@@ -144,7 +144,7 @@ function handleCancellationApiResponse(response: CancelDocumentResponse) {
     // This case should ideally not be reached if the API call was successful (HTTP 200)
     // and the response structure is as defined. Errors are typically caught in the catch block.
     console.warn(
-      `Document ${response.uuid} cancellation status: ${response.status}. Review API logs if unexpected.`,
+      `Document ${response.uuid} cancellation status: ${response.status}. Review API logs if unexpected.`
     );
   }
   console.log("--- End of Cancellation Response ---");

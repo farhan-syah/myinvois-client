@@ -44,7 +44,7 @@ async function searchDocumentsExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -57,7 +57,7 @@ async function searchDocumentsExample() {
 
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     // --- Example 1: Search by Submission Date Range ---
@@ -74,7 +74,7 @@ async function searchDocumentsExample() {
     await performSearchAndDisplay(
       myInvoiceClient,
       submissionDateParams,
-      "Submission Date Search" /*, ON_BEHALF_OF_TIN */,
+      "Submission Date Search" /*, ON_BEHALF_OF_TIN */
     );
 
     // --- Example 2: Search by Issue Date Range and other filters ---
@@ -119,7 +119,7 @@ async function performSearchAndDisplay(
   client: MyInvoisClient,
   params: SearchDocumentsRequestParams,
   searchDescription: string,
-  onBehalfOfTIN?: string,
+  onBehalfOfTIN?: string
 ) {
   console.log(`\n--- ${searchDescription} ---`);
   console.log(`Searching with params:`, params);
@@ -145,21 +145,21 @@ async function performSearchAndDisplay(
         console.log(`  UUID: ${doc.uuid}`);
         console.log(`  Internal ID: ${doc.internalId}`);
         console.log(
-          `  Type: ${doc.typeName} (Version: ${doc.typeVersionName})`,
+          `  Type: ${doc.typeName} (Version: ${doc.typeVersionName})`
         );
         console.log(`  Status: ${doc.status}`);
         console.log(
-          `  Issued: ${doc.dateTimeIssued}, Submitted: ${doc.dateTimeReceived}`,
+          `  Issued: ${doc.dateTimeIssued}, Submitted: ${doc.dateTimeReceived}`
         );
         console.log(`  Issuer: ${doc.issuerName} (TIN: ${doc.issuerTin})`);
         console.log(
-          `  Receiver: ${doc.receiverName || "N/A"} (TIN: ${doc.receiverTin || "N/A"}, ID: ${doc.receiverId || "N/A"})`,
+          `  Receiver: ${doc.receiverName || "N/A"} (TIN: ${doc.receiverTin || "N/A"}, ID: ${doc.receiverId || "N/A"})`
         );
         console.log(`  Total Amount: ${doc.total}`);
       });
     } else {
       console.log(
-        "\nNo documents found matching the criteria for this search.",
+        "\nNo documents found matching the criteria for this search."
       );
     }
   } catch (error) {

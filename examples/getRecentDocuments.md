@@ -44,7 +44,7 @@ async function getRecentDocumentsExample() {
   const myInvoiceClient = new MyInvoisClient(
     CLIENT_ID,
     CLIENT_SECRET,
-    ENVIRONMENT,
+    ENVIRONMENT
   );
 
   try {
@@ -58,7 +58,7 @@ async function getRecentDocumentsExample() {
 
     console.log(
       "Authentication successful. Token (first 20 chars):",
-      accessToken.substring(0, 20) + "...",
+      accessToken.substring(0, 20) + "..."
     );
 
     // Define search parameters (examples)
@@ -109,7 +109,7 @@ Use the `client.documents.getRecentDocuments()` method with the desired paramete
 async function fetchAndDisplayRecentDocuments(
   client: MyInvoisClient,
   params: GetRecentDocumentsRequestParams,
-  onBehalfOfTIN?: string,
+  onBehalfOfTIN?: string
 ) {
   console.log(`\nFetching recent documents with params:`, params);
   if (onBehalfOfTIN) {
@@ -134,19 +134,19 @@ async function fetchAndDisplayRecentDocuments(
         console.log(`  UUID: ${doc.uuid}`);
         console.log(`  Internal ID: ${doc.internalId}`);
         console.log(
-          `  Type: ${doc.typeName} (Version: ${doc.typeVersionName})`,
+          `  Type: ${doc.typeName} (Version: ${doc.typeVersionName})`
         );
         console.log(`  Status: ${doc.status}`);
         console.log(
-          `  Issued: ${doc.dateTimeIssued}, Received by API: ${doc.dateTimeReceived}`,
+          `  Issued: ${doc.dateTimeIssued}, Received by API: ${doc.dateTimeReceived}`
         );
         console.log(
           `  Issuer TIN: ${doc.issuerTin}` +
-            (doc.issuerName ? ` (${doc.issuerName})` : ``),
+            (doc.issuerName ? ` (${doc.issuerName})` : ``)
         );
         console.log(
           `  Receiver TIN: ${doc.receiverTin}` +
-            (doc.receiverName ? ` (${doc.receiverName})` : ``),
+            (doc.receiverName ? ` (${doc.receiverName})` : ``)
         );
         console.log(`  Total Amount: ${doc.total}`);
         if (doc.documentStatusReason) {
